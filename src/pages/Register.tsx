@@ -3,19 +3,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
 
-const Index = () => {
+const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Sign in attempted with:", { email, password });
+    console.log("Register attempted with:", formData);
   };
 
   return (
     <div className="flex min-h-screen">
-      {/* Left Side - Sign In Form */}
+      {/* Left Side - Register Form */}
       <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2 lg:px-12">
         <div className="w-full max-w-md space-y-8">
           {/* Logo and Branding */}
@@ -36,12 +41,26 @@ const Index = () => {
 
           {/* Welcome Header */}
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold">Welcome to Visionkit.ai 👋</h1>
-            <p className="text-muted-foreground">Sign in to your account</p>
+            <h1 className="text-3xl font-bold">Create your account 🚀</h1>
+            <p className="text-muted-foreground">Start building vision-powered applications</p>
           </div>
 
-          {/* Sign In Form */}
+          {/* Register Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-medium">
+                Full Name
+              </label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="h-12"
+              />
+            </div>
+
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
                 Email Address
@@ -49,9 +68,9 @@ const Index = () => {
               <Input
                 id="email"
                 type="email"
-                placeholder="Hania Hasan"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="john@example.com"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="h-12"
               />
             </div>
@@ -65,8 +84,8 @@ const Index = () => {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="h-12 pr-10"
                 />
                 <button
@@ -79,20 +98,37 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="flex justify-end">
-              <a href="#" className="text-sm font-medium text-primary hover:underline">
-                Forget Password
-              </a>
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="text-sm font-medium">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="••••••••••••••"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  className="h-12 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
 
             <Button type="submit" className="h-12 w-full text-base font-semibold" size="lg">
-              Sign In
+              Create Account
             </Button>
 
             <p className="text-center text-sm">
-              Don't have an account?{" "}
-              <a href="/register" className="font-medium text-primary hover:underline">
-                Register
+              Already have an account?{" "}
+              <a href="/" className="font-medium text-primary hover:underline">
+                Sign In
               </a>
             </p>
           </form>
@@ -107,7 +143,7 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Google Sign In */}
+          {/* Google Sign Up */}
           <Button variant="outline" className="h-12 w-full" type="button">
             <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
               <path
@@ -158,4 +194,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Register;
