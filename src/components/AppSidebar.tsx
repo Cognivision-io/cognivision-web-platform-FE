@@ -40,7 +40,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r">
       <SidebarContent className="pt-6">
         {/* Logo and Header */}
-        <div className="px-6 mb-8">
+        <div className={`px-${!collapsed?6:2} mb-8`}>
           <div className="flex items-center gap-2 mb-6">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center flex-shrink-0">
               <span className="text-white font-bold text-lg">V</span>
@@ -66,14 +66,23 @@ export function AppSidebar() {
                     <NavLink 
                       to={item.url}
                       end={item.url === "/dashboard"}
-                      className={({ isActive }) =>
-                        isActive
-                          ? "bg-primary/10 text-primary font-medium border-l-2 border-primary"
-                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                      }
+                      // className={({ isActive }) =>
+                      //   isActive
+                      //     ? "bg-primary/10 text-primary font-medium border-l-2 border-primary"
+                      //     : 
+                      //     "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      // }
+                      // className={'border-primary'}
+                      style={{height:40,marginBottom:5}}
                     >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span className="flex-1">{item.title}</span>}
+                      <div className="bg-primary" style={{
+                        display: "inline-block",
+                        width: "4px",
+                        height: "100%",
+                        borderRadius: "4px"
+                      }}></div>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -107,12 +116,12 @@ export function AppSidebar() {
       </SidebarContent>
 
       {/* User Profile */}
-      <SidebarFooter>
+      <SidebarFooter style={{ padding:0}}>
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton className="h-12">
+                <SidebarMenuButton size="lg" className="h-12">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary text-primary-foreground">H</AvatarFallback>
                   </Avatar>
