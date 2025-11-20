@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+  baseURL: 'https://modflow-backend-dev.yameenyousuf.com',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -33,7 +33,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken');
       localStorage.removeItem('authUser');
-      window.location.href = '/';
+      // window.location.href = '/';
     }
 
     // Handle 403 Forbidden
@@ -49,20 +49,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// API methods template
-export const authAPI = {
-  login: (email: string, password: string) =>
-    api.post('/auth/login', { email, password }),
-  register: (data: { email: string; password: string; name: string }) =>
-    api.post('/auth/register', data),
-  logout: () => api.post('/auth/logout'),
-  refreshToken: () => api.post('/auth/refresh'),
-};
-
-export const userAPI = {
-  getProfile: () => api.get('/user/profile'),
-  updateProfile: (data: any) => api.put('/user/profile', data),
-};
 
 export default api;

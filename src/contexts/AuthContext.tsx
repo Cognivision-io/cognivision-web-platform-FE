@@ -3,7 +3,11 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 interface User {
   id: string;
   email: string;
-  name?: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  phone: string;
+  dateOfBirth: string;
   // Add other user fields as needed
 }
 
@@ -12,7 +16,7 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (token: string, user: User) => Promise<void>;
   logout: () => void;
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
@@ -48,18 +52,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [token, user]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (token: string, user: User) => {
     try {
-      // Replace with your actual API endpoint
-      // const response = await axios.post('/api/auth/login', { email, password });
-      // const { token, user } = response.data;
       
-      // Mock login for template
-      const mockToken = 'mock-jwt-token-' + Date.now();
-      const mockUser = { id: '1', email, name: 'User Name' };
-      
-      setToken(mockToken);
-      setUser(mockUser);
+      setToken(token);
+      setUser(user);
     } catch (error) {
       console.error('Login failed:', error);
       throw error;

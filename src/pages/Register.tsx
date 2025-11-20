@@ -2,20 +2,76 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
+import { authAPI } from "@/api/auth";
+import { Link, useNavigate } from "react-router-dom";
+import { capitalize } from "@/lib/utils";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
+    fName: "",
+    lName: "",
     email: "",
+    phone: "",
+    dob: "",
+    username: "",
     password: "",
     confirmPassword: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Register attempted with:", formData);
+
+    if (formData.confirmPassword !== formData.password) {
+      toast.error("Passwords must match.");
+      return;
+    }
+
+    try {
+      const res = await authAPI.register({
+        dateOfBirth: formData.dob,
+        email: formData.email,
+        firstName: formData.fName,
+        lastName: formData.lName,
+        password: formData.password,
+        username: formData.username,
+        phone: formData.phone,
+      });
+
+      console.log("🚀 ~ handleSubmit ~ res:", res.data);
+
+      if (res.status != 201 && res.status != 200) {
+        toast.error("Something went wrong. Please try again.");
+        return;
+      }
+
+      toast.success(capitalize(res.data?.message));
+
+      navigate("/verify-otp", {
+        state: {
+          ...res.data?.data,
+          email: formData.email,
+          phone: formData.phone,
+        },
+      });
+    } catch (error) {
+      console.log("🚀 ~ handleSubmit ~ error:", error.response);
+
+      const message = error?.response?.data?.message;
+
+      if (Array.isArray(message)) {
+        message.forEach((msg) => toast.error(capitalize(msg)));
+      } else if (typeof message === "string") {
+        toast.error(capitalize(message));
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    }
   };
 
   return (
@@ -42,23 +98,63 @@ const Register = () => {
           {/* Welcome Header */}
           <div className="space-y-2">
             <h1 className="text-3xl font-bold">Create your account 🚀</h1>
-            <p className="text-muted-foreground">Start building vision-powered applications</p>
+            <p className="text-muted-foreground">
+              Start building vision-powered applications
+            </p>
           </div>
 
           {/* Register Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">
-                Full Name
+              <label htmlFor="username" className="text-sm font-medium">
+                Username
               </label>
               <Input
-                id="name"
+                required
+                id="username"
                 type="text"
-                placeholder="John Doe"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="johndoe123"
+                value={formData.username}
+                onChange={(e) =>
+                  setFormData({ ...formData, username: e.target.value })
+                }
                 className="h-12"
               />
+            </div>
+
+            <div className="flex flex-row gap-x-3">
+              <div className="space-y-2 flex-1">
+                <label htmlFor="fname" className="text-sm font-medium">
+                  First Name
+                </label>
+                <Input
+                  required
+                  id="fname"
+                  type="text"
+                  placeholder="John"
+                  value={formData.fName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fName: e.target.value })
+                  }
+                  className="h-12"
+                />
+              </div>
+              <div className="space-y-2 flex-1">
+                <label htmlFor="lname" className="text-sm font-medium">
+                  Last Name
+                </label>
+                <Input
+                  required
+                  id="lname"
+                  type="text"
+                  placeholder="Doe"
+                  value={formData.lName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, lName: e.target.value })
+                  }
+                  className="h-12"
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -66,11 +162,47 @@ const Register = () => {
                 Email Address
               </label>
               <Input
+                required
                 id="email"
                 type="email"
                 placeholder="john@example.com"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                className="h-12"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="phone" className="text-sm font-medium">
+                Phone
+              </label>
+              <Input
+                required
+                id="phone"
+                type="tel"
+                placeholder="+1 234 567 8901"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                className="h-12"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="dob" className="text-sm font-medium">
+                Date Of Birth
+              </label>
+              <Input
+                required
+                id="dob"
+                type="date"
+                value={formData.dob}
+                onChange={(e) =>
+                  setFormData({ ...formData, dob: e.target.value })
+                }
                 className="h-12"
               />
             </div>
@@ -82,10 +214,13 @@ const Register = () => {
               <div className="relative">
                 <Input
                   id="password"
+                  required
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••••••••"
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                   className="h-12 pr-10"
                 />
                 <button
@@ -104,11 +239,17 @@ const Register = () => {
               </label>
               <div className="relative">
                 <Input
+                  required
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="••••••••••••••"
                   value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
                   className="h-12 pr-10"
                 />
                 <button
@@ -116,20 +257,28 @@ const Register = () => {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showConfirmPassword ? (
+                    <EyeOff size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
                 </button>
               </div>
             </div>
 
-            <Button type="submit" className="h-12 w-full text-base font-semibold" size="lg">
+            <Button
+              type="submit"
+              className="h-12 w-full text-base font-semibold"
+              size="lg"
+            >
               Create Account
             </Button>
 
             <p className="text-center text-sm">
               Already have an account?{" "}
-              <a href="/" className="font-medium text-primary hover:underline">
+              <Link to="/" className="font-medium text-primary hover:underline">
                 Sign In
-              </a>
+              </Link>
             </p>
           </form>
 
@@ -139,7 +288,9 @@ const Register = () => {
               <div className="w-full border-t border-border"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-background px-4 text-muted-foreground">Or</span>
+              <span className="bg-background px-4 text-muted-foreground">
+                Or
+              </span>
             </div>
           </div>
 
@@ -172,21 +323,24 @@ const Register = () => {
       <div className="hidden lg:flex lg:w-1/2">
         <div className="relative flex w-full flex-col justify-between bg-primary p-12 text-primary-foreground">
           <div className="absolute inset-0 bg-gradient-to-b from-primary to-primary/90"></div>
-          
+
           <div className="relative z-10 flex-1 flex flex-col justify-center space-y-6">
             <h2 className="text-5xl font-bold leading-tight">
               Build vision-powered apps; no heavy lifting.
             </h2>
             <p className="text-lg leading-relaxed text-primary-foreground/90">
-              Empower your applications with computer vision and augmented reality in just a few
-              lines of code. Our SDK handles everything; from dataset management and model training
-              to real-time object detection and spatial measurement; so you can focus on building
+              Empower your applications with computer vision and augmented
+              reality in just a few lines of code. Our SDK handles everything;
+              from dataset management and model training to real-time object
+              detection and spatial measurement; so you can focus on building
               experiences, not infrastructure.
             </p>
           </div>
 
           <div className="relative z-10">
-            <p className="text-lg font-medium">Your data. Your models. Your vision.</p>
+            <p className="text-lg font-medium">
+              Your data. Your models. Your vision.
+            </p>
           </div>
         </div>
       </div>

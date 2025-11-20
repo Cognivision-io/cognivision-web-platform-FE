@@ -1,34 +1,74 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { useToast } from "@/hooks/use-toast";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import toast from "react-hot-toast";
+import { authAPI } from "@/api/auth";
+import { capitalize } from "@/lib/utils";
 
 const VerifyOtp = () => {
   const [otp, setOtp] = useState("");
-  const { toast } = useToast();
 
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+  
+  const location = useLocation();
+  const routedata = location.state || {};
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length !== 6) {
-      toast({
-        title: "Invalid OTP",
-        description: "Please enter all 6 digits",
-        variant: "destructive",
-      });
+      toast.error("Please enter all 6 digits");
       return;
     }
-    toast({
-      title: "OTP Verified",
-      description: "Successfully verified your code",
-    });
+
+    try {
+      const res = await authAPI.verifyOTP(Number(otp));
+
+      if (res.status != 201 && res.status != 200) {
+        toast.error("Something went wrong. Please try again.");
+        return;
+      }
+
+      toast.success("Successfully verified your code");
+
+      navigate("/");
+    } catch (error) {
+      const message = error?.response?.data?.message;
+
+      if (Array.isArray(message)) {
+        message.forEach((msg) => toast.error(capitalize(msg)));
+      } else if (typeof message === "string") {
+        toast.error(capitalize(message));
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    }
   };
 
-  const handleResendCode = () => {
-    toast({
-      title: "Code Resent",
-      description: "A new OTP has been sent to your email",
-    });
+  const handleResendCode = async () => {
+    try {
+      const res = await authAPI.resendOTP(routedata.email, routedata?.phone);
+      if (res.status != 201 && res.status != 200) {
+        toast.error("Something went wrong. Please try again.");
+        return;
+      }
+      setOtp("");
+      toast.success("A new OTP has been sent to your email");
+    } catch (error) {
+      const message = error?.response?.data?.message;
+
+      if (Array.isArray(message)) {
+        message.forEach((msg) => toast.error(capitalize(msg)));
+      } else if (typeof message === "string") {
+        toast.error(capitalize(message));
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    }
   };
 
   return (
@@ -43,11 +83,13 @@ const VerifyOtp = () => {
               </div>
               <span className="text-xl font-semibold">Visionkit.ai</span>
             </div>
-            
+
             <h1 className="text-3xl font-bold tracking-tight">Enter OTP</h1>
             <p className="text-muted-foreground">
               Enter the OTP that we have sent on your email{" "}
-              <span className="text-foreground font-medium">User@ex.com</span>
+              <span className="text-foreground font-medium">
+                {routedata?.email}
+              </span>
             </p>
           </div>
 
@@ -78,7 +120,9 @@ const VerifyOtp = () => {
             </Button>
 
             <div className="text-center">
-              <span className="text-muted-foreground">Haven't got the code yet? </span>
+              <span className="text-muted-foreground">
+                Haven't got the code yet?{" "}
+              </span>
               <button
                 type="button"
                 onClick={handleResendCode}
@@ -92,13 +136,17 @@ const VerifyOtp = () => {
       </div>
 
       {/* Right Side - Hero Section */}
-      <div className="hidden lg:flex flex-1 bg-gradient-hero items-center justify-center p-12">
-        <div className="max-w-2xl space-y-6 text-white">
+      <div className="hidden lg:flex flex-1 bg-gradient-hero items-center justify-center p-12 bg-primary">
+        <div className="max-w-2xl space-y-6 text-white bg-primary">
           <h2 className="text-5xl font-bold leading-tight">
             Build vision-powered apps; no heavy lifting.
           </h2>
           <p className="text-lg text-white/90 leading-relaxed">
-            Empower your applications with computer vision and augmented reality in just a few lines of code. Our SDK handles everything; from dataset management and model training to real-time object detection and spatial measurement; so you can focus on building experiences, not infrastructure.
+            Empower your applications with computer vision and augmented reality
+            in just a few lines of code. Our SDK handles everything; from
+            dataset management and model training to real-time object detection
+            and spatial measurement; so you can focus on building experiences,
+            not infrastructure.
           </p>
           <p className="text-white/80 text-sm pt-8">
             Your data. Your models. Your vision.

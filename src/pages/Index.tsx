@@ -2,15 +2,70 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { authAPI } from "@/api/auth";
+import toast from "react-hot-toast";
+import { capitalize } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Sign in attempted with:", { email, password });
+    try {
+      const res = await authAPI.login(email, password);
+
+      if (res.status != 201 && res.status != 200) {
+        toast.error("Something went wrong. Please try again.");
+        return;
+      }
+
+      toast.success(capitalize(res.data?.message));
+
+      const token = res.data?.data?.tokens?.token;
+
+      login(token, {
+        dateOfBirth: res.data?.data?.user?.dateOfBirth,
+        email: res.data?.data?.user?.email,
+        firstName: res.data?.data?.user?.firstName,
+        lastName: res.data?.data?.user?.lastName,
+        username: res.data?.data?.user?.username,
+        phone: res.data?.data?.user?.phone,
+        id: res.data?.data?.user?.id,
+      });
+
+      navigate("/dashboard");
+    } catch (error) {
+      console.log("🚀 ~ handleSubmit ~ error:", error.response);
+
+      const message = error?.response?.data?.message;
+
+      if (message == "Email is not verifed") {
+        toast.success("Verify your email");
+        navigate("/verify-otp", {
+          state: {
+            email: email,
+            redirectToLogin: true,
+          },
+        });
+        return;
+      }
+
+      if (Array.isArray(message)) {
+        message.forEach((msg) => toast.error(capitalize(msg)));
+      } else if (typeof message === "string") {
+        toast.error(capitalize(message));
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    }
   };
 
   return (
@@ -47,6 +102,7 @@ const Index = () => {
                 Email Address
               </label>
               <Input
+                required
                 id="email"
                 type="email"
                 placeholder="Hania Hasan"
@@ -62,6 +118,7 @@ const Index = () => {
               </label>
               <div className="relative">
                 <Input
+                  required
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••••••••"
@@ -80,20 +137,30 @@ const Index = () => {
             </div>
 
             <div className="flex justify-end">
-              <a href="#" className="text-sm font-medium text-primary hover:underline">
+              <Link
+                to="/forget-password"
+                className="text-sm font-medium text-primary hover:underline"
+              >
                 Forget Password
-              </a>
+              </Link>
             </div>
 
-            <Button type="submit" className="h-12 w-full text-base font-semibold" size="lg">
+            <Button
+              type="submit"
+              className="h-12 w-full text-base font-semibold"
+              size="lg"
+            >
               Sign In
             </Button>
 
             <p className="text-center text-sm">
               Don't have an account?{" "}
-              <a href="/register" className="font-medium text-primary hover:underline">
+              <Link
+                to="/register"
+                className="font-medium text-primary hover:underline"
+              >
                 Register
-              </a>
+              </Link>
             </p>
           </form>
 
@@ -103,7 +170,9 @@ const Index = () => {
               <div className="w-full border-t border-border"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-background px-4 text-muted-foreground">Or</span>
+              <span className="bg-background px-4 text-muted-foreground">
+                Or
+              </span>
             </div>
           </div>
 
@@ -136,21 +205,24 @@ const Index = () => {
       <div className="hidden lg:flex lg:w-1/2">
         <div className="relative flex w-full flex-col justify-between bg-primary p-12 text-primary-foreground">
           <div className="absolute inset-0 bg-gradient-to-b from-primary to-primary/90"></div>
-          
+
           <div className="relative z-10 flex-1 flex flex-col justify-center space-y-6">
             <h2 className="text-5xl font-bold leading-tight">
               Build vision-powered apps; no heavy lifting.
             </h2>
             <p className="text-lg leading-relaxed text-primary-foreground/90">
-              Empower your applications with computer vision and augmented reality in just a few
-              lines of code. Our SDK handles everything; from dataset management and model training
-              to real-time object detection and spatial measurement; so you can focus on building
+              Empower your applications with computer vision and augmented
+              reality in just a few lines of code. Our SDK handles everything;
+              from dataset management and model training to real-time object
+              detection and spatial measurement; so you can focus on building
               experiences, not infrastructure.
             </p>
           </div>
 
           <div className="relative z-10">
-            <p className="text-lg font-medium">Your data. Your models. Your vision.</p>
+            <p className="text-lg font-medium">
+              Your data. Your models. Your vision.
+            </p>
           </div>
         </div>
       </div>
