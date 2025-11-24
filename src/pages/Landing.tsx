@@ -66,7 +66,8 @@ const Landing = () => {
           </header>
         </div>
 
-        <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-12 px-6 pb-12 pt-10 md:flex-row md:items-start md:pb-20 lg:gap-16 lg:pt-16">
+        <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-12 px-6 pb-12 pt-10 md:flex-row md:items-center md:pb-20 lg:gap-16 lg:pt-16">
+          {/* Left: phone image */}
           <div className="flex w-full justify-center md:w-5/12">
             <div className="relative w-full max-w-[360px]">
               <div className="absolute inset-0 rounded-[36px] bg-gradient-to-b from-white/35 via-white/10 to-transparent blur-3xl" />
@@ -78,7 +79,8 @@ const Landing = () => {
             </div>
           </div>
 
-          <div className="w-full text-center md:w-7/12 md:text-left">
+          {/* Right: heading + text */}
+          <div className="w-full text-center md:w-7/12 md:text-left md:flex md:flex-col md:justify-center">
             <h1 className="text-[36px] font-extrabold leading-[1.05] text-black sm:text-[42px] md:text-[48px] lg:text-[52px]">
               Bring Real-World Intelligence to Your App
             </h1>
@@ -194,25 +196,27 @@ const Landing = () => {
                   title: "Hybrid-Ready AR",
                   body: "One SDK for Flutter & React Native — no need for native ARKit/ARCore coding.",
                   color: "#a88bff",
-                  icon: <AppWindow size={22} strokeWidth={2.2} />,
+                  icon: <AppWindow size={22} strokeWidth={2.2} color="black" />,
                 },
                 {
                   title: "AI Vision + ML Inference",
                   body: "Real-time object detection, pose tracking, spatial analysis, and more.",
                   color: "#ffbe32",
-                  icon: <Cpu size={22} strokeWidth={2.2} />,
+                  icon: <Cpu size={22} strokeWidth={2.2} color="black" />,
                 },
                 {
                   title: "3D Spatial Mapping",
                   body: "Understand surfaces, depth, and real-world geometry for precise AR overlays.",
                   color: "#39c56b",
-                  icon: <Box size={22} strokeWidth={2.2} />,
+                  icon: <Box size={22} strokeWidth={2.2} color="black" />,
                 },
                 {
                   title: "Cross-Platform Performance",
                   body: "Runs seamlessly on iOS, Android, and web with optimized edge + cloud inference.",
                   color: "#f5933c",
-                  icon: <CheckSquare size={22} strokeWidth={2.2} />,
+                  icon: (
+                    <CheckSquare size={22} strokeWidth={2.2} color="black" />
+                  ),
                 },
               ].map((item) => (
                 <div
