@@ -1,7 +1,48 @@
 import React from "react";
 import { Mail, Phone, Globe2, Linkedin, Instagram, Globe } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
+const subjectOptions = ["Project demo", "General Inquiry"] as const;
+type SubjectOption = (typeof subjectOptions)[number];
+
+const contactSchema = yup
+  .object({
+    firstName: yup.string().trim().required("First name is required"),
+    lastName: yup.string().trim().required("Last name is required"),
+    email: yup
+      .string()
+      .trim()
+      .email("Enter a valid email")
+      .required("Email is required"),
+    phoneNumber: yup.string().trim().required("Phone number is required"),
+    subject: yup
+      .mixed<SubjectOption>()
+      .oneOf(subjectOptions, "Subject is required")
+      .required("Subject is required"),
+    message: yup.string().trim().required("Message is required"),
+  })
+  .required();
+
+type ContactFormValues = yup.InferType<typeof contactSchema>;
 
 const ContactSection: React.FC = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<ContactFormValues>({
+    resolver: yupResolver(contactSchema),
+  });
+
+  const onSubmit = (data: ContactFormValues) => {
+    // Replace this with your API call / action
+    console.log("Contact form submitted:", data);
+    reset();
+  };
+
   return (
     <section className="bg-[#f4f7fe] px-6 py-16 md:py-20">
       <div className="mx-auto max-w-6xl rounded-[32px] bg-[#f5f7fd] shadow-[0_30px_80px_rgba(15,23,42,0.12)]">
@@ -70,7 +111,10 @@ const ContactSection: React.FC = () => {
 
           {/* Right: Form panel */}
           <div className="w-full rounded-b-[32px] bg-[#f5f7fd] px-10 py-10 md:w-[62%] md:rounded-r-[32px] md:rounded-bl-none md:px-14 md:py-12">
-            <form className="flex h-full flex-col justify-between">
+            <form
+              className="flex h-full flex-col justify-between"
+              onSubmit={handleSubmit(onSubmit)}
+            >
               <div className="space-y-8">
                 {/* Name row */}
                 <div className="grid gap-8 md:grid-cols-2">
@@ -80,9 +124,15 @@ const ContactSection: React.FC = () => {
                     </p>
                     <input
                       type="text"
-                      placeholder="I"
+                      placeholder="John"
                       className="w-full border-b border-[#d4d4d8] bg-transparent pb-1 text-[14px] text-[#111827] outline-none placeholder:text-[#d4d4d8]"
+                      {...register("firstName")}
                     />
+                    {errors.firstName && (
+                      <p className="text-[11px] text-red-500">
+                        {errors.firstName.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <p className="text-[12px] font-medium text-[#6b7280]">
@@ -90,9 +140,15 @@ const ContactSection: React.FC = () => {
                     </p>
                     <input
                       type="text"
-                      defaultValue="Doe"
-                      className="w-full border-b border-[#d4d4d8] bg-transparent pb-1 text-[14px] text-[#111827] outline-none"
+                      placeholder="Doe"
+                      className="w-full border-b border-[#d4d4d8] bg-transparent pb-1 text-[14px] text-[#111827] outline-none placeholder:text-[#d4d4d8]"
+                      {...register("lastName")}
                     />
+                    {errors.lastName && (
+                      <p className="text-[11px] text-red-500">
+                        {errors.lastName.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -104,8 +160,15 @@ const ContactSection: React.FC = () => {
                     </p>
                     <input
                       type="email"
-                      className="w-full border-b border-[#d4d4d8] bg-transparent pb-1 text-[14px] text-[#111827] outline-none"
+                      placeholder="you@example.com"
+                      className="w-full border-b border-[#d4d4d8] bg-transparent pb-1 text-[14px] text-[#111827] outline-none placeholder:text-[#d4d4d8]"
+                      {...register("email")}
                     />
+                    {errors.email && (
+                      <p className="text-[11px] text-red-500">
+                        {errors.email.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <p className="text-[12px] font-medium text-[#6b7280]">
@@ -113,9 +176,15 @@ const ContactSection: React.FC = () => {
                     </p>
                     <input
                       type="tel"
-                      defaultValue="+1 012 3456 789"
-                      className="w-full border-b border-[#111827] bg-transparent pb-1 text-[14px] text-[#111827] outline-none"
+                      placeholder="+1 012 3456 789"
+                      className="w-full border-b border-[#111827] bg-transparent pb-1 text-[14px] text-[#111827] outline-none placeholder:text-[#d4d4d8]"
+                      {...register("phoneNumber")}
                     />
+                    {errors.phoneNumber && (
+                      <p className="text-[11px] text-red-500">
+                        {errors.phoneNumber.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -128,11 +197,12 @@ const ContactSection: React.FC = () => {
                     <label className="inline-flex cursor-pointer items-center gap-2">
                       <input
                         type="radio"
-                        name="subject"
+                        value="Project demo"
+                        {...register("subject")}
                         className="peer sr-only"
                         defaultChecked
                       />
-                      <span className="relative flex h-4 w-4 items-center justify-center rounded-full border border-[#111827] bg-white">
+                      <span className="relative flex h-4 w-4 items-center justify-center rounded-full border border-[#111827] bg-white peer-checked:border-[#111827]">
                         <span className="h-2 w-2 rounded-full bg-[#111827] peer-checked:opacity-100" />
                       </span>
                       <span className="text-[#111827]">Project demo</span>
@@ -141,15 +211,23 @@ const ContactSection: React.FC = () => {
                     <label className="inline-flex cursor-pointer items-center gap-2">
                       <input
                         type="radio"
-                        name="subject"
+                        value="General Inquiry"
+                        {...register("subject")}
                         className="peer sr-only"
                       />
-                      <span className="relative flex h-4 w-4 items-center justify-center rounded-full border border-[#d4d4d8] bg-white">
+                      <span className="relative flex h-4 w-4 items-center justify-center rounded-full border border-[#d4d4d8] bg-white peer-checked:border-[#111827]">
                         <span className="h-2 w-2 rounded-full bg-[#d4d4d8] peer-checked:bg-[#111827]" />
                       </span>
-                      <span className="text-[#6b7280]">General Inquiry</span>
+                      <span className="text-[#6b7280] peer-checked:text-[#111827]">
+                        General Inquiry
+                      </span>
                     </label>
                   </div>
+                  {errors.subject && (
+                    <p className="text-[11px] text-red-500">
+                      {errors.subject.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Message */}
@@ -159,9 +237,15 @@ const ContactSection: React.FC = () => {
                   </p>
                   <textarea
                     rows={3}
-                    placeholder="Write your message.."
+                    placeholder="Write your message..."
                     className="w-full resize-none border-b border-[#d4d4d8] bg-transparent pb-1 text-[14px] text-[#111827] outline-none placeholder:text-[#d4d4d8]"
+                    {...register("message")}
                   />
+                  {errors.message && (
+                    <p className="text-[11px] text-red-500">
+                      {errors.message.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -169,9 +253,10 @@ const ContactSection: React.FC = () => {
               <div className="mt-10 flex justify-end">
                 <button
                   type="submit"
-                  className="inline-flex items-center rounded-full bg-[#5328d4] px-10 py-3 text-[14px] font-semibold text-white shadow-[0_16px_40px_rgba(83,40,212,0.5)] transition-transform duration-150 hover:-translate-y-0.5"
+                  disabled={isSubmitting}
+                  className="inline-flex items-center rounded-full bg-[#5328d4] px-10 py-3 text-[14px] font-semibold text-white shadow-[0_16px_40px_rgba(83,40,212,0.5)] transition-transform duration-150 hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
                 >
-                  Send Message
+                  {isSubmitting ? "Sending..." : "Send Message"}
                 </button>
               </div>
             </form>
