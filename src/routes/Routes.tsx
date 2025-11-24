@@ -14,6 +14,8 @@ import Dashboard from "../pages/Dashboard";
 import NotFound from "../pages/NotFound";
 import { useAuth } from "@/contexts/AuthContext";
 import ForgetPassword from "@/pages/ForgetPassword";
+import ContactUs from "@/pages/ContactUs";
+import AboutUs from "@/pages/AboutUs";
 
 export default function Routes() {
   const { isAuthenticated, token, user } = useAuth();
@@ -24,7 +26,12 @@ export default function Routes() {
   const location = useLocation();
 
   useEffect(() => {
-    const authRoutes = ["/login", "/register", "/verify-otp", "/forget-password"];
+    const authRoutes = [
+      "/login",
+      "/register",
+      "/verify-otp",
+      "/forget-password",
+    ];
     const protectedRoutes = ["/dashboard"];
 
     if (!isAuthenticated && protectedRoutes.includes(location.pathname)) {
@@ -45,7 +52,8 @@ export default function Routes() {
       <Route path="/forget-password" element={<ForgetPassword />} />
       <Route path="/verify-otp" element={<VerifyOtp />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      {/* Catch-all route */}
+      <Route path="/contact-us" element={<ContactUs />} />
+      <Route path="/about-us" element={<AboutUs />} />
       <Route path="*" element={<NotFound />} />
     </AppRoutes>
   );
