@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 
 import Index from "../pages/Index";
+import Landing from "../pages/Landing";
 import Register from "../pages/Register";
 import VerifyOtp from "../pages/VerifyOtp";
 import Dashboard from "../pages/Dashboard";
@@ -23,12 +24,12 @@ export default function Routes() {
   const location = useLocation();
 
   useEffect(() => {
-    const authRoutes = ["/", "/register", "/verify-otp", "/forget-password"];
+    const authRoutes = ["/login", "/register", "/verify-otp", "/forget-password"];
     const protectedRoutes = ["/dashboard"];
 
     if (!isAuthenticated && protectedRoutes.includes(location.pathname)) {
       // User is not authenticated but trying to access protected route
-      navigate("/", { replace: true });
+      navigate("/login", { replace: true });
     } else if (isAuthenticated && authRoutes.includes(location.pathname)) {
       // Authenticated user trying to access auth routes
       navigate("/dashboard", { replace: true });
@@ -38,7 +39,8 @@ export default function Routes() {
   return (
     //After adding route here make sure to add in above protected or authenticated routes array <3
     <AppRoutes>
-      <Route path="/" element={<Index />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Index />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forget-password" element={<ForgetPassword />} />
       <Route path="/verify-otp" element={<VerifyOtp />} />

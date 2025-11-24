@@ -35,7 +35,7 @@ const VerifyOtp = () => {
 
       toast.success("Successfully verified your code");
 
-      navigate("/");
+      navigate("/login");
     } catch (error) {
       const message = error?.response?.data?.message;
 
