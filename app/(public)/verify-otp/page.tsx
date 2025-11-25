@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +13,7 @@ import toast from "react-hot-toast";
 import { authAPI } from "@/api/auth";
 import { capitalize } from "@/lib/utils";
 
-const VerifyOtpPage = () => {
+const VerifyOtpContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") ?? "";
@@ -133,6 +133,20 @@ const VerifyOtpPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const VerifyOtpPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid min-h-screen place-items-center bg-background text-muted-foreground">
+          Loading verification screen...
+        </div>
+      }
+    >
+      <VerifyOtpContent />
+    </Suspense>
   );
 };
 
