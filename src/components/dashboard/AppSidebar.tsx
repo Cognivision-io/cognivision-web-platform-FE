@@ -47,7 +47,7 @@ export function AppSidebar() {
         {/* Logo and Header */}
         <div className={cn("mb-8", collapsed ? "px-2" : "px-6")}>
           <div className="mb-6 flex items-center gap-2">
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary/80">
               <span className="text-lg font-bold text-white">V</span>
             </div>
             {!collapsed && <span className="text-xl font-semibold">Visionkit.ai</span>}

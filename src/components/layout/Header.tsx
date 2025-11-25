@@ -1,15 +1,13 @@
-'use client';
-
-/* eslint-disable @next/next/no-img-element */
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 
 const navItems = [
-  { label: "About us", href: "/about-us" },
-  { label: "Use Cases", href: "/#use-cases" },
-  { label: "Docs", href: "/#docs" },
+  { label: "About us", href: "/about-us", highlight: true },
+  { label: "Use Cases", href: "/use-cases", highlight: true },
+  { label: "Docs", href: "/docs", highlight: true },
   { label: "Contact", href: "/contact-us", highlight: true },
 ];
 
@@ -55,8 +53,8 @@ const Header = () => {
                     item.highlight && isActive
                       ? "font-semibold underline underline-offset-[6px]"
                       : isActive
-                        ? "opacity-100"
-                        : ""
+                      ? "opacity-100"
+                      : ""
                   }`}
                 >
                   {item.label}

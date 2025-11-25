@@ -23,7 +23,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-[#f4f7fe] text-[#0f172a]">
       <div className="relative overflow-hidden pb-16">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-[#4c23d7] via-[#5129de] to-[#5b30e6]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-linear-to-b from-[#4c23d7] via-[#5129de] to-[#5b30e6]" />
         <img
           src="/HeroGreyWaves.svg"
           alt=""
@@ -33,20 +33,33 @@ const LandingPage = () => {
 
         <div className="relative mx-auto max-w-6xl px-6 pt-8">
           <header className="flex items-center justify-between gap-4">
-            <img src="/logo.svg" alt="CogniVision.io" className="h-10 w-auto drop-shadow-sm" />
+            <img
+              src="/logo.svg"
+              alt="CogniVision.io"
+              className="h-10 w-auto drop-shadow-sm"
+            />
 
             <nav className="hidden items-center gap-8 text-sm font-semibold text-white md:flex">
-              <a className="flex items-center gap-2 transition-opacity hover:opacity-90" href="#use-cases">
+              <a
+                className="flex items-center gap-2 transition-opacity hover:opacity-90"
+                href="#use-cases"
+              >
                 <span>Use Cases</span>
                 <ChevronDown size={16} />
               </a>
-              <a className="transition-opacity hover:opacity-90" href="#pricing">
+              <a
+                className="transition-opacity hover:opacity-90"
+                href="#pricing"
+              >
                 Pricing
               </a>
               <a className="transition-opacity hover:opacity-90" href="#docs">
                 Docs
               </a>
-              <a className="transition-opacity hover:opacity-90" href="#contact">
+              <a
+                className="transition-opacity hover:opacity-90"
+                href="#contact"
+              >
                 Contact
               </a>
             </nav>
@@ -63,7 +76,7 @@ const LandingPage = () => {
         <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-12 px-6 pb-12 pt-10 md:flex-row md:items-center md:pb-20 lg:gap-16 lg:pt-16">
           <div className="flex w-full justify-center md:w-5/12">
             <div className="relative w-full max-w-[360px]">
-              <div className="absolute inset-0 rounded-[36px] bg-gradient-to-b from-white/35 via-white/10 to-transparent blur-3xl" />
+              <div className="absolute inset-0 rounded-[36px] bg-linear-to-b from-white/35 via-white/10 to-transparent blur-3xl" />
               <img
                 src="/MobileLogo.svg"
                 alt="CogniVision mobile preview"
@@ -77,12 +90,13 @@ const LandingPage = () => {
               Bring Real-World Intelligence to Your App
             </h1>
             <p className="mt-5 text-lg leading-[1.7] text-[#323a4b] sm:text-xl">
-              Cognivision is a unified AR + AI vision SDK that lets developers add spatial understanding, object
-              detection, and real-time measurements to hybrid apps — with just a few lines of code.
+              Cognivision is a unified AR + AI vision SDK that lets developers
+              add spatial understanding, object detection, and real-time
+              measurements to hybrid apps — with just a few lines of code.
             </p>
             <Link
               href="/register"
-              className="mt-8 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#5b25e5] to-[#6d37ff] px-7 py-3 text-base font-semibold text-white shadow-[0_16px_38px_rgba(68,43,199,0.35)] transition duration-150 hover:-translate-y-0.5"
+              className="mt-8 inline-flex items-center justify-center rounded-full bg-linear-to-r from-[#5b25e5] to-[#6d37ff] px-7 py-3 text-base font-semibold text-white shadow-[0_16px_38px_rgba(68,43,199,0.35)] transition duration-150 hover:-translate-y-0.5"
             >
               Get Started
             </Link>
@@ -92,11 +106,14 @@ const LandingPage = () => {
 
       <section className="bg-[#f4f7fe] px-6 pb-20">
         <div className="mx-auto max-w-5xl text-center">
-          <h2 className="text-[30px] font-extrabold text-black sm:text-[32px]">About Cognivision</h2>
+          <h2 className="text-[30px] font-extrabold text-black sm:text-[32px]">
+            About Cognivision
+          </h2>
           <p className="mt-4 text-lg leading-[1.75] text-[#1f2937] sm:text-xl">
-            Cognivision is a hybrid AR + AI SDK that lets developers bring spatially aware, real-time vision to apps
-            across iOS, Android, and web. Track objects, map environments, and overlay AR insights — fast, precise, and
-            without complex native coding.
+            Cognivision is a hybrid AR + AI SDK that lets developers bring
+            spatially aware, real-time vision to apps across iOS, Android, and
+            web. Track objects, map environments, and overlay AR insights —
+            fast, precise, and without complex native coding.
           </p>
         </div>
 
@@ -118,13 +135,20 @@ const LandingPage = () => {
               body: "From sports and healthcare to retail and industrial solutions.",
             },
           ].map((feature) => (
-            <div key={feature.title} className="flex flex-col items-start justify-start gap-4 md:items-center">
+            <div
+              key={feature.title}
+              className="flex flex-col items-start justify-start gap-4 md:items-center"
+            >
               <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#d8dded] bg-white shadow-[0_10px_30px_rgba(11,0,81,0.08)]">
                 {feature.icon}
               </div>
               <div className="space-y-3 text-left md:text-center">
-                <h3 className="text-[21px] font-semibold leading-snug text-black">{feature.title}</h3>
-                <p className="text-[15px] leading-7 text-[#212530]/90">{feature.body}</p>
+                <h3 className="text-[21px] font-semibold leading-snug text-black">
+                  {feature.title}
+                </h3>
+                <p className="text-[15px] leading-7 text-[#212530]/90">
+                  {feature.body}
+                </p>
               </div>
             </div>
           ))}
@@ -146,18 +170,23 @@ const LandingPage = () => {
       <section className="bg-[#f6f7fb] px-6 py-16 md:py-20 lg:py-24">
         <div className="mx-auto max-w-6xl">
           <h2 className="max-w-4xl text-[32px] font-extrabold leading-tight text-black sm:text-[36px] lg:text-[40px]">
-            Hybrid Apps Get Real AR Intelligence — Powered By One Unified Vision SDK.
+            Hybrid Apps Get Real AR Intelligence — Powered By One Unified Vision
+            SDK.
           </h2>
 
           <div className="mt-16 flex flex-col gap-14 lg:flex-row lg:items-start lg:gap-24">
             <div className="max-w-xl lg:w-[40%]">
-              <h3 className="text-[32px] font-semibold leading-tight text-black">What problem are we solving?</h3>
+              <h3 className="text-[32px] font-semibold leading-tight text-black">
+                What problem are we solving?
+              </h3>
               <p className="mt-6 text-[16px] leading-[1.85] text-[#171c26]">
-                Cognivision is a plug-and-play computer vision SDK built for Flutter and React Native developers who
-                want to integrate AR capabilities without rewriting native code.
+                Cognivision is a plug-and-play computer vision SDK built for
+                Flutter and React Native developers who want to integrate AR
+                capabilities without rewriting native code.
                 <br />
-                It combines machine learning, AR spatial mapping, and 3D understanding into one lightweight toolkit —
-                optimized for real-time performance on mobile.
+                It combines machine learning, AR spatial mapping, and 3D
+                understanding into one lightweight toolkit — optimized for
+                real-time performance on mobile.
               </p>
             </div>
 
@@ -185,10 +214,15 @@ const LandingPage = () => {
                   title: "Cross-Platform Performance",
                   body: "Runs seamlessly on iOS, Android, and web with optimized edge + cloud inference.",
                   color: "#f5933c",
-                  icon: <CheckSquare size={22} strokeWidth={2.2} color="black" />,
+                  icon: (
+                    <CheckSquare size={22} strokeWidth={2.2} color="black" />
+                  ),
                 },
               ].map((item) => (
-                <div key={item.title} className="flex items-start gap-4 sm:gap-5">
+                <div
+                  key={item.title}
+                  className="flex items-start gap-4 sm:gap-5"
+                >
                   <div
                     className="mt-1 flex h-14 w-14 items-center justify-center rounded-[18px] shadow-[0_16px_40px_rgba(9,3,75,0.14)]"
                     style={{ backgroundColor: item.color }}
@@ -196,8 +230,12 @@ const LandingPage = () => {
                     <span className="text-white">{item.icon}</span>
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-[17px] font-semibold text-[#0f172a]">{item.title}</h4>
-                    <p className="text-[15px] leading-7 text-[#1f2937]">{item.body}</p>
+                    <h4 className="text-[17px] font-semibold text-[#0f172a]">
+                      {item.title}
+                    </h4>
+                    <p className="text-[15px] leading-7 text-[#1f2937]">
+                      {item.body}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -205,17 +243,9 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-
-      <section id="use-cases">
-        <UseCasesSection />
-      </section>
+      <UseCasesSection />
       <UpcomingUseCasesSection />
-
-      <section id="contact">
-        <ContactSection />
-      </section>
-
-      <ConnectWithTeamSection />
+      <ContactSection />
       <Footer />
     </div>
   );

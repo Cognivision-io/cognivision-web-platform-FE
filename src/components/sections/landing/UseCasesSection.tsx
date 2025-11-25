@@ -14,7 +14,7 @@ const UseCasesSection = () => {
         </h2>
         <div className="mt-10 grid gap-8 items-stretch md:mt-12 md:grid-cols-2">
           {/* Left: White Card */}
-          <div className="rounded-[26px] z-[11] bg-white shadow-[0_24px_60px_rgba(15,23,42,0.16)] flex flex-col">
+          <div className="rounded-[26px] z-11 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.16)] flex flex-col">
             <div className="px-8 pt-8 pb-4 md:px-10 md:pt-10">
               <h3 className="text-[20px] font-semibold text-black md:text-[22px]">
                 The Solution Cognivision SDK Integration
@@ -61,7 +61,7 @@ const UseCasesSection = () => {
         <div className="mt-10 rounded-[26px] bg-black shadow-[0_26px_70px_rgba(15,23,42,0.5)] md:mt-12">
           <div className="grid overflow-hidden rounded-[26px] md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
             {/* Left text panel */}
-            <div className="flex items-center justify-center bg-gradient-to-r from-black via-black to-black/60 px-10 py-10 md:px-14 md:py-14">
+            <div className="flex items-center justify-center bg-linear-to-r from-black via-black to-black/60 px-10 py-10 md:px-14 md:py-14">
               <div className="max-w-md text-white">
                 <h3 className="text-[46px] font-extrabold leading-snug md:text-[30px]">
                   WGTS (Who’s

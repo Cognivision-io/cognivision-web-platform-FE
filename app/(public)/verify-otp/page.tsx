@@ -78,7 +78,7 @@ const VerifyOtpPage = () => {
         <div className="w-full max-w-md space-y-8">
           <div className="space-y-2">
             <div className="mb-8 flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary/80">
                 <span className="text-lg font-bold text-white">V</span>
               </div>
               <span className="text-xl font-semibold">Visionkit.ai</span>

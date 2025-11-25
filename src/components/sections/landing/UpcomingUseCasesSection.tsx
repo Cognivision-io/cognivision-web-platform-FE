@@ -114,7 +114,7 @@ const UpcomingUseCasesSection = () => {
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                 />
                 {/* Dark gradient overlay */}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
 
                 {/* Title */}
                 <div className="absolute inset-x-0 bottom-0 px-5 pb-4 pt-10">

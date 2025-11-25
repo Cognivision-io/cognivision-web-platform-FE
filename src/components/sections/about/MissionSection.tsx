@@ -14,7 +14,7 @@ const MissionSection = () => {
           Empowering computer vision experiences
           <br className="hidden sm:block" />
           <span className="block sm:inline"> with our sdk that connect </span>
-          <span className="bg-gradient-to-r from-[#a855f7] to-[#6366f1] bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-[#a855f7] to-[#6366f1] bg-clip-text text-transparent">
             anyone, anytime and anywhere.
           </span>
         </h2>
