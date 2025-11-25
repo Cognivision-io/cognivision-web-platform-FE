@@ -15,28 +15,28 @@ const RESOURCES: ResourceCard[] = [
     title: "Platform: iOS (Swift)",
     subtitle:
       "Built natively for iOS using Swift, ensuring seamless performance and ARKit integration.",
-    imageSrc: "/assets/resource-1.jpg",
+    imageSrc: "/public/Resources1UseCase.png",
   },
   {
     id: "launch",
     title: "Launch: 2025 (App Store Live)",
     subtitle:
       "Launched in 2025 and now live on the App Store, delivering real-world AR + ML experiences to users.",
-    imageSrc: "/assets/resource-2.jpg",
+    imageSrc: "/public/Resources2UseCase.png",
   },
   {
     id: "sdk",
     title: "SDK: Cognivision.ai — Swift Edition",
     subtitle:
       "Powered by Cognivision.ai — Swift Edition, offering seamless AR and ML integration for iOS developers.",
-    imageSrc: "/assets/resource-3.jpg",
+    imageSrc: "/public/Resources3UseCase.png",
   },
   {
     id: "website",
     title: "Website: WGTS on App Store",
     subtitle:
       "Discover more on the WGTS App Store page, showcasing Cognivision-powered AR precision in action.",
-    imageSrc: "/assets/resource-4.jpg",
+    imageSrc: "/public/Resources4UseCase.png",
   },
 ];
 
