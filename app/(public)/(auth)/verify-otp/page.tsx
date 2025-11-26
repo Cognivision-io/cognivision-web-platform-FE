@@ -1,0 +1,137 @@
+'use client';
+
+import { FormEvent, Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import toast from "react-hot-toast";
+
+import { authAPI } from "@/api/auth";
+import { capitalize } from "@/lib/utils";
+
+const VerifyOtpContent = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") ?? "";
+  const phone = searchParams.get("phone") ?? "";
+  const [otp, setOtp] = useState("");
+
+  const handleVerifyOtp = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (otp.length !== 6) {
+      toast.error("Please enter all 6 digits");
+      return;
+    }
+
+    try {
+      const res = await authAPI.verifyOTP(Number(otp));
+
+      if (res.status !== 200 && res.status !== 201) {
+        toast.error("Something went wrong. Please try again.");
+        return;
+      }
+
+      toast.success("Successfully verified your code");
+      router.replace("/login");
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { message?: string | string[] } } })?.response?.data?.message;
+      if (Array.isArray(message)) {
+        message.forEach((msg: string) => toast.error(capitalize(msg)));
+      } else if (typeof message === "string") {
+        toast.error(capitalize(message));
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    }
+  };
+
+  const handleResendCode = async () => {
+    try {
+      const res = await authAPI.resendOTP(email, phone);
+      if (res.status !== 200 && res.status !== 201) {
+        toast.error("Something went wrong. Please try again.");
+        return;
+      }
+      setOtp("");
+      toast.success("A new OTP has been sent to your email");
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { message?: string | string[] } } })?.response?.data?.message;
+      if (Array.isArray(message)) {
+        message.forEach((msg: string) => toast.error(capitalize(msg)));
+      } else if (typeof message === "string") {
+        toast.error(capitalize(message));
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    }
+  };
+
+  return (
+    <div className="flex w-full items-center justify-center bg-background px-6 py-12 lg:w-1/2 lg:px-12">
+      <div className="w-full max-w-md space-y-8">
+        <div className="space-y-2">
+          <div className="mb-8 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary/80">
+              <span className="text-lg font-bold text-white">V</span>
+            </div>
+            <span className="text-xl font-semibold">Visionkit.ai</span>
+          </div>
+
+          <h1 className="text-3xl font-bold tracking-tight">Enter OTP</h1>
+          <p className="text-muted-foreground">
+            Enter the OTP that we have sent on your email{" "}
+            <span className="text-foreground font-medium">{email || "account email"}</span>
+          </p>
+        </div>
+
+        <form onSubmit={handleVerifyOtp} className="space-y-6">
+          <div className="flex justify-center">
+            <InputOTP maxLength={6} value={otp} onChange={(value) => setOtp(value)}>
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+
+          <Button type="submit" className="h-12 w-full text-base font-medium" size="lg">
+            Verify OTP
+          </Button>
+
+          <div className="text-center text-sm">
+            <span className="text-muted-foreground">Haven&apos;t got the code yet? </span>
+            <button type="button" onClick={handleResendCode} className="text-primary hover:underline">
+              Resend code
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const VerifyOtpPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex w-full items-center justify-center px-6 py-12 text-muted-foreground lg:w-1/2 lg:px-12">
+          <div className="text-center text-sm">Loading verification screen...</div>
+        </div>
+      }
+    >
+      <VerifyOtpContent />
+    </Suspense>
+  );
+};
+
+export default VerifyOtpPage;
