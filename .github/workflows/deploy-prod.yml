@@ -1,0 +1,33 @@
+name: Auto-Deployment (PRODUCTION)
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  deploy-prod:
+  
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20"
+
+      - name: Deploy NodeJS App to Production Server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{secrets.SSH_HOST}}
+          key: ${{secrets.SSH_KEY}}
+          username: root
+          script: |
+            cd /mnt/cognivision-frontend/production/cognivision-frontend
+            git pull origin production
+            npm install
+            npm run build
+            pm2 restart cognivision-frontend-prod
+          debug: true
