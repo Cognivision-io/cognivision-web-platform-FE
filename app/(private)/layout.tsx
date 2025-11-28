@@ -14,7 +14,7 @@ export default function PrivateLayout({
 }) {
   const router = useRouter();
   const isHydrated = useAuthStore((state) => state.isHydrated);
-  const isAuthenticated = useAuthStore((state) => Boolean(state.token && state.user));
+  const isAuthenticated = useAuthStore((state) => Boolean(state.user));
 
   useEffect(() => {
     if (!isHydrated) return;

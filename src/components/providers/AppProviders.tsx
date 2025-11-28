@@ -13,7 +13,7 @@ const AppProviders = ({ children }: PropsWithChildren) => {
   const hydrateAuth = useAuthStore((state) => state.hydrate);
 
   useEffect(() => {
-    hydrateAuth();
+    void hydrateAuth();
   }, [hydrateAuth]);
 
   return (

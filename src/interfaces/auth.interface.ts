@@ -60,3 +60,9 @@ export type LoginResponse = {
   };
   message: string;
 };
+
+export type AuthUserResponse = {
+  statusCode: number;
+  data: AuthenticatedUser;
+  message: string;
+};

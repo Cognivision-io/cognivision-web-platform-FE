@@ -3,7 +3,6 @@ import axios, { AxiosHeaders } from "axios";
 // Create axios instance with default config
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
-  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -16,7 +15,7 @@ api.interceptors.request.use(
       const token = window.localStorage.getItem("authToken");
       if (token) {
         const headers = AxiosHeaders.from(config.headers ?? {});
-        headers.set("Authorization", `Bearer ${token}`);
+        headers.set("Authorization", `${token}`);
         config.headers = headers;
       }
     }
