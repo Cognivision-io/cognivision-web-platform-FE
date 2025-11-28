@@ -8,13 +8,14 @@ import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { authAPI } from "@/api/auth";
 import { capitalize } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
+import { useLoginMutation } from "@/features/auth/mutations/auth.mutation";
 
 const LoginPage = () => {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
+  const { mutateAsync: loginMutation, isPending } = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,7 +23,7 @@ const LoginPage = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const response = await authAPI.login({ email, password });
+      const response = await loginMutation({ email, password });
 
       if (!response?.data?.tokens?.token || !response?.data?.user) {
         toast.error("Something went wrong. Please try again.");
@@ -136,8 +137,8 @@ const LoginPage = () => {
             </Link>
           </div>
 
-          <Button type="submit" className="h-12 w-full text-base font-semibold" size="lg">
-            Sign In
+          <Button type="submit" className="h-12 w-full text-base font-semibold" size="lg" disabled={isPending}>
+            {isPending ? "Signing in..." : "Sign In"}
           </Button>
 
           <p className="text-center text-sm">

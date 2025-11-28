@@ -6,21 +6,18 @@ import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { authAPI } from "@/api/auth";
 import { capitalize } from "@/lib/utils";
+import { useResendOtpMutation } from "@/features/auth/mutations/auth.mutation";
 
 const ForgetPasswordPage = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const { mutateAsync: resendOtp, isPending } = useResendOtpMutation();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const res = await authAPI.resendOTP(email);
-      if (res.status !== 200 && res.status !== 201) {
-        toast.error("Something went wrong. Please try again.");
-        return;
-      }
+      await resendOtp({ email });
       toast.success("An OTP has been sent to your email");
       router.push(`/verify-otp?email=${encodeURIComponent(email)}`);
     } catch (error: unknown) {
@@ -72,8 +69,8 @@ const ForgetPasswordPage = () => {
             />
           </div>
 
-          <Button type="submit" className="h-12 w-full text-base font-semibold" size="lg">
-            Verify
+          <Button type="submit" className="h-12 w-full text-base font-semibold" size="lg" disabled={isPending}>
+            {isPending ? "Sending..." : "Verify"}
           </Button>
         </form>
       </div>

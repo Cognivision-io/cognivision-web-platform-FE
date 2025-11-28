@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { FormEvent, Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/input-otp";
 import toast from "react-hot-toast";
 
-import { authAPI } from "@/api/auth";
 import { capitalize } from "@/lib/utils";
+import { useResendOtpMutation, useVerifyOtpMutation } from "@/features/auth/mutations/auth.mutation";
 
 const VerifyOtpContent = () => {
   const router = useRouter();
@@ -19,8 +19,9 @@ const VerifyOtpContent = () => {
   const email = searchParams.get("email") ?? "";
   const shouldAutoSend = searchParams.get("autoSend") === "true";
   const [otp, setOtp] = useState("");
-  const [isResending, setIsResending] = useState(false);
   const [hasTriggeredAutoSend, setHasTriggeredAutoSend] = useState(false);
+  const { mutateAsync: verifyOtpMutation, isPending: isVerifying } = useVerifyOtpMutation();
+  const { mutateAsync: resendOtpMutation, isPending: isResending } = useResendOtpMutation();
 
   const handleVerifyOtp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -30,13 +31,7 @@ const VerifyOtpContent = () => {
     }
 
     try {
-      const res = await authAPI.verifyOTP(Number(otp));
-
-      if (res.status !== 200 && res.status !== 201) {
-        toast.error("Something went wrong. Please try again.");
-        return;
-      }
-
+      await verifyOtpMutation({ code: Number(otp) });
       toast.success("Successfully verified your code");
       router.replace("/login");
     } catch (error: unknown) {
@@ -59,12 +54,7 @@ const VerifyOtpContent = () => {
     }
 
     try {
-      setIsResending(true);
-      const res = await authAPI.resendOTP(email);
-      if (res.status !== 200 && res.status !== 201) {
-        toast.error("Something went wrong. Please try again.");
-        return;
-      }
+      await resendOtpMutation({ email });
       setOtp("");
       toast.success("A new OTP has been sent to your email");
     } catch (error: unknown) {
@@ -77,10 +67,8 @@ const VerifyOtpContent = () => {
       } else {
         toast.error("Something went wrong. Please try again.");
       }
-    } finally {
-      setIsResending(false);
     }
-  }, [email]);
+  }, [email, resendOtpMutation]);
 
   useEffect(() => {
     if (!shouldAutoSend || !email || hasTriggeredAutoSend) {
@@ -126,8 +114,8 @@ const VerifyOtpContent = () => {
             </InputOTP>
           </div>
 
-          <Button type="submit" className="h-12 w-full text-base font-medium" size="lg">
-            Verify OTP
+          <Button type="submit" className="h-12 w-full text-base font-medium" size="lg" disabled={isVerifying}>
+            {isVerifying ? "Verifying..." : "Verify OTP"}
           </Button>
 
           <div className="text-center text-sm">

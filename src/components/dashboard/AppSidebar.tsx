@@ -1,7 +1,6 @@
-'use client';
-
+"use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Network, Database, Rocket, BarChart3, Settings, HelpCircle, Bell } from "lucide-react";
 import {
   Sidebar,
@@ -22,6 +21,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/auth-store";
+import toast from "react-hot-toast";
+import { useLogoutMutation } from "@/features/auth/mutations/auth.mutation";
 
 const mainItems = [
   { title: "Use Case", url: "/dashboard", icon: Network },
@@ -38,8 +40,24 @@ const bottomItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const logout = useAuthStore((state) => state.logout);
+  const { mutateAsync: triggerLogout, isPending: isLoggingOut } = useLogoutMutation();
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    try {
+      await triggerLogout();
+      logout();
+      toast.success("Signed out successfully");
+      router.replace("/login");
+    } catch (error) {
+      console.error("Failed to sign out", error);
+      toast.error("Failed to sign out. Please try again.");
+    }
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r">
@@ -137,7 +155,9 @@ export function AppSidebar() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem>Profile</DropdownMenuItem>
                 <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem>Sign out</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
+                  {isLoggingOut ? "Signing out..." : "Sign out"}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

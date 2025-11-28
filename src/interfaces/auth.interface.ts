@@ -66,3 +66,21 @@ export type AuthUserResponse = {
   data: AuthenticatedUser;
   message: string;
 };
+
+export type VerifyOtpPayload = {
+  code: number;
+};
+
+export type VerifyOtpResponse = {
+  statusCode: number;
+  message: string;
+};
+
+export type ResendOtpPayload = {
+  email: string;
+};
+
+export type ResendOtpResponse = {
+  statusCode: number;
+  message: string;
+};
