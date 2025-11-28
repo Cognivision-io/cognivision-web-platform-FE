@@ -10,11 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authAPI } from "@/api/auth";
 import { capitalize } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/stores/auth-store";
 
 const LoginPage = () => {
   const router = useRouter();
-  const { login } = useAuth();
+  const login = useAuthStore((state) => state.login);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,27 +22,19 @@ const LoginPage = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const res = await authAPI.login(email, password);
+      const response = await authAPI.login({ email, password });
 
-      if (res.status !== 200 && res.status !== 201) {
+      if (!response?.data?.tokens?.token || !response?.data?.user) {
         toast.error("Something went wrong. Please try again.");
         return;
       }
 
-      toast.success(capitalize(res.data?.message));
+      toast.success(capitalize(response.message ?? "Success"));
 
-      const token = res.data?.data?.tokens?.token;
-      const userPayload = res.data?.data?.user;
+      const token = response.data.tokens.token;
+      const userPayload = response.data.user;
 
-      await login(token, {
-        dateOfBirth: userPayload?.dateOfBirth,
-        email: userPayload?.email,
-        firstName: userPayload?.firstName,
-        lastName: userPayload?.lastName,
-        username: userPayload?.username,
-        phone: userPayload?.phone,
-        id: userPayload?.id,
-      });
+      await login(token, userPayload);
 
       router.replace("/dashboard");
     } catch (error: unknown) {

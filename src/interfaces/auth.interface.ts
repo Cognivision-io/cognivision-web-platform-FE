@@ -13,3 +13,50 @@ export type RegisterResponse = {
   };
   message: string;
 };
+
+export type LoginPayload = {
+  email: string;
+  password: string;
+};
+
+export type AuthTokens = {
+  token: string;
+};
+
+export type AuthenticatedUser = {
+  id: number;
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  firstName: string;
+  lastName: string | null;
+  username: string | null;
+  email: string;
+  phone: string | null;
+  dateOfBirth: string | null;
+  country: string | null;
+  isEmailVerified: boolean;
+  isPhoneVerified: boolean;
+  otpCode: string | null;
+  otpExpireAt: string | null;
+  subscriptionType: string | null;
+  useCase: string | null;
+  subscriptionStartDate: string | null;
+  subscriptionEndDate: string | null;
+  isSubscribed: boolean;
+  lastLoginAt: string | null;
+  providerId: string | null;
+  provider: string | null;
+  profilePicture: string | null;
+  workspaces: unknown[];
+  projects: unknown[];
+};
+
+export type LoginResponse = {
+  statusCode: number;
+  data: {
+    tokens: AuthTokens;
+    user: AuthenticatedUser;
+  };
+  message: string;
+};

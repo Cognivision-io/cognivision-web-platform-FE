@@ -4,11 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
-import {
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { useAuth } from "@/contexts/AuthContext";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { useAuthStore } from "@/stores/auth-store";
 
 export default function PrivateLayout({
   children,
@@ -16,21 +13,23 @@ export default function PrivateLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const isAuthenticated = useAuthStore((state) => Boolean(state.token && state.user));
 
-  // useEffect(() => {
-  //   if (!isLoading && !isAuthenticated) {
-  //     router.replace("/login");
-  //   }
-  // }, [isAuthenticated, isLoading, router]);
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (!isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [isAuthenticated, isHydrated, router]);
 
-  // if (isLoading || !isAuthenticated) {
-  //   return (
-  //     <div className="grid min-h-screen place-items-center bg-background text-foreground">
-  //       <p className="text-sm text-muted-foreground">Loading dashboard...</p>
-  //     </div>
-  //   );
-  // }
+  if (!isHydrated || !isAuthenticated) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-background text-foreground">
+        <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>

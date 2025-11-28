@@ -1,9 +1,12 @@
 import api from "@/lib/axios";
+import type { LoginPayload, LoginResponse } from "@/interfaces/auth.interface";
 
 // API methods template
 export const authAPI = {
-  login: (email: string, password: string) =>
-    api.post("/auth/login", { email: email, password: password }),
+  login: async (payload: LoginPayload) => {
+    const response = await api.post<LoginResponse>("/auth/login", payload);
+    return response.data;
+  },
   register: (data: {
     email: string;
     password: string;
