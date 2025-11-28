@@ -9,7 +9,6 @@ const PUBLIC_FILE = /\.(.*)$/;
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
   if (PUBLIC_FILE.test(pathname)) {
     return NextResponse.next();
   }
