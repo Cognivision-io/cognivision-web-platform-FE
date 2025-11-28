@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, Suspense, useState } from "react";
+import { FormEvent, Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,8 +17,10 @@ const VerifyOtpContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") ?? "";
-  const phone = searchParams.get("phone") ?? "";
+  const shouldAutoSend = searchParams.get("autoSend") === "true";
   const [otp, setOtp] = useState("");
+  const [isResending, setIsResending] = useState(false);
+  const [hasTriggeredAutoSend, setHasTriggeredAutoSend] = useState(false);
 
   const handleVerifyOtp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -50,9 +52,15 @@ const VerifyOtpContent = () => {
     }
   };
 
-  const handleResendCode = async () => {
+  const resendOtp = useCallback(async () => {
+    if (!email) {
+      toast.error("Missing email. Please go back and try again.");
+      return;
+    }
+
     try {
-      const res = await authAPI.resendOTP(email, phone);
+      setIsResending(true);
+      const res = await authAPI.resendOTP(email);
       if (res.status !== 200 && res.status !== 201) {
         toast.error("Something went wrong. Please try again.");
         return;
@@ -69,7 +77,21 @@ const VerifyOtpContent = () => {
       } else {
         toast.error("Something went wrong. Please try again.");
       }
+    } finally {
+      setIsResending(false);
     }
+  }, [email]);
+
+  useEffect(() => {
+    if (!shouldAutoSend || !email || hasTriggeredAutoSend) {
+      return;
+    }
+    setHasTriggeredAutoSend(true);
+    void resendOtp();
+  }, [shouldAutoSend, email, hasTriggeredAutoSend, resendOtp]);
+
+  const handleResendCode = () => {
+    void resendOtp();
   };
 
   return (
@@ -110,9 +132,15 @@ const VerifyOtpContent = () => {
 
           <div className="text-center text-sm">
             <span className="text-muted-foreground">Haven&apos;t got the code yet? </span>
-            <button type="button" onClick={handleResendCode} className="text-primary hover:underline">
-              Resend code
-            </button>
+            <Button
+              type="button"
+              variant="link"
+              className="px-1 text-base"
+              onClick={handleResendCode}
+              disabled={isResending}
+            >
+              {isResending ? "Sending..." : "Resend code"}
+            </Button>
           </div>
         </form>
       </div>

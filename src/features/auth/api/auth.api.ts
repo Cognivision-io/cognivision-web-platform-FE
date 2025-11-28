@@ -1,15 +1,5 @@
 import api from "@/lib/axios";
-
-export type RegisterPayload = {
-  firstName: string;
-  email: string;
-  password: string;
-  useCase: string;
-};
-
-export type RegisterResponse = {
-  message: string;
-};
+import type { RegisterPayload, RegisterResponse } from "@/interfaces/auth.interface";
 
 export const authApi = {
   register: async (payload: RegisterPayload) => {

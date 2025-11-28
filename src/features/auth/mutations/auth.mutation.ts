@@ -1,7 +1,8 @@
 import { useMutation, type UseMutationOptions } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 
-import { authApi, type RegisterPayload, type RegisterResponse } from "@/features/auth/api/auth.api";
+import { authApi } from "@/features/auth/api/auth.api";
+import type { RegisterPayload, RegisterResponse } from "@/interfaces/auth.interface";
 
 export const REGISTER_MUTATION_KEY = ["auth", "register"] as const;
 

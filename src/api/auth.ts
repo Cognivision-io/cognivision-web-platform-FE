@@ -16,11 +16,5 @@ export const authAPI = {
   logout: () => api.post("/auth/logout"),
   refreshToken: () => api.post("/auth/refresh"),
   verifyOTP: (code: number) => api.post("/auth/verify-otp", { code }),
-  resendOTP: (email: string, phone?: string) => {
-    const payload: { email: string; phone?: string } = { email };
-    if (phone) {
-      payload.phone = phone;
-    }
-    return api.post("/auth/send-otp", payload);
-  },
+  resendOTP: (email: string) => api.post("/auth/send-otp", { email }),
 };

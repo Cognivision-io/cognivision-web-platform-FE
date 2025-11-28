@@ -46,15 +46,28 @@ const LoginPage = () => {
 
       router.replace("/dashboard");
     } catch (error: unknown) {
-      const message = (
-        error as { response?: { data?: { message?: string | string[] } } }
-      )?.response?.data?.message;
+      const errorResponse = (
+        error as {
+          response?: {
+            data?: {
+              message?: string | string[];
+              response?: { email?: string };
+            };
+          };
+        }
+      )?.response?.data;
+      const message = errorResponse?.message;
 
       if (message === "Email is not verifed") {
+        const emailFromServer = errorResponse?.response?.email;
+        const emailToUse = emailFromServer ?? email;
         toast.success("Verify your email");
-        router.push(
-          `/verify-otp?email=${encodeURIComponent(email)}&redirectToLogin=true`
-        );
+        const params = new URLSearchParams({
+          email: emailToUse,
+          redirectToLogin: "true",
+          autoSend: "true",
+        });
+        router.push(`/verify-otp?${params.toString()}`);
         return;
       }
 

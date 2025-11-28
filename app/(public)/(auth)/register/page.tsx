@@ -70,7 +70,10 @@ const RegisterPage = () => {
     try {
       const data = await register(values);
       toast.success(capitalize(data.message ?? "Account created successfully"));
-      router.push("/login");
+      const params = new URLSearchParams({
+        email: values.email,
+      });
+      router.push(`/verify-otp?${params.toString()}`);
     } catch (error: unknown) {
       handleError(error);
     }
