@@ -12,7 +12,10 @@ import type {
 
 export const authApi = {
   register: async (payload: RegisterPayload) => {
-    const response = await api.post<RegisterResponse>("/auth/register", payload);
+    const response = await api.post<RegisterResponse>(
+      "/auth/register",
+      payload
+    );
     return response.data;
   },
   login: async (payload: LoginPayload) => {
@@ -20,14 +23,20 @@ export const authApi = {
     return response.data;
   },
   logout: async () => {
-    await api.post("/auth/logout");
+    await api.get("/auth/logout");
   },
   verifyOtp: async (payload: VerifyOtpPayload) => {
-    const response = await api.post<VerifyOtpResponse>("/auth/verify-otp", payload);
+    const response = await api.post<VerifyOtpResponse>(
+      "/auth/verify-otp",
+      payload
+    );
     return response.data;
   },
   resendOtp: async (payload: ResendOtpPayload) => {
-    const response = await api.post<ResendOtpResponse>("/auth/send-otp", payload);
+    const response = await api.post<ResendOtpResponse>(
+      "/auth/send-otp",
+      payload
+    );
     return response.data;
   },
 };
