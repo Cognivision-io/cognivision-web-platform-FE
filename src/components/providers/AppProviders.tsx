@@ -2,11 +2,9 @@
 
 import { useEffect, useState, type PropsWithChildren } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster as HotToaster } from "react-hot-toast";
-
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { useAuthStore } from "@/stores/auth-store";
+import { Toaster } from "sonner";
 
 const AppProviders = ({ children }: PropsWithChildren) => {
   const [queryClient] = useState(() => new QueryClient());
@@ -20,8 +18,7 @@ const AppProviders = ({ children }: PropsWithChildren) => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         {children}
-        <HotToaster />
-        <SonnerToaster />
+        <Toaster position="top-right" key={"toast"} />
       </TooltipProvider>
     </QueryClientProvider>
   );

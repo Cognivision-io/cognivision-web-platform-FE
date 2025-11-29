@@ -1,7 +1,15 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Network, Database, Rocket, BarChart3, Settings, HelpCircle, Bell } from "lucide-react";
+import {
+  Network,
+  Database,
+  Rocket,
+  BarChart3,
+  Settings,
+  HelpCircle,
+  Bell,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -22,8 +30,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
-import toast from "react-hot-toast";
 import { useLogoutMutation } from "@/features/auth/mutations/auth.mutation";
+import CustomToast from "../ui/sonner";
 
 const mainItems = [
   { title: "Use Case", url: "/dashboard", icon: Network },
@@ -44,18 +52,19 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const logout = useAuthStore((state) => state.logout);
-  const { mutateAsync: triggerLogout, isPending: isLoggingOut } = useLogoutMutation();
+  const { mutateAsync: triggerLogout, isPending: isLoggingOut } =
+    useLogoutMutation();
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
     try {
       await triggerLogout();
       logout();
-      toast.success("Signed out successfully");
+      CustomToast.success("Signed out successfully");
       router.replace("/login");
     } catch (error) {
       console.error("Failed to sign out", error);
-      toast.error("Failed to sign out. Please try again.");
+      CustomToast.error("Failed to sign out. Please try again.");
     }
   };
 
@@ -68,9 +77,11 @@ export function AppSidebar() {
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary/80">
               <span className="text-lg font-bold text-white">V</span>
             </div>
-            {!collapsed && <span className="text-xl font-semibold">Visionkit.ai</span>}
+            {!collapsed && (
+              <span className="text-xl font-semibold">Visionkit.ai</span>
+            )}
           </div>
-          
+
           {!collapsed && (
             <div className="space-y-1">
               <p className="font-medium">Hania</p>
@@ -91,16 +102,21 @@ export function AppSidebar() {
                       "mb-1 h-10",
                       pathname === item.url
                         ? "bg-primary/10 text-primary font-medium"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     )}
                   >
-                    <Link href={item.url} className="flex flex-1 items-center gap-2">
+                    <Link
+                      href={item.url}
+                      className="flex flex-1 items-center gap-2"
+                    >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span className="flex-1">{item.title}</span>}
+                      {!collapsed && (
+                        <span className="flex-1">{item.title}</span>
+                      )}
                       <span
                         className={cn(
                           "ml-auto hidden h-full w-1 rounded bg-primary md:inline-block",
-                          pathname === item.url ? "opacity-100" : "opacity-0",
+                          pathname === item.url ? "opacity-100" : "opacity-0"
                         )}
                       />
                     </Link>
@@ -122,7 +138,10 @@ export function AppSidebar() {
                       asChild
                       className="text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     >
-                      <Link href={item.url} className="flex flex-1 items-center gap-2">
+                      <Link
+                        href={item.url}
+                        className="flex flex-1 items-center gap-2"
+                      >
                         <item.icon className="h-4 w-4" />
                         {!collapsed && <span>{item.title}</span>}
                       </Link>
@@ -136,14 +155,16 @@ export function AppSidebar() {
       </SidebarContent>
 
       {/* User Profile */}
-      <SidebarFooter style={{ padding:0}}>
+      <SidebarFooter style={{ padding: 0 }}>
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton size="lg" className="h-12">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground">H</AvatarFallback>
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      H
+                    </AvatarFallback>
                   </Avatar>
                   {!collapsed && (
                     <div className="flex flex-col items-start flex-1">
@@ -155,7 +176,10 @@ export function AppSidebar() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem>Profile</DropdownMenuItem>
                 <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                >
                   {isLoggingOut ? "Signing out..." : "Sign out"}
                 </DropdownMenuItem>
               </DropdownMenuContent>

@@ -4,13 +4,13 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { capitalize } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLoginMutation } from "@/features/auth/mutations/auth.mutation";
+import CustomToast from "@/components/ui/sonner";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -26,11 +26,11 @@ const LoginPage = () => {
       const response = await loginMutation({ email, password });
 
       if (!response?.data?.tokens?.token || !response?.data?.user) {
-        toast.error("Something went wrong. Please try again.");
+        CustomToast.error("Something went wrong. Please try again.");
         return;
       }
 
-      toast.success(capitalize(response.message ?? "Success"));
+      CustomToast.success(capitalize(response.message ?? "Success"));
 
       const token = response.data.tokens.token;
       const userPayload = response.data.user;
@@ -54,7 +54,7 @@ const LoginPage = () => {
       if (message === "Email is not verifed") {
         const emailFromServer = errorResponse?.response?.email;
         const emailToUse = emailFromServer ?? email;
-        toast.success("Verify your email");
+        CustomToast.success("Verify your email");
         const params = new URLSearchParams({
           email: emailToUse,
           redirectToLogin: "true",
@@ -65,11 +65,11 @@ const LoginPage = () => {
       }
 
       if (Array.isArray(message)) {
-        message.forEach((msg: string) => toast.error(capitalize(msg)));
+        message.forEach((msg: string) => CustomToast.error(capitalize(msg)));
       } else if (typeof message === "string") {
-        toast.error(capitalize(message));
+        CustomToast.error(capitalize(message));
       } else {
-        toast.error("Something went wrong. Please try again.");
+        CustomToast.error("Something went wrong. Please try again.");
       }
     }
   };
@@ -132,18 +132,29 @@ const LoginPage = () => {
           </div>
 
           <div className="flex justify-end">
-            <Link href="/forget-password" className="text-sm font-medium text-primary hover:underline">
+            <Link
+              href="/forget-password"
+              className="text-sm font-medium text-primary hover:underline"
+            >
               Forget Password
             </Link>
           </div>
 
-          <Button type="submit" className="h-12 w-full text-base font-semibold" size="lg" disabled={isPending}>
+          <Button
+            type="submit"
+            className="h-12 w-full text-base font-semibold"
+            size="lg"
+            disabled={isPending}
+          >
             {isPending ? "Signing in..." : "Sign In"}
           </Button>
 
           <p className="text-center text-sm">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="font-medium text-primary hover:underline">
+            <Link
+              href="/register"
+              className="font-medium text-primary hover:underline"
+            >
               Register
             </Link>
           </p>

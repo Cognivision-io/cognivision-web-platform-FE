@@ -8,10 +8,13 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import toast from "react-hot-toast";
 
 import { capitalize } from "@/lib/utils";
-import { useResendOtpMutation, useVerifyOtpMutation } from "@/features/auth/mutations/auth.mutation";
+import {
+  useResendOtpMutation,
+  useVerifyOtpMutation,
+} from "@/features/auth/mutations/auth.mutation";
+import CustomToast from "@/components/ui/sonner";
 
 const VerifyOtpContent = () => {
   const router = useRouter();
@@ -20,52 +23,56 @@ const VerifyOtpContent = () => {
   const shouldAutoSend = searchParams.get("autoSend") === "true";
   const [otp, setOtp] = useState("");
   const [hasTriggeredAutoSend, setHasTriggeredAutoSend] = useState(false);
-  const { mutateAsync: verifyOtpMutation, isPending: isVerifying } = useVerifyOtpMutation();
-  const { mutateAsync: resendOtpMutation, isPending: isResending } = useResendOtpMutation();
+  const { mutateAsync: verifyOtpMutation, isPending: isVerifying } =
+    useVerifyOtpMutation();
+  const { mutateAsync: resendOtpMutation, isPending: isResending } =
+    useResendOtpMutation();
 
   const handleVerifyOtp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (otp.length !== 6) {
-      toast.error("Please enter all 6 digits");
+      CustomToast.error("Please enter all 6 digits");
       return;
     }
 
     try {
       await verifyOtpMutation({ code: Number(otp) });
-      toast.success("Successfully verified your code");
+      CustomToast.success("Successfully verified your code");
       router.replace("/login");
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { message?: string | string[] } } })?.response?.data?.message;
+      const message = (
+        error as { response?: { data?: { message?: string | string[] } } }
+      )?.response?.data?.message;
       if (Array.isArray(message)) {
-        message.forEach((msg: string) => toast.error(capitalize(msg)));
+        message.forEach((msg: string) => CustomToast.error(capitalize(msg)));
       } else if (typeof message === "string") {
-        toast.error(capitalize(message));
+        CustomToast.error(capitalize(message));
       } else {
-        toast.error("Something went wrong. Please try again.");
+        CustomToast.error("Something went wrong. Please try again.");
       }
     }
   };
 
   const resendOtp = useCallback(async () => {
     if (!email) {
-      toast.error("Missing email. Please go back and try again.");
+      CustomToast.error("Missing email. Please go back and try again.");
       return;
     }
 
     try {
       await resendOtpMutation({ email });
       setOtp("");
-      toast.success("A new OTP has been sent to your email");
+      CustomToast.success("A new OTP has been sent to your email");
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { message?: string | string[] } } })?.response?.data?.message;
+      const message = (
+        error as { response?: { data?: { message?: string | string[] } } }
+      )?.response?.data?.message;
       if (Array.isArray(message)) {
-        message.forEach((msg: string) => toast.error(capitalize(msg)));
+        message.forEach((msg: string) => CustomToast.error(capitalize(msg)));
       } else if (typeof message === "string") {
-        toast.error(capitalize(message));
+        CustomToast.error(capitalize(message));
       } else {
-        toast.error("Something went wrong. Please try again.");
+        CustomToast.error("Something went wrong. Please try again.");
       }
     }
   }, [email, resendOtpMutation]);
@@ -96,13 +103,19 @@ const VerifyOtpContent = () => {
           <h1 className="text-3xl font-bold tracking-tight">Enter OTP</h1>
           <p className="text-muted-foreground">
             Enter the OTP that we have sent on your email{" "}
-            <span className="text-foreground font-medium">{email || "account email"}</span>
+            <span className="text-foreground font-medium">
+              {email || "account email"}
+            </span>
           </p>
         </div>
 
         <form onSubmit={handleVerifyOtp} className="space-y-6">
           <div className="flex justify-center">
-            <InputOTP maxLength={6} value={otp} onChange={(value) => setOtp(value)}>
+            <InputOTP
+              maxLength={6}
+              value={otp}
+              onChange={(value) => setOtp(value)}
+            >
               <InputOTPGroup>
                 <InputOTPSlot index={0} />
                 <InputOTPSlot index={1} />
@@ -114,12 +127,19 @@ const VerifyOtpContent = () => {
             </InputOTP>
           </div>
 
-          <Button type="submit" className="h-12 w-full text-base font-medium" size="lg" disabled={isVerifying}>
+          <Button
+            type="submit"
+            className="h-12 w-full text-base font-medium"
+            size="lg"
+            disabled={isVerifying}
+          >
             {isVerifying ? "Verifying..." : "Verify OTP"}
           </Button>
 
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">Haven&apos;t got the code yet? </span>
+            <span className="text-muted-foreground">
+              Haven&apos;t got the code yet?{" "}
+            </span>
             <Button
               type="button"
               variant="link"
@@ -141,7 +161,9 @@ const VerifyOtpPage = () => {
     <Suspense
       fallback={
         <div className="flex w-full items-center justify-center px-6 py-12 text-muted-foreground lg:w-1/2 lg:px-12">
-          <div className="text-center text-sm">Loading verification screen...</div>
+          <div className="text-center text-sm">
+            Loading verification screen...
+          </div>
         </div>
       }
     >

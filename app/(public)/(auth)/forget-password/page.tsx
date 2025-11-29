@@ -2,12 +2,12 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { capitalize } from "@/lib/utils";
 import { useResendOtpMutation } from "@/features/auth/mutations/auth.mutation";
+import CustomToast from "@/components/ui/sonner";
 
 const ForgetPasswordPage = () => {
   const router = useRouter();
@@ -18,18 +18,18 @@ const ForgetPasswordPage = () => {
     event.preventDefault();
     try {
       await resendOtp({ email });
-      toast.success("An OTP has been sent to your email");
+      CustomToast.success("An OTP has been sent to your email");
       router.push(`/verify-otp?email=${encodeURIComponent(email)}`);
     } catch (error: unknown) {
       const message = (
         error as { response?: { data?: { message?: string | string[] } } }
       )?.response?.data?.message;
       if (Array.isArray(message)) {
-        message.forEach((msg: string) => toast.error(capitalize(msg)));
+        message.forEach((msg: string) => CustomToast.error(capitalize(msg)));
       } else if (typeof message === "string") {
-        toast.error(capitalize(message));
+        CustomToast.error(capitalize(message));
       } else {
-        toast.error("Something went wrong. Please try again.");
+        CustomToast.error("Something went wrong. Please try again.");
       }
     }
   };
@@ -49,7 +49,8 @@ const ForgetPasswordPage = () => {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">Forgot Password?</h1>
           <p className="text-muted-foreground">
-            Please enter your email we’ll send a one-time password (OTP) to verify your identity.
+            Please enter your email we’ll send a one-time password (OTP) to
+            verify your identity.
           </p>
         </div>
 
@@ -69,7 +70,12 @@ const ForgetPasswordPage = () => {
             />
           </div>
 
-          <Button type="submit" className="h-12 w-full text-base font-semibold" size="lg" disabled={isPending}>
+          <Button
+            type="submit"
+            className="h-12 w-full text-base font-semibold"
+            size="lg"
+            disabled={isPending}
+          >
             {isPending ? "Sending..." : "Verify"}
           </Button>
         </form>

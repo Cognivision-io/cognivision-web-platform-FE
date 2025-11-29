@@ -1,27 +1,47 @@
-import { useTheme } from "next-themes";
-import { Toaster as Sonner, toast } from "sonner";
+import { CircleAlert, CircleCheckIcon, CircleX } from "lucide-react";
+import { toast } from "sonner";
 
-type ToasterProps = React.ComponentProps<typeof Sonner>;
-
-const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme();
-
-  return (
-    <Sonner
-      theme={theme as ToasterProps["theme"]}
-      className="toaster group"
-      toastOptions={{
-        classNames: {
-          toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
-          description: "group-[.toast]:text-muted-foreground",
-          actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
-          cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
-        },
-      }}
-      {...props}
-    />
-  );
+const CustomToast = {
+  success: (message: string) => {
+    const toastId = toast(
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center">
+          <CircleCheckIcon
+            className="mr-2 shrink-0 w-5 h-5"
+            color="#106c0e"
+            fontSize={20}
+          />
+          <h1 className="text-[1rem]">{message}</h1>
+        </div>
+        <CircleX
+          className="ml-2 hover:cursor-pointer shrink-0 w-5 h-5"
+          color="#d20000"
+          onClick={() => toast.dismiss(toastId)}
+          fontSize={20}
+        />
+      </div>
+    );
+  },
+  error: (message: string) => {
+    const toastId = toast(
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center">
+          <CircleAlert
+            className="mr-2 shrink-0 w-5 h-5"
+            color="#d20000"
+            fontSize={20}
+          />
+          <h1 className="text-[1rem]">{message}</h1>
+        </div>
+        <CircleX
+          className="ml-2 shrink-0 w-5 h-5 hover:cursor-pointer"
+          color="#d20000"
+          onClick={() => toast.dismiss(toastId)}
+          fontSize={20}
+        />
+      </div>
+    );
+  },
 };
 
-export { Toaster, toast };
+export default CustomToast;

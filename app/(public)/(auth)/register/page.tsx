@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -22,6 +21,7 @@ import {
 } from "@/components/ui/form";
 import { useRegisterMutation } from "@/features/auth/mutations/auth.mutation";
 import { capitalize } from "@/lib/utils";
+import CustomToast from "@/components/ui/sonner";
 
 const registerSchema = yup.object({
   firstName: yup.string().trim().required("Full Name is required"),
@@ -58,18 +58,20 @@ const RegisterPage = () => {
     )?.response?.data?.message;
 
     if (Array.isArray(message)) {
-      message.forEach((msg: string) => toast.error(capitalize(msg)));
+      message.forEach((msg: string) => CustomToast.error(capitalize(msg)));
     } else if (typeof message === "string") {
-      toast.error(capitalize(message));
+      CustomToast.error(capitalize(message));
     } else {
-      toast.error("Something went wrong. Please try again.");
+      CustomToast.error("Something went wrong. Please try again.");
     }
   };
 
   const handleSubmit = async (values: RegisterFormValues) => {
     try {
       const data = await register(values);
-      toast.success(capitalize(data.message ?? "Account created successfully"));
+      CustomToast.success(
+        capitalize(data.message ?? "Account created successfully")
+      );
       const params = new URLSearchParams({
         email: values.email,
       });
@@ -92,17 +94,25 @@ const RegisterPage = () => {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Create your account with us below</h1>
+          <h1 className="text-3xl font-bold">
+            Create your account with us below
+          </h1>
           <p className="text-left text-sm">
             Already have an account?{" "}
-            <Link href="/login" className="cursor-pointer font-medium text-primary underline">
+            <Link
+              href="/login"
+              className="cursor-pointer font-medium text-primary underline"
+            >
               Login
             </Link>
           </p>
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+          >
             <FormField
               control={form.control}
               name="firstName"
@@ -110,7 +120,12 @@ const RegisterPage = () => {
                 <FormItem>
                   <FormLabel>Full Name</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="John Doe" className="h-12" autoComplete="name" />
+                    <Input
+                      {...field}
+                      placeholder="John Doe"
+                      className="h-12"
+                      autoComplete="name"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -157,7 +172,9 @@ const RegisterPage = () => {
                       type="button"
                       onClick={() => setShowPassword((prev) => !prev)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                     >
                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
@@ -174,14 +191,23 @@ const RegisterPage = () => {
                 <FormItem>
                   <FormLabel>Define Use Case</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Describe how you plan to use CogniVision" className="h-12" />
+                    <Input
+                      {...field}
+                      placeholder="Describe how you plan to use CogniVision"
+                      className="h-12"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button type="submit" className="h-12 w-full text-base font-semibold" size="lg" disabled={isPending}>
+            <Button
+              type="submit"
+              className="h-12 w-full text-base font-semibold"
+              size="lg"
+              disabled={isPending}
+            >
               {isPending ? "Creating account..." : "Create Account"}
             </Button>
           </form>
