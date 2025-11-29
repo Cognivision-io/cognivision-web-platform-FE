@@ -41,7 +41,7 @@ export default function PrivateLayout({
               <SidebarTrigger />
             </div>
           </header>
-          <main className="flex-1 overflow-auto">{children}</main>
+          <main className="flex-1 overflow-auto bg-[#f5f7ff]">{children}</main>
         </div>
       </div>
     </SidebarProvider>

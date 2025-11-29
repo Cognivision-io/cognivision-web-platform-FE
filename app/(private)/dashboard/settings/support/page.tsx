@@ -1,44 +1,55 @@
-import { LifeBuoy, ShieldCheck } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import { Gavel } from "lucide-react";
 
 const SupportPage = () => {
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
+      {/* Header */}
       <div>
-        <h1 className="text-[32px] font-semibold text-[#141b2d]">Support</h1>
-        <p className="mt-1 text-base text-[#6c7394]">Need help? Reach out to our team and track responses here.</p>
+        <h1 className="text-[28px] font-semibold leading-tight text-[#111827]">
+          Support
+        </h1>
+        <p className="mt-2 max-w-3xl text-[13px] leading-relaxed text-[#7f8590]">
+          API keys are revokable credentials used to integrate the API into your
+          application. Use your keys to perform inference on your models and
+          upload images directly to your project from outside sources.
+        </p>
       </div>
-      <div className="rounded-2xl border border-[#e0e5ff] bg-white px-6 py-7 shadow-[0_24px_50px_rgba(41,53,108,0.07)]">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f1f5ff]">
-              <LifeBuoy className="h-5 w-5 text-[#6580ff]" />
-            </div>
-            <div>
-              <p className="text-base font-semibold text-[#1b2559]">We&apos;re here for you</p>
-              <p className="text-sm text-[#6c7394]">
-                Drop us a line anytime at{" "}
-                <span className="font-semibold text-[#4d63d5]">support@visionkit.ai</span>
-              </p>
+
+      {/* Cards */}
+      <div className="space-y-6">
+        {/* Read the documentation */}
+        <div className="flex items-center gap-6 rounded-lg border border-[#e6e9f2] bg-white px-6 py-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+          <div className="grid h-14 w-14 place-items-center rounded-lg bg-[#f0f0fe]">
+            <div className="grid h-8 w-8 place-items-center rounded-md bg-[#4845f5]">
+              <span className="text-[14px] font-bold leading-none text-white">
+                i
+              </span>
             </div>
           </div>
-          <Button
-            type="button"
-            className="h-11 rounded-xl bg-[#4d63d5] px-5 text-sm font-semibold text-white shadow-[0_20px_30px_rgba(77,99,213,0.35)] hover:bg-[#4357c7]"
-          >
-            Contact support
-          </Button>
+
+          <div className="space-y-1">
+            <p className="text-[14px] font-semibold text-[#212133]">
+              Read the documentation
+            </p>
+            <p className="text-[12.5px] text-[#6b6f8d]">
+              Discover the concepts, reference, guides and tutorials.
+            </p>
+          </div>
         </div>
-      </div>
-      <div className="rounded-2xl border border-[#e8ebff] bg-white px-5 py-5 shadow-[0_20px_40px_rgba(41,53,108,0.05)]">
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f5f8ff]">
-            <ShieldCheck className="h-5 w-5 text-[#5e73d8]" />
+
+        {/* Submit a support ticket */}
+        <div className="flex items-center gap-6 rounded-lg border border-[#e6e9f2] bg-white px-6 py-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+          <div className="grid h-14 w-14 place-items-center rounded-lg bg-[#fcf3cc]">
+            <Gavel className="h-6 w-6 text-[#c8842a]" />
           </div>
-          <div>
-            <p className="text-sm font-semibold text-[#1b2559]">Status</p>
-            <p className="text-sm text-[#6c7394]">All systems are operational</p>
+
+          <div className="space-y-1">
+            <p className="text-[14px] font-semibold text-[#212133]">
+              Submit a support ticket
+            </p>
+            <p className="text-[12.5px] text-[#6b6f8d]">
+              submit a support ticket
+            </p>
           </div>
         </div>
       </div>

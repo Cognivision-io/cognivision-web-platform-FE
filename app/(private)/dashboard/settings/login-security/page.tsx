@@ -60,12 +60,9 @@ const LoginSecurityPage = () => {
         <h1 className="text-[32px] font-semibold text-[#141b2d]">
           Your Profile
         </h1>
-        <p className="mt-1 text-base text-[#6c7394]">
-          You are signed in with your {providerLabel.toLowerCase()} account
-        </p>
       </div>
 
-      <div className="rounded-2xl border border-[#e0e5ff] bg-white px-5 py-5 shadow-[0_24px_50px_rgba(41,53,108,0.07)]">
+      <div className="rounded-lg border border-[#e0e5ff] bg-white px-5 py-5 shadow-[0_24px_50px_rgba(41,53,108,0.07)]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-1 items-center gap-4">
             <Avatar className="h-12 w-12">
@@ -86,7 +83,7 @@ const LoginSecurityPage = () => {
             type="button"
             disabled={isLoggingOut}
             onClick={handleLogout}
-            className="inline-flex h-11 items-center gap-2 rounded-xl border border-[#e0e4f8] bg-white px-5 text-sm font-semibold text-[#4b516f] shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition hover:border-[#cdd2f1] hover:text-[#2b3150]"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#e0e4f8] bg-white px-3 text-sm font-semibold text-[#4b516f] shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition hover:border-[#cdd2f1] hover:text-[#2b3150]"
           >
             <LogOut className="h-4 w-4 text-[#9AA1C8]" />
             {isLoggingOut ? "Signing out..." : "Sign out"}

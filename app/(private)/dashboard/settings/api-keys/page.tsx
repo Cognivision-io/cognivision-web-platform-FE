@@ -1,35 +1,95 @@
-import { KeyRound } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import { Eye, Link2, Trash2 } from "lucide-react";
 
 const ApiKeysPage = () => {
   return (
     <div className="space-y-8">
+      {/* Header */}
       <div>
-        <h1 className="text-[32px] font-semibold text-[#141b2d]">API Keys</h1>
-        <p className="mt-1 text-base text-[#6c7394]">
-          Securely manage keys for programmatic access to your VisionKit workspace.
+        <h1 className="text-[28px] font-semibold leading-tight text-[#111827]">
+          API Keys
+        </h1>
+        <p className="mt-2 max-w-3xl text-[13px] leading-relaxed text-[#4b5563]">
+          API keys are revokable credentials used to integrate the API into your
+          application. Use your keys to perform inference on your models and
+          upload images directly to your project from outside sources.
         </p>
       </div>
-      <div className="rounded-2xl border border-[#e0e5ff] bg-white px-6 py-7 shadow-[0_24px_50px_rgba(41,53,108,0.07)]">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#edefff] text-primary">
-              <KeyRound className="h-5 w-5 text-[#6a6ce0]" />
-            </div>
-            <div>
-              <p className="text-base font-semibold text-[#1b2559]">Key management is coming soon</p>
-              <p className="text-sm text-[#6c7394]">We&apos;ll notify you as soon as you can mint and revoke keys.</p>
+
+      {/* Keys section */}
+      <div className="space-y-6">
+        {/* Private API Key */}
+        <div className="rounded-xl border border-[#e5e7f3] bg-white px-6 py-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+          <div className="space-y-1.5">
+            <p className="text-[13px] font-semibold text-[#111827]">
+              Private API Key
+            </p>
+            <p className="text-[12px] text-[#4b5563]">
+              For use with our{" "}
+              <span className="font-semibold">Platform APIs</span>
+            </p>
+          </div>
+
+          <div className="mt-4 rounded-md border border-[#e5e7eb] bg-[#f9fafb] px-4 py-2.5">
+            <div className="flex items-center gap-3">
+              <p className="flex-1 truncate text-[12px] text-[#111827]">
+                o0K9kdy2ZLjrw6iCkUT
+              </p>
+              <div className="flex items-center gap-3 text-[#9ca3af]">
+                <button
+                  type="button"
+                  className="transition-colors hover:text-[#4b5563]"
+                  aria-label="Reveal key"
+                >
+                  <Eye className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  className="transition-colors hover:text-[#4b5563]"
+                  aria-label="Copy key"
+                >
+                  <Link2 className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  className="transition-colors hover:text-[#ef4444]"
+                  aria-label="Delete key"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
-          <Button
-            type="button"
-            variant="secondary"
-            className="h-11 rounded-xl bg-[#eef0ff] px-5 text-sm font-semibold text-[#6a6ce0] hover:bg-[#e0e3ff]"
-            disabled
-          >
-            Generate key
-          </Button>
+        </div>
+
+        {/* Publishable API Key */}
+        <div className="rounded-xl border border-[#e5e7f3] bg-white px-6 py-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
+          <div className="space-y-1.5">
+            <p className="text-[13px] font-semibold text-[#111827]">
+              Publishable API Key
+            </p>
+            <p className="text-[12px] text-[#4b5563]">
+              For use exclusively with{" "}
+              <span className="font-mono text-[11px]">inferencejs</span>, the
+              client-side library.
+            </p>
+          </div>
+
+          <div className="mt-4 rounded-md border border-[#e5e7eb] bg-[#f9fafb] px-4 py-2.5">
+            <div className="flex items-center gap-3">
+              <p className="flex-1 truncate text-[12px] text-[#111827]">
+                rf_wUkEmRMybTRW0GCjjYRQLj4V9aR2
+              </p>
+              <div className="flex items-center gap-3 text-[#9ca3af]">
+                <button
+                  type="button"
+                  className="transition-colors hover:text-[#4b5563]"
+                  aria-label="Copy key"
+                >
+                  <Link2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
