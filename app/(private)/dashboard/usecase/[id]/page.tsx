@@ -87,7 +87,7 @@ const UseCaseDetailPage = () => {
               <Button
                 size="lg"
                 type="button"
-                className="h-12 rounded-lg bg-[#5b21ff] px-6 text-base font-semibold text-white shadow-[0_18px_45px_rgba(91,33,255,0.45)] hover:bg-[#4b1fd8]"
+                className="h-12 rounded-lg bg-primary px-6 text-base font-semibold text-white shadow-[0_18px_45px_rgba(91,33,255,0.45)] hover:bg-[#4b1fd8]"
               >
                 <Plus className="h-5 w-5" />
                 Create new dataset
@@ -96,7 +96,7 @@ const UseCaseDetailPage = () => {
                 size="lg"
                 type="button"
                 variant="outline"
-                className="h-12 rounded-lg border-2 border-[#d7ccff] bg-white px-6 text-base font-semibold text-[#5b21ff] hover:border-[#b8a0ff] hover:bg-[#f7f3ff]"
+                className="h-12 rounded-lg border-2 border-[#d7ccff] bg-white px-6 text-base font-semibold text-primary hover:border-[#b8a0ff] hover:bg-[#f7f3ff]"
               >
                 <CloudUpload className="h-5 w-5" />
                 Upload Pre-built dataset

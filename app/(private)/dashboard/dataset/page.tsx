@@ -1,13 +1,12 @@
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   ChevronDown,
   ImageIcon,
   MoreHorizontal,
-  Plus,
   Search,
   Users,
 } from "lucide-react";
+import { CreateWorkspaceDialog } from "@/features/dataset/components/create-workspace-dialog";
 
 const projects = [
   {
@@ -72,10 +71,7 @@ const DatasetPage = () => {
             </button>
           </div>
           <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
-            <Button className="h-10 rounded-lg bg-[#5b21ff] px-3 text-sm font-semibold shadow-[0_12px_30px_rgba(91,33,255,0.35)] hover:bg-[#4b1fd8]">
-              <Plus className="h-4 w-4" />
-              New Project
-            </Button>
+            <CreateWorkspaceDialog />
           </div>
         </div>
 
@@ -84,7 +80,7 @@ const DatasetPage = () => {
           {projects.map((project) => (
             <div
               key={project.id}
-              className="flex items-center gap-4 rounded-lg border border-[#e3e5f1] bg-white p-5 shadow-[0_10px_24px_rgba(15,23,42,0.04)] w-[60%]"
+              className="flex items-center gap-4 rounded-lg border border-[#e3e5f1] bg-white px-5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.04)] w-[60%]"
             >
               {/* Thumbnail */}
               <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#e4e6f2] bg-[#f7f7fd] text-slate-300">
