@@ -1,11 +1,10 @@
-'use client';
+"use client";
 
 import type { AxiosError } from "axios";
 import { create } from "zustand";
-
-import { userAPI } from "@/api/user";
 import type { AuthenticatedUser } from "@/interfaces/auth.interface";
 import { clearSessionToken, persistSessionToken } from "@/lib/session";
+import { userAPI } from "@/features/auth/api/user.api";
 
 type AuthStore = {
   user: AuthenticatedUser | null;
