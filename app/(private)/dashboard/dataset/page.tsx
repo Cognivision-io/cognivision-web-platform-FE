@@ -1,3 +1,5 @@
+"use client";
+
 import { Input } from "@/components/ui/input";
 import {
   ChevronDown,
@@ -7,19 +9,18 @@ import {
   Users,
 } from "lucide-react";
 import { CreateWorkspaceDialog } from "@/features/dataset/components/create-workspace-dialog";
-
-const projects = [
-  {
-    id: "1",
-    type: "Object detection",
-    title: "My first project",
-    edited: "Edited 1 day ago",
-    images: 0,
-    models: 0,
-  },
-];
+import { useProjectsQuery } from "@/features/dataset/queries/project.query";
+import { formatDistanceToNow } from "date-fns";
 
 const DatasetPage = () => {
+  const { data, isLoading } = useProjectsQuery({
+    page: 1,
+    limit: 10,
+    search: "test", // Hardcoded search as per requirement or remove if not needed initially
+  });
+
+  const projects = data?.data?.data || [];
+
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
@@ -77,45 +78,56 @@ const DatasetPage = () => {
 
         {/* Project list */}
         <div className="space-y-4 pt-2">
-          {projects.map((project) => (
-            <div
-              key={project.id}
-              className="flex items-center gap-4 rounded-lg border border-[#e3e5f1] bg-white px-5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.04)] w-[60%]"
-            >
-              {/* Thumbnail */}
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#e4e6f2] bg-[#f7f7fd] text-slate-300">
-                <ImageIcon className="h-7 w-7" />
-              </div>
+          {isLoading ? (
+            <div className="text-center text-sm text-slate-500">Loading...</div>
+          ) : projects.length === 0 ? (
+            <div className="text-center text-sm text-slate-500">
+              No projects found.
+            </div>
+          ) : (
+            projects.map((project) => (
+              <div
+                key={project.id}
+                className="flex items-center gap-4 rounded-lg border border-[#e3e5f1] bg-white px-5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.04)] w-[60%]"
+              >
+                {/* Thumbnail */}
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#e4e6f2] bg-[#f7f7fd] text-slate-300">
+                  <ImageIcon className="h-7 w-7" />
+                </div>
 
-              {/* Content */}
-              <div className="flex flex-1 flex-col gap-1.5">
-                <div className="flex flex-wrap items-start gap-3 sm:items-center sm:justify-between">
-                  <div>
-                    <span className="inline-flex rounded-full border border-[#e2e4f0] bg-[#f7f7fb] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-600">
-                      {project.type}
-                    </span>
-                    <h3 className="mt-2 text-base font-semibold text-slate-900">
-                      {project.title}
-                    </h3>
+                {/* Content */}
+                <div className="flex flex-1 flex-col gap-1.5">
+                  <div className="flex flex-wrap items-start gap-3 sm:items-center sm:justify-between">
+                    <div>
+                      <span className="inline-flex rounded-full border border-[#e2e4f0] bg-[#f7f7fb] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-600">
+                        {project.type}
+                      </span>
+                      <h3 className="mt-2 text-base font-semibold text-slate-900">
+                        {project.name}
+                      </h3>
+                    </div>
+
+                    <button className="text-slate-500 transition hover:text-slate-800">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </button>
                   </div>
 
-                  <button className="text-slate-500 transition hover:text-slate-800">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </button>
-                </div>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    Edited{" "}
+                    {formatDistanceToNow(new Date(project.updatedAt), {
+                      addSuffix: true,
+                    })}
+                  </p>
 
-                <p className="mt-0.5 text-xs text-slate-500">
-                  {project.edited}
-                </p>
-
-                <div className="mt-1 flex items-center gap-2 text-xs font-medium text-slate-600">
-                  <span>{project.images} Images</span>
-                  <span className="h-1 w-1 rounded-full bg-slate-300" />
-                  <span>{project.models} Models</span>
+                  <div className="mt-1 flex items-center gap-2 text-xs font-medium text-slate-600">
+                    <span>{project.images || 0} Images</span>
+                    <span className="h-1 w-1 rounded-full bg-slate-300" />
+                    <span>{project.models || 0} Models</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
