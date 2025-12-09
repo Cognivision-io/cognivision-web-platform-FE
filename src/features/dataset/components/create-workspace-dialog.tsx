@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   Dialog,
@@ -19,6 +20,9 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Hash, ImageIcon, Plus, Workflow, X } from "lucide-react";
+import { useCreateProjectMutation } from "@/features/dataset/mutations/project.mutation";
+import { useQueryClient } from "@tanstack/react-query";
+import { PROJECTS_QUERY_KEY } from "@/features/dataset/queries/project.query";
 
 const useCaseOptions = [
   { label: "Retail analytics", value: "retail" },
@@ -72,11 +76,36 @@ function RadioOption({
 }
 
 export const CreateWorkspaceDialog = () => {
+  const [open, setOpen] = useState(false);
   const [tool, setTool] = useState<Tool>("traditional");
   const [selectedType, setSelectedType] =
     useState<ProjectType>("object-detection");
   const [labelMode, setLabelMode] = useState<LabelMode>("");
   const [useCase, setUseCase] = useState("");
+  const [name, setName] = useState("My First Project");
+  const [annotation, setAnnotation] = useState("objects");
+
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  const { mutate: createProject, isPending } = useCreateProjectMutation({
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+      setOpen(false);
+      router.push(`/dashboard/usecase/${data.data.id}/upload-dataset`);
+    },
+  });
+
+  const handleCreate = () => {
+    createProject({
+      name,
+      annotation,
+      description: "This project is for detecting fruits in images.", // Hardcoded for now as per requirement or add input
+      license: "Public Domain", // Hardcoded for now
+      type: selectedType,
+      workspace: 1, // Hardcoded as per requirement
+    });
+  };
 
   const projectTypeDescription = useMemo(
     () =>
@@ -91,7 +120,7 @@ export const CreateWorkspaceDialog = () => {
   );
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="h-10 rounded-lg bg-primary px-3 text-sm font-semibold shadow-[0_12px_30px_rgba(91,33,255,0.35)] hover:bg-primary/90">
           <Plus className="h-4 w-4" />
@@ -142,7 +171,8 @@ export const CreateWorkspaceDialog = () => {
                       Project Name
                     </Label>
                     <Input
-                      defaultValue="My First Project"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
                       className="h-10 rounded-[12px] border-slate-300 bg-white px-4 text-[14px] font-medium text-slate-900 shadow-none placeholder:text-slate-400 focus-visible:ring-0"
                     />
                   </div>
@@ -152,7 +182,8 @@ export const CreateWorkspaceDialog = () => {
                       Annotation Group
                     </Label>
                     <Input
-                      defaultValue="objects"
+                      value={annotation}
+                      onChange={(e) => setAnnotation(e.target.value)}
                       className="h-10 rounded-[12px] border-slate-300 bg-white px-4 text-[14px] font-medium text-slate-900 shadow-none placeholder:text-slate-400 focus-visible:ring-0"
                     />
                   </div>
@@ -359,11 +390,13 @@ export const CreateWorkspaceDialog = () => {
                     </Button>
                   </DialogClose>
 
-                  <DialogClose asChild>
-                    <Button className="h-12 rounded-[14px] bg-primary px-10 text-[14px] font-medium text-white hover:bg-primary/90">
-                      Create Workspace
-                    </Button>
-                  </DialogClose>
+                  <Button
+                    onClick={handleCreate}
+                    disabled={isPending}
+                    className="h-12 rounded-[14px] bg-primary px-10 text-[14px] font-medium text-white hover:bg-primary/90"
+                  >
+                    {isPending ? "Creating..." : "Create Workspace"}
+                  </Button>
                 </div>
               </div>
             </div>
