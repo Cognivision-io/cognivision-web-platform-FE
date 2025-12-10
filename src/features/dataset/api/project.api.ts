@@ -38,7 +38,7 @@ export const projectApi = {
 
     const response = await api.post("/project/upload-images", formData, {
       params: {
-        projectId: payload.projectId.includes('/') ? payload.projectId.split('/').pop() : payload.projectId,
+        roboflowProjectId: payload.projectId,
         batch: payload.batch,
         concurrency: 10,
       },
@@ -59,7 +59,7 @@ export const projectApi = {
 
     const response = await api.post("/project/upload-folder", formData, {
       params: {
-        projectId: payload.projectId.includes('/') ? payload.projectId.split('/').pop() : payload.projectId,
+        roboflowProjectId: payload.projectId,
         batch: payload.batch,
         concurrency: 10,
       },
@@ -81,6 +81,11 @@ export const projectApi = {
 
   deleteProject: async (id: string) => {
     const response = await api.delete(`/project/${id}`);
+    return response.data;
+  },
+
+  getImageDetail: async (roboflowProjectId: string, imageId: string) => {
+    const response = await api.get(`/project/image-detail/${encodeURIComponent(roboflowProjectId)}/${imageId}`);
     return response.data;
   },
 };

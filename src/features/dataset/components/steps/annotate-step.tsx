@@ -1,21 +1,40 @@
 import { Pencil, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
-import { useUnannotatedImagesQuery } from "@/features/dataset/queries/image.query";
+import { useUnannotatedImagesQuery, useImageDetailQuery } from "@/features/dataset/queries/image.query";
 import { useState } from "react";
 
 interface AnnotateStepProps {
   onNext: () => void;
+  uploadedData?: { roboflowProjectId: string; imageIds: string[] } | null;
 }
 
-export const AnnotateStep = ({ onNext }: AnnotateStepProps) => {
+export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
   const params = useParams();
   const projectId = Number(params.id);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const { data: imagesData, isLoading } = useUnannotatedImagesQuery(projectId, 0); // Fetch initial batch
+  const { data: imagesData, isLoading: isLoadingUnannotated } = useUnannotatedImagesQuery(projectId, 0, {
+    enabled: !uploadedData
+  }); 
 
-  const currentImage = imagesData?.results?.[currentImageIndex];
+  const currentUploadImageId = uploadedData?.imageIds[currentImageIndex];
+  const { data: imageDetail, isLoading: isLoadingDetail } = useImageDetailQuery(
+    uploadedData?.roboflowProjectId || "",
+    currentUploadImageId || "",
+    { enabled: !!uploadedData && !!currentUploadImageId }
+  );
+
+  const isLoading = uploadedData ? isLoadingDetail : isLoadingUnannotated;
+  
+  // Normalize the image object. 
+  // If uploadedData is present, the API returns { data: { image: ... } }
+  // If not, useUnannotatedImagesQuery returns { results: [...] }
+  const currentImage = uploadedData 
+    ? imageDetail?.data?.image 
+    : imagesData?.results?.[currentImageIndex];
+    
+  const totalImages = uploadedData ? uploadedData.imageIds.length : (imagesData?.results?.length || 0);
 
   return (
     <div className="p-8">
@@ -57,13 +76,13 @@ export const AnnotateStep = ({ onNext }: AnnotateStepProps) => {
             <div className="relative aspect-square w-full max-w-md">
                 <div className="flex h-full w-full items-center justify-center">
                   <img
-                    src={currentImage.url} 
+                    src={currentImage.urls?.original || currentImage.url} 
                     alt={currentImage.name}
                     className="h-full w-full object-contain mix-blend-multiply"
                   />
                 </div>
                 {/* Simple pagination controls for preview if multiple images exist */}
-                {imagesData && imagesData.results.length > 1 && (
+                {totalImages > 1 && (
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                          <Button 
                             size="sm" 
@@ -76,8 +95,8 @@ export const AnnotateStep = ({ onNext }: AnnotateStepProps) => {
                          <Button 
                             size="sm" 
                             variant="secondary" 
-                            disabled={currentImageIndex === imagesData.results.length - 1}
-                            onClick={() => setCurrentImageIndex(prev => Math.min(imagesData.results.length - 1, prev + 1))}
+                            disabled={currentImageIndex === totalImages - 1}
+                            onClick={() => setCurrentImageIndex(prev => Math.min(totalImages - 1, prev + 1))}
                          >
                             Next
                          </Button>
