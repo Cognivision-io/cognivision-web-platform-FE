@@ -27,6 +27,20 @@ export const useProjectsQuery = (
   });
 };
 
+export const PROJECT_QUERY_KEY = ["project"] as const;
+
+export const useProjectQuery = (
+  id: number,
+  options?: UseQueryOptions<import("@/interfaces/project.interface").GetProjectResponse, ProjectError>
+) => {
+  return useQuery({
+    queryKey: [...PROJECT_QUERY_KEY, id],
+    queryFn: () => projectApi.getProject(id),
+    enabled: !!id,
+    ...options,
+  });
+};
+
 
 export const useDeleteProjectMutation = () => {
   const queryClient = useQueryClient();

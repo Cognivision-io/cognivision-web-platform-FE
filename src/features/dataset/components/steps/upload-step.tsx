@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDropzone } from "react-dropzone";
 import { useUploadImagesMutation, useUploadFolderMutation } from "@/features/dataset/mutations/upload.mutation";
+import { useProjectQuery } from "@/features/dataset/queries/project.query";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -30,6 +31,8 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
 
   const params = useParams();
   const projectId = params.id as string;
+  const { data: project } = useProjectQuery(Number(projectId));
+  const uploadProjectId = project?.data?.project?.id || projectId;
 
   const { mutate: uploadImages } = useUploadImagesMutation({
     onSuccess: () => {
@@ -124,13 +127,13 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
 
     if (isFolderUpload) {
        uploadFolder({
-        projectId,
+        projectId: uploadProjectId,
         batch: batchName,
         files,
       });
     } else {
       uploadImages({
-        projectId,
+        projectId: uploadProjectId,
         batch: batchName,
         files,
       });
