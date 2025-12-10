@@ -3,9 +3,14 @@ export interface Annotation {
 }
 
 export interface Image {
-  id: string; // or number, based on backend. typically string in roboflow, but maybe number in this backend? The prompt used number for id param.
+  id: string;
   name: string;
-  url: string; // or something similar
+  url?: string;
+  urls?: {
+    original: string;
+    thumb: string;
+    annotation?: string | null;
+  };
   annotations: Annotation;
   // Add other fields as necessary from the response
 }

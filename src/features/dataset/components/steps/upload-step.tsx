@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 
 interface UploadStepProps {
-  onNext: () => void;
+  onNext: (data: { roboflowProjectId: string; imageIds: string[] }) => void;
 }
 
 export const UploadStep = ({ onNext }: UploadStepProps) => {
@@ -34,11 +34,18 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
   const { data: project } = useProjectQuery(Number(projectId));
   const uploadProjectId = project?.data?.project?.id || projectId;
 
+  const handleSuccess = (data: any) => {
+    setUploadProgress(false);
+    const roboflowProjectId = data.projectId;
+    const imageIds = data.results?.successful?.map((item: any) => item.result.id) || [];
+    
+    toast.success("Uploaded successfully");
+    onNext({ roboflowProjectId, imageIds });
+  };
+
   const { mutate: uploadImages } = useUploadImagesMutation({
-    onSuccess: () => {
-      setUploadProgress(false);
-      toast.success("Images uploaded successfully");
-      onNext();
+    onSuccess: (data) => {
+      handleSuccess(data);
     },
     onError: (error) => {
       setUploadProgress(false);
@@ -47,10 +54,8 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
   });
 
   const { mutate: uploadFolder } = useUploadFolderMutation({
-    onSuccess: () => {
-      setUploadProgress(false);
-      toast.success("Folder uploaded successfully");
-      onNext();
+    onSuccess: (data) => {
+        handleSuccess(data);
     },
     onError: (error) => {
       setUploadProgress(false);

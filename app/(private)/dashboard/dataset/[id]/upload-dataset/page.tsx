@@ -45,6 +45,15 @@ const steps = [
 const UploadDatasetPage = () => {
   const params = useParams<{ id: string | string[] }>();
   const [currentStep, setCurrentStep] = useState(0);
+  const [uploadedData, setUploadedData] = useState<{
+    roboflowProjectId: string;
+    imageIds: string[];
+  } | null>(null);
+
+  const handleUploadSuccess = (data: { roboflowProjectId: string; imageIds: string[] }) => {
+    setUploadedData(data);
+    setCurrentStep(1);
+  };
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f8f9fc] px-6 py-8 lg:px-10">
@@ -62,11 +71,14 @@ const UploadDatasetPage = () => {
           )}
         >
           {currentStep === 0 && (
-            <UploadStep onNext={() => setCurrentStep(1)} />
+            <UploadStep onNext={handleUploadSuccess} />
           )}
 
           {currentStep === 1 && (
-            <AnnotateStep onNext={() => setCurrentStep(2)} />
+            <AnnotateStep 
+              onNext={() => setCurrentStep(2)} 
+              uploadedData={uploadedData}
+            />
           )}
 
           {currentStep === 2 && (
