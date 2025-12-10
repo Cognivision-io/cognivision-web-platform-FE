@@ -1,21 +1,141 @@
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
   CloudUpload,
   FileText,
   Folder,
   Image as ImageIcon,
+  Loader2,
+  X,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useDropzone } from "react-dropzone";
+import { useUploadImagesMutation, useUploadFolderMutation } from "@/features/dataset/mutations/upload.mutation";
+import { useParams } from "next/navigation";
+import { toast } from "sonner";
+import Image from "next/image";
 
 interface UploadStepProps {
   onNext: () => void;
 }
 
 export const UploadStep = ({ onNext }: UploadStepProps) => {
-  const [batchName, setBatchName] = useState("Uploaded on 10/03/25 at 9:23 pm");
+  const [batchName, setBatchName] = useState("");
   const [tags, setTags] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [previewImages, setPreviewImages] = useState<{ file: File; preview: string }[]>([]);
+  const [uploadProgress, setUploadProgress] = useState(false);
+
+  const params = useParams();
+  const projectId = params.id as string;
+
+  const { mutate: uploadImages } = useUploadImagesMutation({
+    onSuccess: () => {
+      setUploadProgress(false);
+      toast.success("Images uploaded successfully");
+      onNext();
+    },
+    onError: (error) => {
+      setUploadProgress(false);
+      toast.error(error.message || "Failed to upload images");
+    },
+  });
+
+  const { mutate: uploadFolder } = useUploadFolderMutation({
+    onSuccess: () => {
+      setUploadProgress(false);
+      toast.success("Folder uploaded successfully");
+      onNext();
+    },
+    onError: (error) => {
+      setUploadProgress(false);
+      toast.error(error.message || "Failed to upload folder");
+    },
+  });
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const newPreviews = acceptedFiles.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+    setFiles((prev) => [...prev, ...acceptedFiles]);
+    setPreviewImages((prev) => [...prev, ...newPreviews]);
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+    onDrop,
+    accept: {
+      "image/*": [".jpg", ".jpeg", ".png", ".bmp", ".webp", ".avif"],
+    },
+    noClick: true, // Disable click on root to allow custom buttons
+  });
+
+  const folderInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length > 0) {
+      const validFiles = selectedFiles.filter(file => file.type.startsWith('image/'));
+       const newPreviews = validFiles.map((file) => ({
+        file,
+        preview: URL.createObjectURL(file),
+      }));
+      setFiles((prev) => [...prev, ...validFiles]);
+      setPreviewImages((prev) => [...prev, ...newPreviews]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviewImages((prev) => {
+      // Revoke the object URL to avoid memory leaks
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const handleUpload = () => {
+    if (files.length === 0) return;
+    
+    if (!batchName.trim()) {
+      toast.error("Batch Name is required");
+      return;
+    }
+
+    setUploadProgress(true);
+    
+    // Check if files have webkitRelativePath determining if it was a folder upload
+    // Typically mixed uploads are tricky, but if we use the folder button, all might share logic
+    // For simplicity, if we used the folder input, we might want to call uploadFolder, 
+    // but the backend logic for uploadImages is similar if we just pass files.
+    // However, the user specifically asked for /project/upload-folder if user upload folder.
+    // The dropzone flattens files. The folderInputRef gives files with webkitRelativePath.
+    
+    // Simplification: If any file has a path separator in webkitRelativePath, treat as folder upload?
+    // Or simpler: Use uploadImages for drag/drop and file selection, uploadFolder for folder selection logic.
+    // Given the state is merged, we'll try to determine best generic strategy.
+    // If we assume purely on how they were added: 
+    // It's hard to distinguish once merged into 'files' array without tracking source.
+    
+    // Let's check if any file has a non-empty webkitRelativePath indicating folder structure.
+    const isFolderUpload = files.some(f => f.webkitRelativePath && f.webkitRelativePath.includes('/'));
+
+    if (isFolderUpload) {
+       uploadFolder({
+        projectId,
+        batch: batchName,
+        files,
+      });
+    } else {
+      uploadImages({
+        projectId,
+        batch: batchName,
+        files,
+      });
+    }
+  };
 
   return (
     <>
@@ -28,11 +148,12 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
       <div className="mb-8 grid gap-6 md:grid-cols-2">
         <div className="space-y-2">
           <Label className="text-sm font-semibold text-slate-900">
-            Batch Name:
+            Batch Name: <span className="text-red-500">*</span>
           </Label>
           <Input
             value={batchName}
             onChange={(e) => setBatchName(e.target.value)}
+            placeholder="Enter batch name"
             className="h-11 rounded-lg border-slate-200 bg-white text-sm shadow-none focus-visible:ring-primary"
           />
         </div>
@@ -49,95 +170,174 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
         </div>
       </div>
 
-      {/* Upload Areas */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Drag and Drop Area */}
-        <div className="flex min-h-[400px] flex-col rounded-xl border border-[#e1e4f5] bg-white p-8">
-          <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f0f2f5]">
-              <ImageIcon className="h-8 w-8 text-slate-400" />
+      {files.length > 0 ? (
+        <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+                 <h2 className="text-xl font-semibold text-slate-900">
+                   {uploadProgress ? "Uploading files..." : "Selected Files"}
+                 </h2>
+            </div>
+          
+           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+             {previewImages.map((img, index) => (
+               <div key={index} className="relative aspect-square group rounded-lg overflow-hidden border border-slate-200">
+                 <Image
+                   src={img.preview}
+                   alt="preview"
+                   fill
+                   className="object-cover"
+                 />
+                 {!uploadProgress && (
+                   <button 
+                      onClick={() => removeFile(index)}
+                      className="absolute top-1 right-1 bg-white/80 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                   >
+                      <X className="h-3 w-3 text-slate-700" />
+                   </button>
+                 )}
+               </div>
+             ))}
+             
+              {/* Add more button */}
+             {!uploadProgress && (
+               <div 
+                  {...getRootProps()} 
+                  onClick={open}
+                  className="flex items-center justify-center aspect-square rounded-lg border-2 border-dashed border-slate-200 hover:border-primary/50 hover:bg-slate-50 cursor-pointer transition"
+               >
+                  <input {...getInputProps()} />
+                  <div className="flex flex-col items-center gap-1 text-slate-400">
+                      <Plus className="h-6 w-6" />
+                      <span className="text-xs">Add</span>
+                  </div>
+               </div>
+             )}
+           </div>
+           
+            <div className="mt-8 flex justify-end gap-3">
+                 <Button variant="outline" onClick={() => {
+                     setFiles([]);
+                     setPreviewImages([]);
+                 }} disabled={uploadProgress}>
+                     Cancel
+                 </Button>
+                <Button onClick={handleUpload} disabled={uploadProgress}>
+                    {uploadProgress && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {uploadProgress ? "Uploading..." : "Start Upload"}
+                </Button>
+            </div>
+        </div>
+      ) : (
+        /* Upload Areas */
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Drag and Drop Area */}
+          <div
+            {...getRootProps()}
+            className={`flex min-h-[400px] flex-col rounded-xl border-2 border-dashed transition-colors ${
+              isDragActive
+                ? "border-primary bg-primary/5"
+                : "border-[#e1e4f5] bg-white"
+            } p-8`}
+          >
+            <input {...getInputProps()} />
+            <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f0f2f5]">
+                <ImageIcon className="h-8 w-8 text-slate-400" />
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-slate-700">
+                  {isDragActive
+                    ? "Drop the files here..."
+                    : "Drag and drop files to upload dataset"}
+                </h3>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={open}
+                  type="button"
+                  className="h-10 gap-2 rounded-lg border-slate-300 font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  <FileText className="h-4 w-4" />
+                  Select File(s)
+                </Button>
+                <div className="relative">
+                    <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => folderInputRef.current?.click()}
+                    className="h-10 gap-2 rounded-lg border-slate-300 font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                    <Folder className="h-4 w-4" />
+                    Select Folder
+                    </Button>
+                    <input
+                        type="file"
+                        ref={folderInputRef}
+                        onChange={handleFolderSelect}
+                        className="hidden"
+                        {...({ webkitdirectory: "", directory: "" } as any)}
+                        multiple
+                    />
+                </div>
+              </div>
             </div>
 
-            <div>
+            {/* Supported Formats */}
+            <div className="mt-8 rounded-lg border border-[#e1e4f5] bg-[#fafbfd] p-4">
+              <h4 className="mb-3 text-sm font-medium text-slate-500">
+                Supported Formats
+              </h4>
+              <div className="grid grid-cols-3 gap-4 text-xs">
+                <div>
+                  <div className="font-semibold text-slate-700">Images</div>
+                  <div className="mt-1 font-mono text-slate-500">
+                    .jpg, .png, .bmp, .webp, .avif
+                  </div>
+                </div>
+                <div>
+                  <div className="font-semibold text-slate-700">Videos</div>
+                  <div className="mt-1 font-mono text-slate-500">
+                    .mov, .mp4
+                  </div>
+                </div>
+                <div>
+                  <div className="font-semibold text-slate-700">PDFs</div>
+                  <div className="mt-1 font-mono text-slate-500">.pdf</div>
+                </div>
+              </div>
+              <div className="mt-3 text-[10px] text-slate-400">
+                *Max size of 20MB and 16,400 x 16,900 pixels.
+              </div>
+            </div>
+          </div>
+
+          {/* Pre-built Dataset Area */}
+          <div className="flex min-h-[400px] flex-col rounded-xl border border-[#e1e4f5] bg-[#f8f9fc] p-8">
+            <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
+              <div className="flex h-16 w-16 items-center justify-center">
+                <CloudUpload className="h-10 w-10 text-slate-900" />
+              </div>
+
               <h3 className="text-lg font-semibold text-slate-700">
-                Drag and drop files to upload dataset
+                Use Pre-built dataset
               </h3>
-            </div>
 
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="h-10 gap-2 rounded-lg border-slate-300 font-medium text-slate-700 hover:bg-slate-50"
-              >
-                <FileText className="h-4 w-4" />
-                Select File(s)
-              </Button>
-              <Button
-                variant="outline"
-                className="h-10 gap-2 rounded-lg border-slate-300 font-medium text-slate-700 hover:bg-slate-50"
-              >
-                <Folder className="h-4 w-4" />
-                Select Folder
-              </Button>
-            </div>
-          </div>
-
-          {/* Supported Formats */}
-          <div className="mt-8 rounded-lg border border-[#e1e4f5] bg-[#fafbfd] p-4">
-            <h4 className="mb-3 text-sm font-medium text-slate-500">
-              Supported Formats
-            </h4>
-            <div className="grid grid-cols-3 gap-4 text-xs">
-              <div>
-                <div className="font-semibold text-slate-700">Images</div>
-                <div className="mt-1 font-mono text-slate-500">
-                  .jpg, .png, .bmp, .webp, .avif
+              <div className="mt-4 w-full max-w-xs rounded-xl border border-[#e1e4f5] bg-[#f0f2f5] p-8 text-center">
+                <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded bg-slate-400 text-white">
+                  <FileText className="h-5 w-5" />
                 </div>
-              </div>
-              <div>
-                <div className="font-semibold text-slate-700">Videos</div>
-                <div className="mt-1 font-mono text-slate-500">
-                  .mov, .mp4
+                <div className="text-sm font-medium text-slate-600">
+                  Upload dataset
                 </div>
-              </div>
-              <div>
-                <div className="font-semibold text-slate-700">PDFs</div>
-                <div className="mt-1 font-mono text-slate-500">.pdf</div>
-              </div>
-            </div>
-            <div className="mt-3 text-[10px] text-slate-400">
-              *Max size of 20MB and 16,400 x 16,900 pixels.
-            </div>
-          </div>
-        </div>
-
-        {/* Pre-built Dataset Area */}
-        <div className="flex min-h-[400px] flex-col rounded-xl border border-[#e1e4f5] bg-[#f8f9fc] p-8">
-          <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
-            <div className="flex h-16 w-16 items-center justify-center">
-              <CloudUpload className="h-10 w-10 text-slate-900" />
-            </div>
-
-            <h3 className="text-lg font-semibold text-slate-700">
-              Use Pre-built dataset
-            </h3>
-
-            <div className="mt-4 w-full max-w-xs rounded-xl border border-[#e1e4f5] bg-[#f0f2f5] p-8 text-center">
-              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded bg-slate-400 text-white">
-                <FileText className="h-5 w-5" />
-              </div>
-              <div className="text-sm font-medium text-slate-600">
-                Upload dataset
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Temporary Navigation for Dev */}
-      <div className="mt-8 flex justify-end">
-        <Button onClick={onNext}>Proceed to Annotate (Dev)</Button>
-      </div>
     </>
   );
 };

@@ -21,6 +21,7 @@ export type LoginPayload = {
 
 export type AuthTokens = {
   token: string;
+  refreshToken?: string;
 };
 
 export type AuthenticatedUser = {
@@ -48,7 +49,7 @@ export type AuthenticatedUser = {
   providerId: string | null;
   provider: string | null;
   profilePicture: string | null;
-  workspaces: unknown[];
+  workspaces: number[];
   projects: unknown[];
 };
 
@@ -73,6 +74,9 @@ export type VerifyOtpPayload = {
 
 export type VerifyOtpResponse = {
   statusCode: number;
+  data: {
+    tokens: AuthTokens;
+  };
   message: string;
 };
 

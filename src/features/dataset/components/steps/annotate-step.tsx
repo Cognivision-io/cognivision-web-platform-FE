@@ -1,11 +1,22 @@
-import { Pencil, Sparkles } from "lucide-react";
+import { Pencil, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useParams } from "next/navigation";
+import { useUnannotatedImagesQuery } from "@/features/dataset/queries/image.query";
+import { useState } from "react";
 
 interface AnnotateStepProps {
   onNext: () => void;
 }
 
 export const AnnotateStep = ({ onNext }: AnnotateStepProps) => {
+  const params = useParams();
+  const projectId = Number(params.id);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const { data: imagesData, isLoading } = useUnannotatedImagesQuery(projectId, 0); // Fetch initial batch
+
+  const currentImage = imagesData?.results?.[currentImageIndex];
+
   return (
     <div className="p-8">
       {/* Header */}
@@ -36,16 +47,48 @@ export const AnnotateStep = ({ onNext }: AnnotateStepProps) => {
 
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Left: Image Preview */}
-        <div className="flex items-center justify-center rounded-xl bg-[#f8f9fc] p-8">
-          <div className="relative aspect-square w-full max-w-md">
-            <div className="flex h-full w-full items-center justify-center">
-              <img
-                src="https://img.freepik.com/free-vector/green-leaf-white-background_1308-106478.jpg"
-                alt="Uploaded Leaf"
-                className="h-full w-full object-contain mix-blend-multiply"
-              />
+        <div className="flex items-center justify-center rounded-xl bg-[#f8f9fc] p-8 min-h-[400px]">
+          {isLoading ? (
+             <div className="flex flex-col items-center gap-2">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="text-sm text-slate-500">Loading images...</span>
+             </div>
+          ) : currentImage ? (
+            <div className="relative aspect-square w-full max-w-md">
+                <div className="flex h-full w-full items-center justify-center">
+                  <img
+                    src={currentImage.url} 
+                    alt={currentImage.name}
+                    className="h-full w-full object-contain mix-blend-multiply"
+                  />
+                </div>
+                {/* Simple pagination controls for preview if multiple images exist */}
+                {imagesData && imagesData.results.length > 1 && (
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                         <Button 
+                            size="sm" 
+                            variant="secondary" 
+                            disabled={currentImageIndex === 0}
+                            onClick={() => setCurrentImageIndex(prev => Math.max(0, prev - 1))}
+                         >
+                            Prev
+                         </Button>
+                         <Button 
+                            size="sm" 
+                            variant="secondary" 
+                            disabled={currentImageIndex === imagesData.results.length - 1}
+                            onClick={() => setCurrentImageIndex(prev => Math.min(imagesData.results.length - 1, prev + 1))}
+                         >
+                            Next
+                         </Button>
+                    </div>
+                )}
             </div>
-          </div>
+          ) : (
+            <div className="text-center text-slate-500">
+                No unannotated images found.
+            </div>
+          )}
         </div>
 
         {/* Right: Labeling Options */}
