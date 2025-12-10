@@ -17,6 +17,7 @@ export type Project = {
   workspaceId: number;
   createdAt: string;
   updatedAt: string;
+  roboflowProjectId?: string;
   // Add other fields as needed based on the response
   images?: number;
   models?: number;
@@ -26,6 +27,62 @@ export type CreateProjectResponse = {
   statusCode: number;
   data: Project;
   message: string;
+};
+
+export interface RoboflowWorkspace {
+  name: string;
+  url: string;
+  members: number;
+}
+
+export interface RoboflowProjectMetadata {
+  id: string;
+  type: string;
+  name: string;
+  created: number;
+  updated: number;
+  images: number;
+  unannotated: number;
+  annotation: string;
+  versions: number;
+  public: boolean;
+  multilabel: boolean;
+  license: string;
+  splits: Record<string, number>;
+  colors: Record<string, string>;
+  classes: Record<string, number>;
+  icon?: {
+    original: string;
+    thumb: string;
+    annotation: string | null;
+  };
+  preprocessing: any;
+  augmentation: any;
+}
+
+export interface RoboflowVersion {
+  id: string;
+  name: string;
+  created: number;
+  images: number;
+  splits: Record<string, number>;
+  preprocessing: any;
+  augmentation: any;
+  exports: string[];
+  model?: any;
+}
+
+export interface ProjectDetails {
+  workspace: RoboflowWorkspace;
+  project: RoboflowProjectMetadata;
+  versions: RoboflowVersion[];
+}
+
+export type GetProjectResponse = {
+  statusCode: number;
+  data: ProjectDetails;
+  message: string;
+  // Helper to access nested project fields if needed, but structure is strictly typed above
 };
 
 export type GetProjectsResponse = {

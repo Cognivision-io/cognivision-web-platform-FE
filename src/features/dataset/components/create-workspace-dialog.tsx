@@ -128,7 +128,7 @@ export const CreateWorkspaceDialog = () => {
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       setOpen(false);
       toast.success("Project created successfully");
-      router.push(`/dashboard/usecase/${data.data.id}/upload-dataset`);
+      router.push(`/dashboard/dataset/${data.data.id}/upload-dataset`);
       reset();
     },
     onError: (error) => {

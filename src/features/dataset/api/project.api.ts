@@ -25,6 +25,11 @@ export const projectApi = {
     return response.data;
   },
 
+  getProject: async (id: number) => {
+    const response = await api.get<import("@/interfaces/project.interface").GetProjectResponse>(`/project/${id}`);
+    return response.data;
+  },
+
   uploadImages: async (payload: { projectId: string; batch?: string; files: File[] }) => {
     const formData = new FormData();
     payload.files.forEach((file) => {
@@ -33,8 +38,9 @@ export const projectApi = {
 
     const response = await api.post("/project/upload-images", formData, {
       params: {
-        roboflowProjectId: payload.projectId,
+        projectId: payload.projectId.includes('/') ? payload.projectId.split('/').pop() : payload.projectId,
         batch: payload.batch,
+        concurrency: 10,
       },
       headers: {
         "Content-Type": "multipart/form-data",
@@ -53,8 +59,9 @@ export const projectApi = {
 
     const response = await api.post("/project/upload-folder", formData, {
       params: {
-        projectId: payload.projectId,
+        projectId: payload.projectId.includes('/') ? payload.projectId.split('/').pop() : payload.projectId,
         batch: payload.batch,
+        concurrency: 10,
       },
       headers: {
         "Content-Type": "multipart/form-data",
