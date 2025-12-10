@@ -23,6 +23,11 @@ import { Hash, ImageIcon, Plus, Workflow, X } from "lucide-react";
 import { useCreateProjectMutation } from "@/features/dataset/mutations/project.mutation";
 import { useQueryClient } from "@tanstack/react-query";
 import { PROJECTS_QUERY_KEY } from "@/features/dataset/queries/project.query";
+import { useAuthStore } from "@/stores/auth-store";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { toast } from "sonner";
 
 const useCaseOptions = [
   { label: "Retail analytics", value: "retail" },
@@ -37,6 +42,20 @@ type ProjectType =
   | "classification"
   | "instance-segmentation";
 type LabelMode = "" | "single" | "multi";
+
+const schema = yup.object({
+  name: yup.string().required("Project Name is required"),
+  annotation: yup.string().required("Annotation Group is required"),
+  tool: yup.string().oneOf(["traditional", "rapid"]).default("traditional"),
+  selectedType: yup
+    .string()
+    .oneOf(["object-detection", "classification", "instance-segmentation"])
+    .default("object-detection"),
+  labelMode: yup.string().default(""),
+  useCase: yup.string().default(""),
+});
+
+type FormData = yup.InferType<typeof schema>;
 
 function RadioOption({
   label,
@@ -77,33 +96,59 @@ function RadioOption({
 
 export const CreateWorkspaceDialog = () => {
   const [open, setOpen] = useState(false);
-  const [tool, setTool] = useState<Tool>("traditional");
-  const [selectedType, setSelectedType] =
-    useState<ProjectType>("object-detection");
-  const [labelMode, setLabelMode] = useState<LabelMode>("");
-  const [useCase, setUseCase] = useState("");
-  const [name, setName] = useState("My First Project");
-  const [annotation, setAnnotation] = useState("objects");
-
+  const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const router = useRouter();
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+    reset,
+  } = useForm<FormData>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      name: "",
+      annotation: "",
+      tool: "traditional",
+      selectedType: "object-detection",
+      labelMode: "",
+      useCase: "",
+    },
+  });
+
+  const tool = watch("tool") as Tool;
+  const selectedType = watch("selectedType") as ProjectType;
+  const labelMode = watch("labelMode") as LabelMode;
 
   const { mutate: createProject, isPending } = useCreateProjectMutation({
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       setOpen(false);
+      toast.success("Project created successfully");
       router.push(`/dashboard/usecase/${data.data.id}/upload-dataset`);
+      reset();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create project");
     },
   });
 
-  const handleCreate = () => {
+  const onSubmit = (data: FormData) => {
+    let workspaceId = 1;
+    if (user?.workspaces && user.workspaces.length > 0) {
+      workspaceId = user.workspaces[0];
+    }
+
     createProject({
-      name,
-      annotation,
-      description: "This project is for detecting fruits in images.", // Hardcoded for now as per requirement or add input
+      name: data.name,
+      annotation: data.annotation,
+      description: "This project is for detecting fruits in images.", // Hardcoded for now
       license: "Public Domain", // Hardcoded for now
-      type: selectedType,
-      workspace: 1, // Hardcoded as per requirement
+      type: data.selectedType as ProjectType,
+      workspace: workspaceId,
     });
   };
 
@@ -164,221 +209,263 @@ export const CreateWorkspaceDialog = () => {
 
               {/* Body */}
               <div className="px-5 pb-9 pt-2 md:px-10">
-                {/* Top fields */}
-                <div className="grid gap-x-5 gap-y-5 md:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label className="text-[13px] font-semibold text-slate-900">
-                      Project Name
-                    </Label>
-                    <Input
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="h-10 rounded-[12px] border-slate-300 bg-white px-4 text-[14px] font-medium text-slate-900 shadow-none placeholder:text-slate-400 focus-visible:ring-0"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-[13px] font-semibold text-slate-900">
-                      Annotation Group
-                    </Label>
-                    <Input
-                      value={annotation}
-                      onChange={(e) => setAnnotation(e.target.value)}
-                      className="h-10 rounded-[12px] border-slate-300 bg-white px-4 text-[14px] font-medium text-slate-900 shadow-none placeholder:text-slate-400 focus-visible:ring-0"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-[13px] font-semibold text-slate-900">
-                      Tool
-                    </Label>
-
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setTool("traditional")}
-                        className={cn(
-                          "h-10 min-w-[150px] rounded-[12px] border px-5 text-[14px] font-medium transition",
-                          tool === "traditional"
-                            ? "border-[#4a2cf0] bg-[#cfd2ff] text-slate-800"
-                            : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                <form id="create-project-form" onSubmit={handleSubmit(onSubmit)}>
+                  {/* Top fields */}
+                  <div className="grid gap-x-5 gap-y-5 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label className="text-[13px] font-semibold text-slate-900">
+                        Project Name
+                      </Label>
+                      <Controller
+                        name="name"
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder="My First Project"
+                            className="h-10 rounded-[12px] border-slate-300 bg-white px-4 text-[14px] font-medium text-slate-900 shadow-none placeholder:text-slate-400 focus-visible:ring-0"
+                          />
                         )}
-                      >
-                        Traditional
-                      </button>
+                      />
+                      {errors.name && (
+                        <p className="text-xs text-red-500">
+                          {errors.name.message}
+                        </p>
+                      )}
+                    </div>
 
-                      <button
-                        type="button"
-                        onClick={() => setTool("rapid")}
-                        className={cn(
-                          "h-10 min-w-[120px] rounded-[12px] border px-5 text-[14px] font-medium transition",
-                          tool === "rapid"
-                            ? "border-[#4a2cf0] bg-[#cfd2ff] text-slate-800"
-                            : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                    <div className="space-y-2">
+                      <Label className="text-[13px] font-semibold text-slate-900">
+                        Annotation Group
+                      </Label>
+                      <Controller
+                        name="annotation"
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder="Objects"
+                            className="h-10 rounded-[12px] border-slate-300 bg-white px-4 text-[14px] font-medium text-slate-900 shadow-none placeholder:text-slate-400 focus-visible:ring-0"
+                          />
                         )}
-                      >
-                        Rapid
-                      </button>
+                      />
+                      {errors.annotation && (
+                        <p className="text-xs text-red-500">
+                          {errors.annotation.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[13px] font-semibold text-slate-900">
+                        Tool
+                      </Label>
+
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setValue("tool", "traditional")}
+                          className={cn(
+                            "h-10 min-w-[150px] rounded-[12px] border px-5 text-[14px] font-medium transition",
+                            tool === "traditional"
+                              ? "border-[#4a2cf0] bg-[#cfd2ff] text-slate-800"
+                              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                          )}
+                        >
+                          Traditional
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setValue("tool", "rapid")}
+                          className={cn(
+                            "h-10 min-w-[120px] rounded-[12px] border px-5 text-[14px] font-medium transition",
+                            tool === "rapid"
+                              ? "border-[#4a2cf0] bg-[#cfd2ff] text-slate-800"
+                              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                          )}
+                        >
+                          Rapid
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Project Category under first column */}
+                    <div className="space-y-2 md:col-span-1">
+                      <Label className="text-[13px] font-semibold text-slate-900">
+                        Project Category
+                      </Label>
+
+                      <Controller
+                        name="useCase"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger className="h-10 w-full rounded-[12px] border-slate-300 bg-white px-4 text-[14px] font-medium text-slate-700 shadow-none focus:ring-0">
+                              <SelectValue placeholder="Select Use Case" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {useCaseOptions.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
                     </div>
                   </div>
 
-                  {/* Project Category under first column */}
-                  <div className="space-y-2 md:col-span-1">
-                    <Label className="text-[13px] font-semibold text-slate-900">
-                      Project Category
-                    </Label>
+                  {/* Project Type */}
+                  <div className="mt-4">
+                    <div className="text-[13px] font-semibold text-slate-900">
+                      Project Type
+                    </div>
 
-                    <Select value={useCase} onValueChange={setUseCase}>
-                      <SelectTrigger className="h-10 w-full rounded-[12px] border-slate-300 bg-white px-4 text-[14px] font-medium text-slate-700 shadow-none focus:ring-0">
-                        <SelectValue placeholder="Select Use Case" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {useCaseOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                    <div className="mt-3 overflow-hidden border border-slate-200 bg-white">
+                      {/* Object Detection */}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setValue("selectedType", "object-detection")
+                        }
+                        className={cn(
+                          "relative w-full px-7 py-6 text-left",
+                          selectedType === "object-detection"
+                            ? "bg-[#cfd2ff]"
+                            : "bg-white hover:bg-slate-50"
+                        )}
+                      >
+                        {selectedType === "object-detection" && (
+                          <span className="pointer-events-none absolute inset-0 outline outline-2 outline-[#4a2cf0] outline-offset-[-2px]" />
+                        )}
 
-                {/* Project Type */}
-                <div className="mt-4">
-                  <div className="text-[13px] font-semibold text-slate-900">
-                    Project Type
-                  </div>
+                        <div className="flex items-start justify-between gap-5">
+                          <div>
+                            <div className="text-[18px] font-semibold text-slate-900">
+                              Object Detection
+                            </div>
+                            <div className="mt-2 text-[14px] text-slate-700">
+                              Identify objects and their positions with bounding
+                              boxes.
+                            </div>
+                          </div>
 
-                  <div className="mt-3 overflow-hidden border border-slate-200 bg-white">
-                    {/* Object Detection */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedType("object-detection")}
-                      className={cn(
-                        "relative w-full px-7 py-6 text-left",
-                        selectedType === "object-detection"
-                          ? "bg-[#cfd2ff]"
-                          : "bg-white hover:bg-slate-50"
-                      )}
-                    >
-                      {selectedType === "object-detection" && (
-                        <span className="pointer-events-none absolute inset-0 outline outline-2 outline-[#4a2cf0] outline-offset-[-2px]" />
-                      )}
+                          <div className="flex flex-wrap justify-end gap-2 pt-0.5">
+                            <span className="inline-flex items-center rounded-full bg-[#4a2cf0] px-4 py-1.5 text-[12px] font-medium text-white">
+                              Bounding Boxes
+                            </span>
+                            <span className="inline-flex items-center gap-2 rounded-full bg-[#4a2cf0] px-4 py-1.5 text-[12px] font-medium text-white">
+                              <Hash className="h-3.5 w-3.5" />
+                              Counts
+                            </span>
+                            <span className="inline-flex items-center gap-2 rounded-full bg-[#4a2cf0] px-4 py-1.5 text-[12px] font-medium text-white">
+                              <Workflow className="h-3.5 w-3.5" />
+                              Tracking
+                            </span>
+                          </div>
+                        </div>
+                      </button>
 
-                      <div className="flex items-start justify-between gap-5">
+                      <div className="h-px w-full bg-slate-200" />
+
+                      {/* Classification */}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setValue("selectedType", "classification")
+                        }
+                        className={cn(
+                          "w-full px-7 py-6 text-left transition",
+                          selectedType === "classification"
+                            ? "bg-slate-50"
+                            : "bg-white hover:bg-slate-50"
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-5">
+                          <div>
+                            <div className="text-[18px] font-semibold text-slate-900">
+                              Classification
+                            </div>
+                            <div className="mt-2 text-[14px] text-slate-700">
+                              Assign labels to the entire image.
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col items-end gap-3 pt-0.5">
+                            <div className="inline-flex items-center gap-2 text-[13px] font-medium text-slate-500">
+                              <ImageIcon className="h-4 w-4" />
+                              Image Labels
+                            </div>
+
+                            <div
+                              className="flex items-center gap-6"
+                              role="radiogroup"
+                              aria-label="Classification label mode"
+                            >
+                              <RadioOption
+                                label="Single-Label"
+                                value="single"
+                                selected={labelMode === "single"}
+                                onSelect={(v) => setValue("labelMode", v)}
+                              />
+                              <RadioOption
+                                label="Multi-Label"
+                                value="multi"
+                                selected={labelMode === "multi"}
+                                onSelect={(v) => setValue("labelMode", v)}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+
+                      <div className="h-px w-full bg-slate-200" />
+
+                      {/* Instance Segmentation */}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setValue("selectedType", "instance-segmentation")
+                        }
+                        className={cn(
+                          "w-full px-7 py-6 text-left transition",
+                          selectedType === "instance-segmentation"
+                            ? "bg-slate-50"
+                            : "bg-white hover:bg-slate-50"
+                        )}
+                      >
                         <div>
                           <div className="text-[18px] font-semibold text-slate-900">
-                            Object Detection
+                            Instance Segmentation
                           </div>
                           <div className="mt-2 text-[14px] text-slate-700">
-                            Identify objects and their positions with bounding
-                            boxes.
+                            Detect multiple objects and their actual shape.
                           </div>
                         </div>
+                      </button>
+                    </div>
 
-                        <div className="flex flex-wrap justify-end gap-2 pt-0.5">
-                          <span className="inline-flex items-center rounded-full bg-[#4a2cf0] px-4 py-1.5 text-[12px] font-medium text-white">
-                            Bounding Boxes
-                          </span>
-                          <span className="inline-flex items-center gap-2 rounded-full bg-[#4a2cf0] px-4 py-1.5 text-[12px] font-medium text-white">
-                            <Hash className="h-3.5 w-3.5" />
-                            Counts
-                          </span>
-                          <span className="inline-flex items-center gap-2 rounded-full bg-[#4a2cf0] px-4 py-1.5 text-[12px] font-medium text-white">
-                            <Workflow className="h-3.5 w-3.5" />
-                            Tracking
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-
-                    <div className="h-px w-full bg-slate-200" />
-
-                    {/* Classification */}
+                    {/* Other */}
                     <button
                       type="button"
-                      onClick={() => setSelectedType("classification")}
-                      className={cn(
-                        "w-full px-7 py-6 text-left transition",
-                        selectedType === "classification"
-                          ? "bg-slate-50"
-                          : "bg-white hover:bg-slate-50"
-                      )}
+                      className="mt-6 w-full rounded-[12px] border border-slate-300 bg-white py-4 text-center text-[14px] font-medium text-slate-700 hover:bg-slate-50"
                     >
-                      <div className="flex items-start justify-between gap-5">
-                        <div>
-                          <div className="text-[18px] font-semibold text-slate-900">
-                            Classification
-                          </div>
-                          <div className="mt-2 text-[14px] text-slate-700">
-                            Assign labels to the entire image.
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-3 pt-0.5">
-                          <div className="inline-flex items-center gap-2 text-[13px] font-medium text-slate-500">
-                            <ImageIcon className="h-4 w-4" />
-                            Image Labels
-                          </div>
-
-                          <div
-                            className="flex items-center gap-6"
-                            role="radiogroup"
-                            aria-label="Classification label mode"
-                          >
-                            <RadioOption
-                              label="Single-Label"
-                              value="single"
-                              selected={labelMode === "single"}
-                              onSelect={setLabelMode}
-                            />
-                            <RadioOption
-                              label="Multi-Label"
-                              value="multi"
-                              selected={labelMode === "multi"}
-                              onSelect={setLabelMode}
-                            />
-                          </div>
-                        </div>
-                      </div>
+                      Other
                     </button>
 
-                    <div className="h-px w-full bg-slate-200" />
-
-                    {/* Instance Segmentation */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedType("instance-segmentation")}
-                      className={cn(
-                        "w-full px-7 py-6 text-left transition",
-                        selectedType === "instance-segmentation"
-                          ? "bg-slate-50"
-                          : "bg-white hover:bg-slate-50"
-                      )}
-                    >
-                      <div>
-                        <div className="text-[18px] font-semibold text-slate-900">
-                          Instance Segmentation
-                        </div>
-                        <div className="mt-2 text-[14px] text-slate-700">
-                          Detect multiple objects and their actual shape.
-                        </div>
-                      </div>
-                    </button>
+                    <div className="sr-only" aria-hidden="true">
+                      {projectTypeDescription}
+                    </div>
                   </div>
-
-                  {/* Other */}
-                  <button
-                    type="button"
-                    className="mt-6 w-full rounded-[12px] border border-slate-300 bg-white py-4 text-center text-[14px] font-medium text-slate-700 hover:bg-slate-50"
-                  >
-                    Other
-                  </button>
-
-                  <div className="sr-only" aria-hidden="true">
-                    {projectTypeDescription}
-                  </div>
-                </div>
+                </form>
               </div>
 
               {/* Footer */}
@@ -391,7 +478,8 @@ export const CreateWorkspaceDialog = () => {
                   </DialogClose>
 
                   <Button
-                    onClick={handleCreate}
+                    type="submit"
+                    form="create-project-form"
                     disabled={isPending}
                     className="h-12 rounded-[14px] bg-primary px-10 text-[14px] font-medium text-white hover:bg-primary/90"
                   >

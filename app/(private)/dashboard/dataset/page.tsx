@@ -9,15 +9,31 @@ import {
   Users,
 } from "lucide-react";
 import { CreateWorkspaceDialog } from "@/features/dataset/components/create-workspace-dialog";
-import { useProjectsQuery } from "@/features/dataset/queries/project.query";
+import {
+  useProjectsQuery,
+  useDeleteProjectMutation,
+} from "@/features/dataset/queries/project.query";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
+import { useState } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 
 const DatasetPage = () => {
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
+
   const { data, isLoading } = useProjectsQuery({
     page: 1,
     limit: 10,
-    search: "test", // Hardcoded search as per requirement or remove if not needed initially
+    search: debouncedSearch,
   });
+
+  const { mutate: deleteProject } = useDeleteProjectMutation();
 
   const projects = data?.data?.data || [];
 
@@ -59,6 +75,8 @@ const DatasetPage = () => {
                 type="search"
                 placeholder="Search projects"
                 className="h-10 rounded-lg border border-[#e1e4f5] bg-white pl-11 text-sm text-slate-900 placeholder:text-slate-400 shadow-[0_1px_2px_rgba(15,23,42,0.02)] focus-visible:ring-0"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
             </div>
 
@@ -107,9 +125,21 @@ const DatasetPage = () => {
                       </h3>
                     </div>
 
-                    <button className="text-slate-500 transition hover:text-slate-800">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="text-slate-500 transition hover:text-slate-800">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => deleteProject(project.id)}
+                          className="text-red-600 focus:text-red-600"
+                        >
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
 
                   <p className="mt-0.5 text-xs text-slate-500">

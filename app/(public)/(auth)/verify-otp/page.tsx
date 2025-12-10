@@ -14,7 +14,9 @@ import {
   useResendOtpMutation,
   useVerifyOtpMutation,
 } from "@/features/auth/mutations/auth.mutation";
+import { useCreateWorkspaceMutation } from "@/features/workspace/mutations/workspace.mutation";
 import CustomToast from "@/components/ui/sonner";
+import { useAuthStore } from "@/stores/auth-store";
 
 const VerifyOtpContent = () => {
   const router = useRouter();
@@ -27,6 +29,8 @@ const VerifyOtpContent = () => {
     useVerifyOtpMutation();
   const { mutateAsync: resendOtpMutation, isPending: isResending } =
     useResendOtpMutation();
+  const { mutateAsync: createWorkspace, isPending: isCreatingWorkspace } =
+    useCreateWorkspaceMutation();
 
   const handleVerifyOtp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -36,7 +40,18 @@ const VerifyOtpContent = () => {
     }
 
     try {
-      await verifyOtpMutation({ code: Number(otp) });
+      const response = await verifyOtpMutation({ code: Number(otp) });
+      const token = response.data?.tokens?.token;
+
+      if (token) {
+        useAuthStore.getState().setToken(token);
+      }
+
+      await createWorkspace({
+        name: "Default Workspace",
+        status: true,
+        order: 1,
+      });
       CustomToast.success("Successfully verified your code");
       router.replace("/login");
     } catch (error: unknown) {
@@ -131,9 +146,9 @@ const VerifyOtpContent = () => {
             type="submit"
             className="h-12 w-full text-base font-medium"
             size="lg"
-            disabled={isVerifying}
+            disabled={isVerifying || isCreatingWorkspace}
           >
-            {isVerifying ? "Verifying..." : "Verify OTP"}
+            {isVerifying || isCreatingWorkspace ? "Verifying..." : "Verify OTP"}
           </Button>
 
           <div className="text-center text-sm">

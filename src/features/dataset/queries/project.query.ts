@@ -1,4 +1,9 @@
-import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
+import {
+  useQuery,
+  type UseQueryOptions,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { projectApi } from "@/features/dataset/api/project.api";
 import type { GetProjectsResponse } from "@/interfaces/project.interface";
@@ -19,5 +24,17 @@ export const useProjectsQuery = (
     queryKey: [...PROJECTS_QUERY_KEY, params],
     queryFn: () => projectApi.getProjects(params),
     ...options,
+  });
+};
+
+
+export const useDeleteProjectMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => projectApi.deleteProject(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+    },
   });
 };
