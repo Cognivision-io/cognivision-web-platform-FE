@@ -11,6 +11,14 @@ import type { AnnotationItem } from "@/interfaces/project.interface";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useDropzone } from "react-dropzone";
+import { ArrowRight, CloudUpload } from "lucide-react";
 
 interface TrainStepProps {
   onNext: () => void;
@@ -24,6 +32,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   const [annotations, setAnnotations] = useState<AnnotationItem[]>([]);
   // Track IDs from initial uploadedData AND new uploads in this step
   const [extendedImageIds, setExtendedImageIds] = useState<string[]>(uploadedData?.imageIds || []);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const imageUploadRef = useRef<HTMLInputElement>(null);
 
   const queryClient = useQueryClient();
@@ -40,11 +49,35 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
       if (newIds.length > 0) {
         setExtendedImageIds(prev => [...prev, ...newIds]);
       }
+      setIsUploadModalOpen(false);
     },
     onError: (error) => {
       console.error("Upload error:", error);
       toast.error("Failed to upload images");
     }
+  });
+
+  const onDrop = (acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+       if (!roboflowProjectId) {
+          toast.error("Project ID not found. Please try refreshing.");
+          return;
+       }
+       uploadImages({
+         projectId: roboflowProjectId,
+         files: acceptedFiles,
+         batch: "train-step-upload"
+       });
+    }
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "image/*": [".jpg", ".jpeg", ".png", ".bmp", ".webp", ".avif"],
+      "video/*": [".mp4", ".mov", ".webm"],
+    },
+    multiple: true,
   });
 
   const params = useParams();
@@ -304,7 +337,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
           </div>
 
           <button
-            onClick={onNext}
+            onClick={() => setIsUploadModalOpen(true)}
             className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
           >
             <Plus className="h-4 w-4" />
@@ -317,12 +350,69 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
           </button>
         </div>
 
-        <div className="mt-auto pt-6">
+        <div className="mt-auto space-y-3 pt-6">
+          <button 
+             onClick={onNext}
+             className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#6841ff] py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#5936db]"
+          >
+            Next Step
+            <ArrowRight className="h-4 w-4" />
+          </button>
+
           <button className="w-full rounded-lg border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">
             Relabel Objects
           </button>
         </div>
       </div>
+
+      <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader className="flex flex-col items-center gap-2 pb-2">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
+               <CloudUpload className="h-6 w-6 text-slate-600" />
+            </div>
+            <DialogTitle className="text-center text-xl font-semibold text-slate-900">
+              Test on More Files
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div
+            {...getRootProps()}
+            className={cn(
+              "mt-4 flex min-h-[300px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors",
+              isDragActive
+                ? "border-[#6841ff] bg-[#6841ff]/5"
+                : "border-slate-200 bg-slate-50 hover:bg-slate-100"
+            )}
+          >
+            <input {...getInputProps()} />
+            <div className="flex flex-col items-center gap-4 text-center p-8">
+               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm">
+                 <CloudUpload className="h-6 w-6 text-slate-900" />
+               </div>
+               
+               <div className="space-y-1">
+                 <h3 className="text-lg font-semibold text-slate-900">
+                   Upload images or a short video
+                 </h3>
+                 <p className="text-xs text-slate-500">
+                   .mp4, .webm, .3gp, .ogv, .m4v, .jpeg, .jpg, .png, .gif, .svg,
+                   <br />
+                   .bmp, .ico, .fl
+                   <br />
+                   Videos can be up to 10 seconds.
+                 </p>
+               </div>
+               
+               {isUploading && (
+                 <div className="text-sm font-medium text-[#6841ff] animate-pulse">
+                    Uploading...
+                 </div>
+               )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
