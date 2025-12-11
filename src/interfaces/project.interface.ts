@@ -98,3 +98,35 @@ export type GetProjectsResponse = {
   };
   message: string;
 };
+
+export type AutoAnnotationDirectPayload = {
+  imageId: string;
+  pointX: number;
+  pointY: number;
+  imageUrl: string;
+  projectId: string; // roboflowProjectId
+};
+
+export type AutoAnnotationBatchDirectPayload = {
+  imageId: string;
+  points: { x: number; y: number }[];
+  imageUrl: string;
+  projectId: string; // roboflowProjectId
+};
+
+export interface AnnotationItem {
+  class: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  confidence: number;
+}
+
+export type AutoAnnotationResponse = {
+  statusCode: number;
+  data: {
+    result: AnnotationItem[];
+  };
+  message: string;
+};

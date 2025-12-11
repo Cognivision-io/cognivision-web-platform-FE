@@ -23,3 +23,35 @@ export const useCreateProjectMutation = (
     ...options,
   });
 };
+
+export const AUTO_ANNOTATION_DIRECT_MUTATION_KEY = ["project", "autoAnnotation", "direct"] as const;
+
+export const useAutoAnnotationDirectMutation = (
+  options?: UseMutationOptions<
+    import("@/interfaces/project.interface").AutoAnnotationResponse,
+    ProjectError,
+    import("@/interfaces/project.interface").AutoAnnotationDirectPayload
+  >
+) => {
+  return useMutation({
+    mutationKey: AUTO_ANNOTATION_DIRECT_MUTATION_KEY,
+    mutationFn: projectApi.autoAnnotationDirect,
+    ...options,
+  });
+};
+
+export const AUTO_ANNOTATION_BATCH_DIRECT_MUTATION_KEY = ["project", "autoAnnotation", "batch", "direct"] as const;
+
+export const useAutoAnnotationBatchDirectMutation = (
+  options?: UseMutationOptions<
+    import("@/interfaces/project.interface").AutoAnnotationResponse,
+    ProjectError,
+    import("@/interfaces/project.interface").AutoAnnotationBatchDirectPayload
+  >
+) => {
+  return useMutation({
+    mutationKey: AUTO_ANNOTATION_BATCH_DIRECT_MUTATION_KEY,
+    mutationFn: projectApi.autoAnnotationBatchDirect,
+    ...options,
+  });
+};

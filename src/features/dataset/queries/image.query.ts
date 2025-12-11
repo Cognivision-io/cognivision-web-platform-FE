@@ -8,11 +8,12 @@ export const UNANNOTATED_IMAGES_QUERY_KEY = ["project", "unannotated-images"] as
 export const useUnannotatedImagesQuery = (
   id: number,
   offset: number = 0,
+  limit: number = 50,
   options?: Omit<UseQueryOptions<GetImagesResponse, AxiosError>, "queryKey" | "queryFn">
 ) => {
   return useQuery({
-    queryKey: [...UNANNOTATED_IMAGES_QUERY_KEY, id, offset],
-    queryFn: () => projectApi.getUnannotatedImages(id, offset),
+    queryKey: [...UNANNOTATED_IMAGES_QUERY_KEY, id, offset, limit],
+    queryFn: () => projectApi.getUnannotatedImages(id, offset, limit),
     enabled: !!id,
     ...options,
   });
