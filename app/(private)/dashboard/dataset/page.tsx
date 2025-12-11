@@ -3,6 +3,7 @@
 import { Input } from "@/components/ui/input";
 import {
   ChevronDown,
+  Edit,
   ImageIcon,
   MoreHorizontal,
   Search,
@@ -22,8 +23,10 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useRouter } from "next/navigation";
 
 const DatasetPage = () => {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
 
@@ -36,6 +39,10 @@ const DatasetPage = () => {
   const { mutate: deleteProject } = useDeleteProjectMutation();
 
   const projects = data?.data?.data || [];
+
+  const handleProjectClick = (projectId: string) => {
+    router.push(`/dashboard/dataset/${projectId}`);
+  };
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">
@@ -106,7 +113,7 @@ const DatasetPage = () => {
             projects.map((project) => (
               <div
                 key={project.id}
-                className="flex items-center gap-4 rounded-lg border border-[#e3e5f1] bg-white px-5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.04)] w-[60%]"
+                className="flex items-center gap-4 rounded-lg border border-[#e3e5f1] bg-white px-5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.04)] w-[60%] cursor-pointer transition-all hover:border-[#6841ff]/30 hover:shadow-[0_10px_24px_rgba(104,65,255,0.08)]"
               >
                 {/* Thumbnail */}
                 <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#e4e6f2] bg-[#f7f7fd] text-slate-300">
@@ -127,13 +134,29 @@ const DatasetPage = () => {
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="text-slate-500 transition hover:text-slate-800">
+                        <button 
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-slate-500 transition hover:text-slate-800"
+                        >
                           <MoreHorizontal className="h-4 w-4" />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                          onClick={() => deleteProject(project.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleProjectClick(project.id);
+                          }}
+                          className="flex items-center gap-2"
+                        >
+                          <Edit className="h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteProject(project.id);
+                          }}
                           className="text-red-600 focus:text-red-600"
                         >
                           Delete
