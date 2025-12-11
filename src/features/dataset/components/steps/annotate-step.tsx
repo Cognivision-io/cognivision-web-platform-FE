@@ -14,7 +14,7 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
   const projectId = Number(params.id);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const { data: imagesData, isLoading: isLoadingUnannotated } = useUnannotatedImagesQuery(projectId, 0, {
+  const { data: imagesData, isLoading: isLoadingUnannotated } = useUnannotatedImagesQuery(projectId, 0, 50, {
     enabled: !uploadedData
   }); 
 

@@ -70,13 +70,15 @@ export const projectApi = {
     return response.data;
   },
 
-  getUnannotatedImages: async (id: number, offset: number = 0) => {
+  getUnannotatedImages: async (id: number, offset: number = 0, limit: number = 50) => {
     const response = await api.get(`/project/${id}/unannotated-images`, {
       params: {
         offset,
+        limit,
       },
     });
-    return response.data as import("@/interfaces/image.interface").GetImagesResponse;
+    // Unwrap the response to match GetImagesResponse interface
+    return response.data.data as import("@/interfaces/image.interface").GetImagesResponse;
   },
 
   deleteProject: async (id: string) => {
@@ -86,6 +88,27 @@ export const projectApi = {
 
   getImageDetail: async (roboflowProjectId: string, imageId: string) => {
     const response = await api.get(`/project/image-detail/${encodeURIComponent(roboflowProjectId)}/${imageId}`);
+    return response.data;
+  },
+
+  autoAnnotationDirect: async (payload: {
+    imageId: string;
+    pointX: number;
+    pointY: number;
+    imageUrl: string;
+    projectId: string; // roboflowProjectId
+  }) => {
+    const response = await api.post("/auto-annotation/direct", payload);
+    return response.data;
+  },
+
+  autoAnnotationBatchDirect: async (payload: {
+    imageId: string;
+    points: { x: number; y: number }[];
+    imageUrl: string;
+    projectId: string; // roboflowProjectId
+  }) => {
+    const response = await api.post("/auto-annotation/batch/direct", payload);
     return response.data;
   },
 };

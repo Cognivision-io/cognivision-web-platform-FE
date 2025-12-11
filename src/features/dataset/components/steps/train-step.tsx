@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect, memo } from "react";
 import { Box, Download, Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { useParams } from "next/navigation";
-import { useUnannotatedImagesQuery, useImageDetailQuery } from "@/features/dataset/queries/image.query";
+import { useUnannotatedImagesQuery, useImageDetailQuery, UNANNOTATED_IMAGES_QUERY_KEY } from "@/features/dataset/queries/image.query";
+import { useProjectQuery } from "@/features/dataset/queries/project.query";
+import { useAutoAnnotationDirectMutation, useCreateProjectMutation } from "@/features/dataset/mutations/project.mutation";
+import { useUploadImagesMutation } from "@/features/dataset/mutations/upload.mutation";
+import type { AnnotationItem } from "@/interfaces/project.interface";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRef } from "react";
+import { toast } from "sonner";
 
 interface TrainStepProps {
   onNext: () => void;
@@ -14,18 +21,45 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   const [zoom, setZoom] = useState(1);
   const [sliderValue, setSliderValue] = useState(50);
   const [selectedFileIndex, setSelectedFileIndex] = useState(0);
+  const [annotations, setAnnotations] = useState<AnnotationItem[]>([]);
+  // Track IDs from initial uploadedData AND new uploads in this step
+  const [extendedImageIds, setExtendedImageIds] = useState<string[]>(uploadedData?.imageIds || []);
+  const imageUploadRef = useRef<HTMLInputElement>(null);
+
+  const queryClient = useQueryClient();
+
+  const { mutate: autoAnnotate, isPending: isAnnotating } = useAutoAnnotationDirectMutation();
+
+  const { mutate: uploadImages, isPending: isUploading } = useUploadImagesMutation({
+    onSuccess: (data) => {
+      toast.success("Images uploaded successfully");
+      queryClient.invalidateQueries({ queryKey: UNANNOTATED_IMAGES_QUERY_KEY });
+      
+      // Extract new IDs from response
+      const newIds = data.results?.successful?.map((item: any) => item.result.id) || [];
+      if (newIds.length > 0) {
+        setExtendedImageIds(prev => [...prev, ...newIds]);
+      }
+    },
+    onError: (error) => {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload images");
+    }
+  });
 
   const params = useParams();
   const projectId = Number(params.id);
 
   // Fetch list of images (fallback if no uploadedData, or for the sidebar list)
-  const { data: imagesData } = useUnannotatedImagesQuery(projectId, 0);
+  // Passing limit 50 to ensure we see more images
+  const { data: imagesData } = useUnannotatedImagesQuery(projectId, 0, 50);
+
+  // Fetch project details to get Roboflow ID if uploadedData is missing
+  const { data: projectData } = useProjectQuery(projectId);
+  const roboflowProjectId = uploadedData?.roboflowProjectId || projectData?.data?.project?.id || "";
   
   // Decide which list to show in sidebar
-  // If we have uploadedData, we ideally want to show THOSE images. 
-  // But useUnannotatedImagesQuery returns a list. 
-  // If accessible, we use imagesData results. 
-  // If uploadedData is set, we might want to filter, but for now let's just use the unannotated list as the "pool"
+  // We simply show all unannotated images available.
   const trainFiles = imagesData?.results || [];
 
   const currentFile = trainFiles[selectedFileIndex];
@@ -33,13 +67,19 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   // If we have uploadedData, we can try to fetch strict details using the project ID from the upload context.
   // We use currentFile.id (from the full list) rather than strict index mapping to uploadedData.imageIds,
   // because the sidebar shows ALL unannotated images, not just the uploaded batch.
-  const selectedImageId = currentFile?.id;
+  // Prioritize uploadedData IDs if available, otherwise fallback to the list
+  const selectedImageId = trainFiles[selectedFileIndex]?.id || extendedImageIds[selectedFileIndex];
 
   const { data: imageDetail } = useImageDetailQuery(
-    uploadedData?.roboflowProjectId || "",
+    roboflowProjectId,
     String(selectedImageId),
-    { enabled: !!uploadedData && !!selectedImageId }
+    { enabled: !!roboflowProjectId && !!selectedImageId }
   );
+
+  // Reset annotations when image changes
+  useEffect(() => {
+    setAnnotations([]);
+  }, [selectedImageId]); // Trigger on ID change
 
   // Determine the display URL for the main canvas
   // If detail is fetched, use its high-res original url. 
@@ -58,6 +98,34 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.5, 1));
   const handleReset = () => setZoom(1);
 
+  const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
+    if (!displayImage || !roboflowProjectId) return;
+
+    const img = e.currentTarget;
+    const rect = img.getBoundingClientRect();
+    // Calculate relative coordinates (0-1)
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+
+    autoAnnotate(
+      {
+        imageId: String(displayImage.id || ""),
+        pointX: x,
+        pointY: y,
+        imageUrl: getImageUrl(displayImage),
+        projectId: roboflowProjectId,
+      },
+      {
+        onSuccess: (response) => {
+          if (response.data?.result) {
+             // Append new annotations to existing ones
+             setAnnotations((prev) => [...prev, ...response.data.result]);
+          }
+        },
+      }
+    );
+  };
+
   return (
     <div className="flex h-[calc(100vh-16rem)] min-h-[600px]">
       {/* Left Sidebar - Files List */}
@@ -70,28 +138,43 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
         </div>
 
         <div className="flex flex-col items-center gap-3 px-2">
-          <button className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-slate-300 hover:border-primary hover:bg-primary/5">
+          <input
+            type="file"
+            ref={imageUploadRef}
+            className="hidden"
+            multiple
+            accept="image/*"
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length > 0) {
+                 if (!roboflowProjectId) {
+                    toast.error("Project ID not found. Please try refreshing.");
+                    return;
+                 }
+                 uploadImages({
+                   projectId: roboflowProjectId,
+                   files: Array.from(e.target.files),
+                   batch: "train-step-upload"
+                 });
+              }
+            }}
+          />
+          <button 
+            onClick={() => imageUploadRef.current?.click()}
+            disabled={isUploading}
+            className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-slate-300 hover:border-primary hover:bg-primary/5 disabled:opacity-50"
+          >
             <Plus className="h-5 w-5 text-slate-400" />
           </button>
 
           <div className="flex flex-col gap-2 overflow-y-auto pb-4">
             {trainFiles.map((file, i) => (
-              <button
+              <SidebarImageItem
                 key={file.id || i}
+                fileId={file.id}
+                roboflowProjectId={roboflowProjectId}
+                isSelected={selectedFileIndex === i}
                 onClick={() => setSelectedFileIndex(i)}
-                className={cn(
-                  "relative h-12 w-12 overflow-hidden rounded-lg border transition-all",
-                  selectedFileIndex === i
-                    ? "border-[#6841ff] ring-2 ring-[#6841ff]/20"
-                    : "border-slate-200 hover:border-slate-300"
-                )}
-              >
-                <img
-                  src={getImageUrl(file)}
-                  alt={file.name}
-                  className="h-full w-full object-cover"
-                />
-              </button>
+              />
             ))}
           </div>
         </div>
@@ -106,7 +189,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
               {displayImage?.name || "No image selected"}
             </span>
             <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
-              View Only
+              Smart Annotation
             </span>
           </div>
 
@@ -146,16 +229,28 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
                 <img
                   src={getImageUrl(displayImage)}
                   alt="Preview"
-                  className="max-h-[500px] object-contain"
+                  className={cn("max-h-[500px] object-contain cursor-crosshair", isAnnotating && "opacity-80 cursor-wait")}
+                  onClick={handleImageClick}
                 />
               )}
-              {/* Mock Bounding Boxes */}
-              <div className="absolute inset-0 border-2 border-[#4ade80]/50" />
-              <div className="absolute left-1/4 top-1/4 h-1/2 w-1/2 border-2 border-[#4ade80]">
-                <span className="absolute -top-6 left-0 bg-[#4ade80] px-1.5 py-0.5 text-[10px] font-bold text-slate-900">
-                  Leaf 98%
-                </span>
-              </div>
+              {/* Annotations */}
+              {annotations.map((ann, i) => (
+                <div
+                  key={i}
+                  className="absolute border-2 border-[#4ade80]"
+                  style={{
+                    // Assuming YOLO format: center x, center y, width, height (all normalized 0-1)
+                    left: `${(ann.x - ann.width / 2) * 100}%`,
+                    top: `${(ann.y - ann.height / 2) * 100}%`,
+                    width: `${ann.width * 100}%`,
+                    height: `${ann.height * 100}%`,
+                  }}
+                >
+                  <span className="absolute -top-6 left-0 bg-[#4ade80] px-1.5 py-0.5 text-[10px] font-bold text-slate-900 whitespace-nowrap">
+                    {ann.class} {Math.round(ann.confidence * 100)}%
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -231,3 +326,36 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
     </div>
   );
 };
+
+const SidebarImageItem = memo(({
+  fileId,
+  roboflowProjectId,
+  isSelected,
+  onClick
+}: {
+  fileId: string;
+  roboflowProjectId: string;
+  isSelected: boolean;
+  onClick: () => void;
+}) => {
+  const { data } = useImageDetailQuery(roboflowProjectId, fileId, { enabled: !!roboflowProjectId && !!fileId });
+  const imageUrl = data?.data?.image?.urls?.thumb || data?.data?.image?.urls?.original || data?.data?.image?.url || "";
+  
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "relative h-12 w-12 overflow-hidden rounded-lg border transition-all flex-none",
+        isSelected
+          ? "border-[#6841ff] ring-2 ring-[#6841ff]/20"
+          : "border-slate-200 hover:border-slate-300"
+      )}
+    >
+      {imageUrl ? (
+        <img src={imageUrl} alt="thumbnail" className="h-full w-full object-cover" />
+      ) : (
+        <div className="h-full w-full bg-slate-100 animate-pulse" />
+      )}
+    </button>
+  );
+});
