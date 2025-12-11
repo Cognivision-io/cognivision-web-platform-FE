@@ -82,7 +82,10 @@ const UploadDatasetPage = () => {
           )}
 
           {currentStep === 2 && (
-            <TrainStep onNext={() => setCurrentStep(3)} />
+            <TrainStep 
+              onNext={() => setCurrentStep(3)} 
+              uploadedData={uploadedData}
+            />
           )}
 
           {currentStep === 3 && (

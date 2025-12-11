@@ -2,20 +2,57 @@ import { useState } from "react";
 import { Box, Download, Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { useParams } from "next/navigation";
+import { useUnannotatedImagesQuery, useImageDetailQuery } from "@/features/dataset/queries/image.query";
+
 interface TrainStepProps {
   onNext: () => void;
+  uploadedData?: { roboflowProjectId: string; imageIds: string[] } | null;
 }
 
-export const TrainStep = ({ onNext }: TrainStepProps) => {
+export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   const [zoom, setZoom] = useState(1);
   const [sliderValue, setSliderValue] = useState(50);
   const [selectedFileIndex, setSelectedFileIndex] = useState(0);
 
-  // Mock files for Train screen
-  const trainFiles = Array.from({ length: 8 }).map((_, i) => ({
-    name: `Image_Leaf(${i + 1}).png`,
-    url: "https://img.freepik.com/free-vector/green-leaf-white-background_1308-106478.jpg",
-  }));
+  const params = useParams();
+  const projectId = Number(params.id);
+
+  // Fetch list of images (fallback if no uploadedData, or for the sidebar list)
+  const { data: imagesData } = useUnannotatedImagesQuery(projectId, 0);
+  
+  // Decide which list to show in sidebar
+  // If we have uploadedData, we ideally want to show THOSE images. 
+  // But useUnannotatedImagesQuery returns a list. 
+  // If accessible, we use imagesData results. 
+  // If uploadedData is set, we might want to filter, but for now let's just use the unannotated list as the "pool"
+  const trainFiles = imagesData?.results || [];
+
+  const currentFile = trainFiles[selectedFileIndex];
+
+  // If we have uploadedData, we can try to fetch strict details using the project ID from the upload context.
+  // We use currentFile.id (from the full list) rather than strict index mapping to uploadedData.imageIds,
+  // because the sidebar shows ALL unannotated images, not just the uploaded batch.
+  const selectedImageId = currentFile?.id;
+
+  const { data: imageDetail } = useImageDetailQuery(
+    uploadedData?.roboflowProjectId || "",
+    String(selectedImageId),
+    { enabled: !!uploadedData && !!selectedImageId }
+  );
+
+  // Determine the display URL for the main canvas
+  // If detail is fetched, use its high-res original url. 
+  // Otherwise fall back to the list's url (which might be a thumb or standard url).
+  const displayImage = uploadedData && imageDetail?.data?.image
+    ? imageDetail.data.image
+    : currentFile;
+    
+  // Helper to get safe URL
+  const getImageUrl = (img: any) => {
+      if (!img) return "";
+      return img.urls?.original || img.url || "";
+  };
 
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.5, 3));
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.5, 1));
@@ -40,7 +77,7 @@ export const TrainStep = ({ onNext }: TrainStepProps) => {
           <div className="flex flex-col gap-2 overflow-y-auto pb-4">
             {trainFiles.map((file, i) => (
               <button
-                key={i}
+                key={file.id || i}
                 onClick={() => setSelectedFileIndex(i)}
                 className={cn(
                   "relative h-12 w-12 overflow-hidden rounded-lg border transition-all",
@@ -50,7 +87,7 @@ export const TrainStep = ({ onNext }: TrainStepProps) => {
                 )}
               >
                 <img
-                  src={file.url}
+                  src={getImageUrl(file)}
                   alt={file.name}
                   className="h-full w-full object-cover"
                 />
@@ -66,7 +103,7 @@ export const TrainStep = ({ onNext }: TrainStepProps) => {
         <div className="flex h-14 items-center justify-between border-b border-slate-200 bg-white px-6">
           <div className="flex items-center gap-3">
             <span className="text-sm font-semibold text-slate-900">
-              {trainFiles[selectedFileIndex].name}
+              {displayImage?.name || "No image selected"}
             </span>
             <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
               View Only
@@ -105,11 +142,13 @@ export const TrainStep = ({ onNext }: TrainStepProps) => {
               className="relative transition-transform duration-200 ease-out"
               style={{ transform: `scale(${zoom})` }}
             >
-              <img
-                src={trainFiles[selectedFileIndex].url}
-                alt="Preview"
-                className="max-h-[500px] object-contain"
-              />
+              {displayImage && (
+                <img
+                  src={getImageUrl(displayImage)}
+                  alt="Preview"
+                  className="max-h-[500px] object-contain"
+                />
+              )}
               {/* Mock Bounding Boxes */}
               <div className="absolute inset-0 border-2 border-[#4ade80]/50" />
               <div className="absolute left-1/4 top-1/4 h-1/2 w-1/2 border-2 border-[#4ade80]">
