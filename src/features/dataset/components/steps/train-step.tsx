@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { useParams } from "next/navigation";
 import { useUnannotatedImagesQuery, useImageDetailQuery, UNANNOTATED_IMAGES_QUERY_KEY } from "@/features/dataset/queries/image.query";
 import { useProjectQuery } from "@/features/dataset/queries/project.query";
-import { useAutoAnnotationDirectMutation, useCreateProjectMutation } from "@/features/dataset/mutations/project.mutation";
+import { useAutoAnnotationBatchDirectMutation, useCreateProjectMutation } from "@/features/dataset/mutations/project.mutation";
 import { useUploadImagesMutation } from "@/features/dataset/mutations/upload.mutation";
 import type { AnnotationItem } from "@/interfaces/project.interface";
 import { useQueryClient } from "@tanstack/react-query";
@@ -30,6 +30,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   const [sliderValue, setSliderValue] = useState(50);
   const [selectedFileIndex, setSelectedFileIndex] = useState(0);
   const [annotations, setAnnotations] = useState<AnnotationItem[]>([]);
+  const [collectedPoints, setCollectedPoints] = useState<{ x: number; y: number }[]>([]);
   // Track IDs from initial uploadedData AND new uploads in this step
   const [extendedImageIds, setExtendedImageIds] = useState<string[]>(uploadedData?.imageIds || []);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -37,13 +38,13 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
 
   const queryClient = useQueryClient();
 
-  const { mutate: autoAnnotate, isPending: isAnnotating } = useAutoAnnotationDirectMutation();
+  const { mutate: autoAnnotateBatch, isPending: isAnnotating } = useAutoAnnotationBatchDirectMutation();
 
   const { mutate: uploadImages, isPending: isUploading } = useUploadImagesMutation({
     onSuccess: (data) => {
       toast.success("Images uploaded successfully");
       queryClient.invalidateQueries({ queryKey: UNANNOTATED_IMAGES_QUERY_KEY });
-      
+
       // Extract new IDs from response
       const newIds = data.results?.successful?.map((item: any) => item.result.id) || [];
       if (newIds.length > 0) {
@@ -59,15 +60,15 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
 
   const onDrop = (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
-       if (!roboflowProjectId) {
-          toast.error("Project ID not found. Please try refreshing.");
-          return;
-       }
-       uploadImages({
-         projectId: roboflowProjectId,
-         files: acceptedFiles,
-         batch: "train-step-upload"
-       });
+      if (!roboflowProjectId) {
+        toast.error("Project ID not found. Please try refreshing.");
+        return;
+      }
+      uploadImages({
+        projectId: roboflowProjectId,
+        files: acceptedFiles,
+        batch: "train-step-upload"
+      });
     }
   };
 
@@ -90,7 +91,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   // Fetch project details to get Roboflow ID if uploadedData is missing
   const { data: projectData } = useProjectQuery(projectId);
   const roboflowProjectId = uploadedData?.roboflowProjectId || projectData?.data?.project?.id || "";
-  
+
   // Decide which list to show in sidebar
   // We simply show all unannotated images available.
   const trainFiles = imagesData?.results || [];
@@ -109,9 +110,10 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
     { enabled: !!roboflowProjectId && !!selectedImageId }
   );
 
-  // Reset annotations when image changes
+  // Reset annotations and points when image changes
   useEffect(() => {
     setAnnotations([]);
+    setCollectedPoints([]);
   }, [selectedImageId]); // Trigger on ID change
 
   // Determine the display URL for the main canvas
@@ -120,11 +122,11 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   const displayImage = uploadedData && imageDetail?.data?.image
     ? imageDetail.data.image
     : currentFile;
-    
+
   // Helper to get safe URL
   const getImageUrl = (img: any) => {
-      if (!img) return "";
-      return img.urls?.original || img.url || "";
+    if (!img) return "";
+    return img.urls?.original || img.url || "";
   };
 
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.5, 3));
@@ -134,26 +136,109 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
     if (!displayImage || !roboflowProjectId) return;
 
+    // Clear previous annotations when starting a new point collection
+    if (collectedPoints.length === 0) {
+      setAnnotations([]);
+    }
+
     const img = e.currentTarget;
     const rect = img.getBoundingClientRect();
-    // Calculate relative coordinates (0-1)
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
 
-    autoAnnotate(
+    // Calculate absolute pixel coordinates relative to image
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Add point to collected points
+    setCollectedPoints((prev) => [...prev, { x, y }]);
+  };
+
+  const handleSubmitBatchAnnotation = () => {
+    if (!displayImage || !roboflowProjectId || collectedPoints.length === 0) return;
+
+    // Get the actual displayed image to measure its rendered size
+    const imgElement = document.querySelector('img[alt="Preview"]') as HTMLImageElement;
+    if (!imgElement) {
+      toast.error("Unable to measure image size");
+      return;
+    }
+
+    const displayedWidth = imgElement.width;
+    const displayedHeight = imgElement.height;
+    // Use naturalWidth/naturalHeight for the TRUE original image dimensions
+    const originalWidth = imgElement.naturalWidth;
+    const originalHeight = imgElement.naturalHeight;
+
+    // Calculate scale factor from displayed to original
+    const scaleX = originalWidth / displayedWidth;
+    const scaleY = originalHeight / displayedHeight;
+
+    // Convert points from displayed coordinates to original image coordinates
+    const normalizedPoints = collectedPoints.map(point => ({
+      x: Math.round((point.x / zoom) * scaleX),
+      y: Math.round((point.y / zoom) * scaleY),
+    }));
+
+    console.log("AutoAnnotate Batch Request:", {
+      imageId: String(displayImage.id || ""),
+      points: normalizedPoints,
+      displayedSize: { w: displayedWidth, h: displayedHeight },
+      originalSize: { w: originalWidth, h: originalHeight },
+      scale: { x: scaleX, y: scaleY },
+      imageUrl: getImageUrl(displayImage),
+      projectId: roboflowProjectId,
+    });
+
+    autoAnnotateBatch(
       {
         imageId: String(displayImage.id || ""),
-        pointX: x,
-        pointY: y,
+        points: normalizedPoints,
         imageUrl: getImageUrl(displayImage),
         projectId: roboflowProjectId,
       },
       {
         onSuccess: (response) => {
-          if (response.data?.result) {
-             // Append new annotations to existing ones
-             setAnnotations((prev) => [...prev, ...response.data.result]);
+          console.log("AutoAnnotate Batch Response:", response.data);
+          const data = response.data;
+
+          if (data && data.success && data.objects && Array.isArray(data.objects)) {
+            // Handle new batch response format with multiple objects
+            const newAnnotations = data.objects.map((obj: any): AnnotationItem => {
+              const annotation: AnnotationItem = {
+                class: "Object",
+                confidence: 1.0,
+                imageWidth: data.imageWidth,
+                imageHeight: data.imageHeight,
+              };
+
+              // Add polygon if available
+              if (obj.polygon && Array.isArray(obj.polygon)) {
+                annotation.polygon = obj.polygon as [number, number][];
+              }
+
+              // Add mask area if available
+              if (obj.mask_area !== undefined) {
+                annotation.maskArea = obj.mask_area;
+              }
+
+              // Normalize BBox if available [x, y, width, height]
+              if (obj.bbox && Array.isArray(obj.bbox) && data.imageWidth && data.imageHeight) {
+                const [bx, by, bw, bh] = obj.bbox;
+                annotation.x = (bx + bw / 2) / data.imageWidth;
+                annotation.y = (by + bh / 2) / data.imageHeight;
+                annotation.width = bw / data.imageWidth;
+                annotation.height = bh / data.imageHeight;
+              }
+
+              return annotation;
+            });
+
+            setAnnotations((prev) => [...prev, ...newAnnotations]);
+            setCollectedPoints([]);
+            toast.success(`${newAnnotations.length} object(s) detected`);
           }
+        },
+        onError: () => {
+          toast.error("Failed to annotate objects");
         },
       }
     );
@@ -179,19 +264,19 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
             accept="image/*"
             onChange={(e) => {
               if (e.target.files && e.target.files.length > 0) {
-                 if (!roboflowProjectId) {
-                    toast.error("Project ID not found. Please try refreshing.");
-                    return;
-                 }
-                 uploadImages({
-                   projectId: roboflowProjectId,
-                   files: Array.from(e.target.files),
-                   batch: "train-step-upload"
-                 });
+                if (!roboflowProjectId) {
+                  toast.error("Project ID not found. Please try refreshing.");
+                  return;
+                }
+                uploadImages({
+                  projectId: roboflowProjectId,
+                  files: Array.from(e.target.files),
+                  batch: "train-step-upload"
+                });
               }
             }}
           />
-          <button 
+          <button
             onClick={() => imageUploadRef.current?.click()}
             disabled={isUploading}
             className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-slate-300 hover:border-primary hover:bg-primary/5 disabled:opacity-50"
@@ -199,7 +284,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
             <Plus className="h-5 w-5 text-slate-400" />
           </button>
 
-          <div className="flex flex-col gap-2 overflow-y-auto pb-4">
+          <div className="flex flex-col gap-2 overflow-y-auto pb-4 max-h-[35rem]">
             {trainFiles.map((file, i) => (
               <SidebarImageItem
                 key={file.id || i}
@@ -266,22 +351,66 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
                   onClick={handleImageClick}
                 />
               )}
+              {/* Collected Points - Before API Call */}
+              {collectedPoints.length > 0 && (
+                <div className="absolute inset-0 pointer-events-none">
+                  {collectedPoints.map((point, i) => (
+                    <div
+                      key={`collected-${i}`}
+                      className="absolute"
+                      style={{
+                        left: `${point.x}px`,
+                        top: `${point.y}px`,
+                        transform: "translate(-50%, -50%)",
+                      }}
+                    >
+                      {/* Point Circle */}
+                      <div className="flex items-center justify-center">
+                        <div className="h-6 w-6 rounded-full border-2 border-blue-500 bg-blue-100/50 flex items-center justify-center">
+                          <div className="h-2 w-2 rounded-full bg-blue-500" />
+                        </div>
+                        {/* Point Label */}
+                        <div className="absolute top-0 -right-6 bg-blue-500 text-white px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap">
+                          P{i + 1}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
               {/* Annotations */}
               {annotations.map((ann, i) => (
-                <div
-                  key={i}
-                  className="absolute border-2 border-[#4ade80]"
-                  style={{
-                    // Assuming YOLO format: center x, center y, width, height (all normalized 0-1)
-                    left: `${(ann.x - ann.width / 2) * 100}%`,
-                    top: `${(ann.y - ann.height / 2) * 100}%`,
-                    width: `${ann.width * 100}%`,
-                    height: `${ann.height * 100}%`,
-                  }}
-                >
-                  <span className="absolute -top-6 left-0 bg-[#4ade80] px-1.5 py-0.5 text-[10px] font-bold text-slate-900 whitespace-nowrap">
-                    {ann.class} {Math.round(ann.confidence * 100)}%
-                  </span>
+                <div key={i} className="absolute inset-0 pointer-events-none">
+                  {/* Render Polygon if available */}
+                  {ann.polygon && ann.imageWidth && ann.imageHeight && (
+                    <svg
+                      viewBox={`0 0 ${ann.imageWidth} ${ann.imageHeight}`}
+                      className="absolute left-0 top-0 h-full w-full"
+                      preserveAspectRatio="none"
+                    >
+                      <polygon
+                        points={ann.polygon.map(p => p.join(",")).join(" ")}
+                        className="fill-[#4ade80]/20 stroke-[#4ade80]"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                  )}
+
+                  {/* Render BBox (Fallback or Always? Usually just fallback if polygon exists, but sticking to logic) */}
+                  {!ann.polygon && ann.x !== undefined && ann.y !== undefined && ann.width !== undefined && ann.height !== undefined && (
+                    <div
+                      className="absolute border-2 border-[#4ade80]"
+                      style={{
+                        left: `${(ann.x - ann.width / 2) * 100}%`,
+                        top: `${(ann.y - ann.height / 2) * 100}%`,
+                        width: `${ann.width * 100}%`,
+                        height: `${ann.height * 100}%`,
+                      }}
+                    />
+                  )}
+
+                  {/* Render Label ALWAYS if coordinates exist */}
+
                 </div>
               ))}
             </div>
@@ -292,7 +421,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
         <div className="flex h-16 items-center border-t border-slate-200 bg-white px-6">
           <div className="flex w-full items-center gap-6">
             <span className="text-xs font-bold text-slate-900">
-              Predictions
+              {collectedPoints.length > 0 ? `Points: ${collectedPoints.length}` : "Predictions"}
             </span>
             <div className="flex flex-1 items-center gap-4">
               <span className="text-[10px] font-medium text-slate-500">
@@ -310,6 +439,24 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
                 More Objects
               </span>
             </div>
+            {collectedPoints.length > 0 && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCollectedPoints([])}
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  disabled={isAnnotating}
+                >
+                  Clear
+                </button>
+                <button
+                  onClick={handleSubmitBatchAnnotation}
+                  className="rounded-lg bg-[#6841ff] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#5936db] disabled:opacity-50"
+                  disabled={isAnnotating}
+                >
+                  {isAnnotating ? "Annotating..." : "Annotate"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -351,9 +498,9 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
         </div>
 
         <div className="mt-auto space-y-3 pt-6">
-          <button 
-             onClick={onNext}
-             className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#6841ff] py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#5936db]"
+          <button
+            onClick={onNext}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#6841ff] py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#5936db]"
           >
             Next Step
             <ArrowRight className="h-4 w-4" />
@@ -369,13 +516,13 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
         <DialogContent className="sm:max-w-xl">
           <DialogHeader className="flex flex-col items-center gap-2 pb-2">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
-               <CloudUpload className="h-6 w-6 text-slate-600" />
+              <CloudUpload className="h-6 w-6 text-slate-600" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold text-slate-900">
               Test on More Files
             </DialogTitle>
           </DialogHeader>
-          
+
           <div
             {...getRootProps()}
             className={cn(
@@ -387,28 +534,28 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
           >
             <input {...getInputProps()} />
             <div className="flex flex-col items-center gap-4 text-center p-8">
-               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm">
-                 <CloudUpload className="h-6 w-6 text-slate-900" />
-               </div>
-               
-               <div className="space-y-1">
-                 <h3 className="text-lg font-semibold text-slate-900">
-                   Upload images or a short video
-                 </h3>
-                 <p className="text-xs text-slate-500">
-                   .mp4, .webm, .3gp, .ogv, .m4v, .jpeg, .jpg, .png, .gif, .svg,
-                   <br />
-                   .bmp, .ico, .fl
-                   <br />
-                   Videos can be up to 10 seconds.
-                 </p>
-               </div>
-               
-               {isUploading && (
-                 <div className="text-sm font-medium text-[#6841ff] animate-pulse">
-                    Uploading...
-                 </div>
-               )}
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm">
+                <CloudUpload className="h-6 w-6 text-slate-900" />
+              </div>
+
+              <div className="space-y-1">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Upload images or a short video
+                </h3>
+                <p className="text-xs text-slate-500">
+                  .mp4, .webm, .3gp, .ogv, .m4v, .jpeg, .jpg, .png, .gif, .svg,
+                  <br />
+                  .bmp, .ico, .fl
+                  <br />
+                  Videos can be up to 10 seconds.
+                </p>
+              </div>
+
+              {isUploading && (
+                <div className="text-sm font-medium text-[#6841ff] animate-pulse">
+                  Uploading...
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>
@@ -430,7 +577,7 @@ const SidebarImageItem = memo(({
 }) => {
   const { data } = useImageDetailQuery(roboflowProjectId, fileId, { enabled: !!roboflowProjectId && !!fileId });
   const imageUrl = data?.data?.image?.urls?.thumb || data?.data?.image?.urls?.original || data?.data?.image?.url || "";
-  
+
   return (
     <button
       onClick={onClick}

@@ -32,13 +32,14 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
   const params = useParams();
   const projectId = params.id as string;
   const { data: project } = useProjectQuery(Number(projectId));
+  console.log("project", project)
   const uploadProjectId = project?.data?.project?.id || projectId;
 
   const handleSuccess = (data: any) => {
     setUploadProgress(false);
     const roboflowProjectId = data.projectId;
     const imageIds = data.results?.successful?.map((item: any) => item.result.id) || [];
-    
+
     toast.success("Uploaded successfully");
     onNext({ roboflowProjectId, imageIds });
   };
@@ -55,7 +56,7 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
 
   const { mutate: uploadFolder } = useUploadFolderMutation({
     onSuccess: (data) => {
-        handleSuccess(data);
+      handleSuccess(data);
     },
     onError: (error) => {
       setUploadProgress(false);
@@ -86,7 +87,7 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
     const selectedFiles = Array.from(e.target.files || []);
     if (selectedFiles.length > 0) {
       const validFiles = selectedFiles.filter(file => file.type.startsWith('image/'));
-       const newPreviews = validFiles.map((file) => ({
+      const newPreviews = validFiles.map((file) => ({
         file,
         preview: URL.createObjectURL(file),
       }));
@@ -106,41 +107,43 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
 
   const handleUpload = () => {
     if (files.length === 0) return;
-    
+
     if (!batchName.trim()) {
       toast.error("Batch Name is required");
       return;
     }
 
     setUploadProgress(true);
-    
+
     // Check if files have webkitRelativePath determining if it was a folder upload
     // Typically mixed uploads are tricky, but if we use the folder button, all might share logic
     // For simplicity, if we used the folder input, we might want to call uploadFolder, 
     // but the backend logic for uploadImages is similar if we just pass files.
     // However, the user specifically asked for /project/upload-folder if user upload folder.
     // The dropzone flattens files. The folderInputRef gives files with webkitRelativePath.
-    
+
     // Simplification: If any file has a path separator in webkitRelativePath, treat as folder upload?
     // Or simpler: Use uploadImages for drag/drop and file selection, uploadFolder for folder selection logic.
     // Given the state is merged, we'll try to determine best generic strategy.
     // If we assume purely on how they were added: 
     // It's hard to distinguish once merged into 'files' array without tracking source.
-    
+
     // Let's check if any file has a non-empty webkitRelativePath indicating folder structure.
     const isFolderUpload = files.some(f => f.webkitRelativePath && f.webkitRelativePath.includes('/'));
 
     if (isFolderUpload) {
-       uploadFolder({
+      uploadFolder({
         projectId: uploadProjectId,
         batch: batchName,
         files,
+        id: projectId
       });
     } else {
       uploadImages({
         projectId: uploadProjectId,
         batch: batchName,
         files,
+        id: projectId
       });
     }
   };
@@ -180,60 +183,60 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
 
       {files.length > 0 ? (
         <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-                 <h2 className="text-xl font-semibold text-slate-900">
-                   {uploadProgress ? "Uploading files..." : "Selected Files"}
-                 </h2>
-            </div>
-          
-           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-             {previewImages.map((img, index) => (
-               <div key={index} className="relative aspect-square group rounded-lg overflow-hidden border border-slate-200">
-                 <Image
-                   src={img.preview}
-                   alt="preview"
-                   fill
-                   className="object-cover"
-                 />
-                 {!uploadProgress && (
-                   <button 
-                      onClick={() => removeFile(index)}
-                      className="absolute top-1 right-1 bg-white/80 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                   >
-                      <X className="h-3 w-3 text-slate-700" />
-                   </button>
-                 )}
-               </div>
-             ))}
-             
-              {/* Add more button */}
-             {!uploadProgress && (
-               <div 
-                  {...getRootProps()} 
-                  onClick={open}
-                  className="flex items-center justify-center aspect-square rounded-lg border-2 border-dashed border-slate-200 hover:border-primary/50 hover:bg-slate-50 cursor-pointer transition"
-               >
-                  <input {...getInputProps()} />
-                  <div className="flex flex-col items-center gap-1 text-slate-400">
-                      <Plus className="h-6 w-6" />
-                      <span className="text-xs">Add</span>
-                  </div>
-               </div>
-             )}
-           </div>
-           
-            <div className="mt-8 flex justify-end gap-3">
-                 <Button variant="outline" onClick={() => {
-                     setFiles([]);
-                     setPreviewImages([]);
-                 }} disabled={uploadProgress}>
-                     Cancel
-                 </Button>
-                <Button onClick={handleUpload} disabled={uploadProgress}>
-                    {uploadProgress && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {uploadProgress ? "Uploading..." : "Start Upload"}
-                </Button>
-            </div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-slate-900">
+              {uploadProgress ? "Uploading files..." : "Selected Files"}
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {previewImages.map((img, index) => (
+              <div key={index} className="relative aspect-square group rounded-lg overflow-hidden border border-slate-200">
+                <Image
+                  src={img.preview}
+                  alt="preview"
+                  fill
+                  className="object-cover"
+                />
+                {!uploadProgress && (
+                  <button
+                    onClick={() => removeFile(index)}
+                    className="absolute top-1 right-1 bg-white/80 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="h-3 w-3 text-slate-700" />
+                  </button>
+                )}
+              </div>
+            ))}
+
+            {/* Add more button */}
+            {!uploadProgress && (
+              <div
+                {...getRootProps()}
+                onClick={open}
+                className="flex items-center justify-center aspect-square rounded-lg border-2 border-dashed border-slate-200 hover:border-primary/50 hover:bg-slate-50 cursor-pointer transition"
+              >
+                <input {...getInputProps()} />
+                <div className="flex flex-col items-center gap-1 text-slate-400">
+                  <Plus className="h-6 w-6" />
+                  <span className="text-xs">Add</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-8 flex justify-end gap-3">
+            <Button variant="outline" onClick={() => {
+              setFiles([]);
+              setPreviewImages([]);
+            }} disabled={uploadProgress}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpload} disabled={uploadProgress}>
+              {uploadProgress && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {uploadProgress ? "Uploading..." : "Start Upload"}
+            </Button>
+          </div>
         </div>
       ) : (
         /* Upload Areas */
@@ -241,11 +244,10 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
           {/* Drag and Drop Area */}
           <div
             {...getRootProps()}
-            className={`flex min-h-[400px] flex-col rounded-xl border-2 border-dashed transition-colors ${
-              isDragActive
-                ? "border-primary bg-primary/5"
-                : "border-[#e1e4f5] bg-white"
-            } p-8`}
+            className={`flex min-h-[400px] flex-col rounded-xl border-2 border-dashed transition-colors ${isDragActive
+              ? "border-primary bg-primary/5"
+              : "border-[#e1e4f5] bg-white"
+              } p-8`}
           >
             <input {...getInputProps()} />
             <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
@@ -272,23 +274,23 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
                   Select File(s)
                 </Button>
                 <div className="relative">
-                    <Button
+                  <Button
                     variant="outline"
                     type="button"
                     onClick={() => folderInputRef.current?.click()}
                     className="h-10 gap-2 rounded-lg border-slate-300 font-medium text-slate-700 hover:bg-slate-50"
-                    >
+                  >
                     <Folder className="h-4 w-4" />
                     Select Folder
-                    </Button>
-                    <input
-                        type="file"
-                        ref={folderInputRef}
-                        onChange={handleFolderSelect}
-                        className="hidden"
-                        {...({ webkitdirectory: "", directory: "" } as any)}
-                        multiple
-                    />
+                  </Button>
+                  <input
+                    type="file"
+                    ref={folderInputRef}
+                    onChange={handleFolderSelect}
+                    className="hidden"
+                    {...({ webkitdirectory: "", directory: "" } as any)}
+                    multiple
+                  />
                 </div>
               </div>
             </div>

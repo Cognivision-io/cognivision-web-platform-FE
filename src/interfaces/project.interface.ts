@@ -115,18 +115,40 @@ export type AutoAnnotationBatchDirectPayload = {
 };
 
 export interface AnnotationItem {
-  class: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  confidence: number;
+  class?: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  confidence?: number;
+  // New fields for polygon
+  polygon?: [number, number][];
+  imageWidth?: number;
+  imageHeight?: number;
+  bbox?: number[];
+  maskArea?: number;
 }
 
 export type AutoAnnotationResponse = {
   statusCode: number;
   data: {
-    result: AnnotationItem[];
+    result?: AnnotationItem[]; // Old format
+    // New format fields directly in data or in a wrapper?
+    // User JSON shows: data: { success: true, bbox: ..., polygon: ... }
+    success?: boolean;
+    bbox?: number[];
+    imageHeight?: number;
+    imageWidth?: number;
+    mask_area?: number;
+    polygon?: [number, number][];
+    saved_images?: any;
+    // Batch format with multiple objects
+    objects?: Array<{
+      bbox?: number[];
+      mask_area?: number;
+      point?: { x: number; y: number };
+      polygon?: [number, number][];
+    }>;
   };
   message: string;
 };
