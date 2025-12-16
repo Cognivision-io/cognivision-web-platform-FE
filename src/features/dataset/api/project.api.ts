@@ -30,7 +30,7 @@ export const projectApi = {
     return response.data;
   },
 
-  uploadImages: async (payload: { projectId: string; batch?: string; files: File[] }) => {
+  uploadImages: async (payload: { projectId: string; batch?: string; files: File[], id?: string }) => {
     const formData = new FormData();
     payload.files.forEach((file) => {
       formData.append("file", file);
@@ -41,6 +41,7 @@ export const projectApi = {
         roboflowProjectId: payload.projectId,
         batch: payload.batch,
         concurrency: 10,
+        id: payload.id
       },
       headers: {
         "Content-Type": "multipart/form-data",
@@ -49,7 +50,7 @@ export const projectApi = {
     return response.data;
   },
 
-  uploadFolder: async (payload: { projectId: string; batch?: string; files: File[] }) => {
+  uploadFolder: async (payload: { projectId: string; batch?: string; files: File[], id: string }) => {
     const formData = new FormData();
     payload.files.forEach((file) => {
       // Use webkitRelativePath to preserve folder structure for upload-folder endpoint
@@ -62,6 +63,7 @@ export const projectApi = {
         roboflowProjectId: payload.projectId,
         batch: payload.batch,
         concurrency: 10,
+        id: payload.id
       },
       headers: {
         "Content-Type": "multipart/form-data",
@@ -73,8 +75,8 @@ export const projectApi = {
   getUnannotatedImages: async (id: number, offset: number = 0, limit: number = 50) => {
     const response = await api.get(`/project/${id}/unannotated-images`, {
       params: {
-        offset,
-        limit,
+        offset: 0,
+        limit: 500,
       },
     });
     // Unwrap the response to match GetImagesResponse interface

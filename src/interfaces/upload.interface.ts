@@ -2,12 +2,14 @@ export interface UploadImagesPayload {
   projectId: string; // The roboflowProjectId or equivalent internal ID map
   batch?: string;
   files: File[];
+  id?: string;
 }
 
 export interface UploadFolderPayload {
   projectId: string;
   batch?: string;
   files: File[];
+  id: string;
 }
 
 export interface UploadResponse {
