@@ -55,3 +55,19 @@ export const useAutoAnnotationBatchDirectMutation = (
     ...options,
   });
 };
+
+export const UPLOAD_ANNOTATION_MUTATION_KEY = ["project", "uploadAnnotation"] as const;
+
+export const useUploadAnnotationMutation = (
+  options?: UseMutationOptions<
+    any,
+    ProjectError,
+    { projectId: number; imageId: string; file: File }
+  >
+) => {
+  return useMutation({
+    mutationKey: UPLOAD_ANNOTATION_MUTATION_KEY,
+    mutationFn: projectApi.uploadAnnotation,
+    ...options,
+  });
+};

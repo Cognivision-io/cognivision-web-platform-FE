@@ -152,3 +152,8 @@ export type AutoAnnotationResponse = {
   };
   message: string;
 };
+
+export interface AnnotateStepProps {
+  onNext: () => void;
+  uploadedData?: { roboflowProjectId: string; imageIds: string[] } | null;
+}

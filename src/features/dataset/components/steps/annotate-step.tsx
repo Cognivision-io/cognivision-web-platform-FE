@@ -3,11 +3,8 @@ import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import { useUnannotatedImagesQuery, useImageDetailQuery } from "@/features/dataset/queries/image.query";
 import { useState } from "react";
+import { AnnotateStepProps } from "@/interfaces/project.interface";
 
-interface AnnotateStepProps {
-  onNext: () => void;
-  uploadedData?: { roboflowProjectId: string; imageIds: string[] } | null;
-}
 
 export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
   const params = useParams();
