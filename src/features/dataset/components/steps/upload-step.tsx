@@ -32,7 +32,6 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
   const params = useParams();
   const projectId = params.id as string;
   const { data: project } = useProjectQuery(Number(projectId));
-  console.log("project", project)
   const uploadProjectId = project?.data?.project?.id || projectId;
 
   const handleSuccess = (data: any) => {

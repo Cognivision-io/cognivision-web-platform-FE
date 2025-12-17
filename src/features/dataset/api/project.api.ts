@@ -113,4 +113,21 @@ export const projectApi = {
     const response = await api.post("/auto-annotation/batch/direct", payload);
     return response.data;
   },
+
+  uploadAnnotation: async (payload: {
+    projectId: number;
+    imageId: string;
+    file: File;
+  }) => {
+    const formData = new FormData();
+    formData.append("file", payload.file);
+    formData.append("imageId", payload.imageId);
+    
+    const response = await api.post(`/project/${payload.projectId}/upload/annotation`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
 };

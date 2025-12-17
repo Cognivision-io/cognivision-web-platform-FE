@@ -5,10 +5,7 @@ import {
   Check, 
   ChevronRight, 
   Download, 
-  Edit, 
   Plus, 
-  History,
-  ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,11 +14,8 @@ import { useUnannotatedImagesQuery } from "@/features/dataset/queries/image.quer
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
-interface TestStepProps {
-  onBack: () => void;
-}
 
-export const TestStep = ({ onBack }: TestStepProps) => {
+export const TestStep = () => {
   const router = useRouter();
   const params = useParams();
   const projectId = Number(params.id);

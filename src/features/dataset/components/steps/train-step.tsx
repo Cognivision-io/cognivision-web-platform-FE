@@ -1,11 +1,11 @@
 import { useState, useEffect, memo } from "react";
-import { Box, Download, Minus, Plus } from "lucide-react";
+import { Box, Download, Minus, Plus, Edit2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { useParams } from "next/navigation";
 import { useUnannotatedImagesQuery, useImageDetailQuery, UNANNOTATED_IMAGES_QUERY_KEY } from "@/features/dataset/queries/image.query";
 import { useProjectQuery } from "@/features/dataset/queries/project.query";
-import { useAutoAnnotationBatchDirectMutation, useCreateProjectMutation } from "@/features/dataset/mutations/project.mutation";
+import { useAutoAnnotationBatchDirectMutation, useCreateProjectMutation, useUploadAnnotationMutation } from "@/features/dataset/mutations/project.mutation";
 import { useUploadImagesMutation } from "@/features/dataset/mutations/upload.mutation";
 import type { AnnotationItem } from "@/interfaces/project.interface";
 import { useQueryClient } from "@tanstack/react-query";
@@ -31,6 +31,10 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   const [selectedFileIndex, setSelectedFileIndex] = useState(0);
   const [annotations, setAnnotations] = useState<AnnotationItem[]>([]);
   const [collectedPoints, setCollectedPoints] = useState<{ x: number; y: number }[]>([]);
+  const [pointLabels, setPointLabels] = useState<{ [index: number]: string }>({});
+  const [annotationLabels, setAnnotationLabels] = useState<{ [index: number]: string }>({});
+  const [editingPointIndex, setEditingPointIndex] = useState<number | null>(null);
+  const [tempLabel, setTempLabel] = useState("");
   // Track IDs from initial uploadedData AND new uploads in this step
   const [extendedImageIds, setExtendedImageIds] = useState<string[]>(uploadedData?.imageIds || []);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -57,6 +61,62 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
       toast.error("Failed to upload images");
     }
   });
+
+  const { mutate: uploadAnnotation, isPending: isUploadingAnnotation } = useUploadAnnotationMutation({
+    onSuccess: () => {
+      toast.success("Annotation uploaded successfully!");
+    },
+    onError: (error) => {
+      console.error("Upload annotation error:", error);
+      toast.error("Failed to upload annotation");
+    }
+  });
+
+  // Helper function to convert annotations to YOLO format
+  const convertAnnotationsToYOLO = (annotations: AnnotationItem[]): { yoloContent: string; classList: string[] } => {
+   
+    // Separate user-labeled and auto-generated labels
+    const allClasses = annotations.map(ann => ann.class || 'unlabeled');
+    const userLabels = allClasses.filter(cls => !cls.startsWith('Object_'));
+    const hasUnlabeled = allClasses.some(cls => cls.startsWith('Object_'));
+    
+    // Build class list: user labels first (sorted), then 'unlabeled' if any exist
+    const uniqueUserLabels = Array.from(new Set(userLabels)).sort();
+    const classList = hasUnlabeled 
+      ? [...uniqueUserLabels, 'unlabeled']
+      : uniqueUserLabels;
+    
+    
+    
+    const yoloLines = annotations.map((ann, index) => {
+      // Map annotation class to class ID
+      let className = ann.class || 'unlabeled';
+      // Convert auto-generated labels to 'unlabeled'
+      if (className.startsWith('Object_')) {
+        className = 'unlabeled';
+      }
+      const classId = classList.indexOf(className);
+      
+      if (ann.polygon && ann.imageWidth && ann.imageHeight) {
+        // Normalize polygon coordinates to 0-1 range
+        const normalizedCoords = ann.polygon.map(([x, y]) => {
+          return `${(x / ann.imageWidth!).toFixed(6)} ${(y / ann.imageHeight!).toFixed(6)}`;
+        }).join(' ');
+        
+        const yoloLine = `${classId} ${normalizedCoords}`;
+        
+        return yoloLine;
+      }
+      return '';
+    }).filter(line => line);
+    
+    const finalYoloFormat = yoloLines.join('\n');
+
+    return {
+      yoloContent: finalYoloFormat,
+      classList: classList
+    };
+  };
 
   const onDrop = (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -114,6 +174,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   useEffect(() => {
     setAnnotations([]);
     setCollectedPoints([]);
+    setPointLabels({});
   }, [selectedImageId]); // Trigger on ID change
 
   // Determine the display URL for the main canvas
@@ -178,16 +239,6 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
       y: Math.round((point.y / zoom) * scaleY),
     }));
 
-    console.log("AutoAnnotate Batch Request:", {
-      imageId: String(displayImage.id || ""),
-      points: normalizedPoints,
-      displayedSize: { w: displayedWidth, h: displayedHeight },
-      originalSize: { w: originalWidth, h: originalHeight },
-      scale: { x: scaleX, y: scaleY },
-      imageUrl: getImageUrl(displayImage),
-      projectId: roboflowProjectId,
-    });
-
     autoAnnotateBatch(
       {
         imageId: String(displayImage.id || ""),
@@ -202,9 +253,13 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
 
           if (data && data.success && data.objects && Array.isArray(data.objects)) {
             // Handle new batch response format with multiple objects
-            const newAnnotations = data.objects.map((obj: any): AnnotationItem => {
+            const newAnnotations = data.objects.map((obj: any, objIndex: number): AnnotationItem => {
+              // Get the class label from the corresponding point (if available)
+              const pointIndex = objIndex < collectedPoints.length ? objIndex : 0;
+              const className = pointLabels[pointIndex] || `Object_${annotations.length + objIndex + 1}`;
+              
               const annotation: AnnotationItem = {
-                class: "Object",
+                class: className,
                 confidence: 1.0,
                 imageWidth: data.imageWidth,
                 imageHeight: data.imageHeight,
@@ -232,8 +287,15 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
               return annotation;
             });
 
+            // Store labels for these annotations
+            const startIndex = annotations.length;
+            newAnnotations.forEach((ann, idx) => {
+              setAnnotationLabels(prev => ({ ...prev, [startIndex + idx]: ann.class || '' }));
+            });
+
             setAnnotations((prev) => [...prev, ...newAnnotations]);
             setCollectedPoints([]);
+            setPointLabels({}); // Clear point labels after creating annotations
             toast.success(`${newAnnotations.length} object(s) detected`);
           }
         },
@@ -364,14 +426,28 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
                         transform: "translate(-50%, -50%)",
                       }}
                     >
-                      {/* Point Circle */}
-                      <div className="flex items-center justify-center">
-                        <div className="h-6 w-6 rounded-full border-2 border-blue-500 bg-blue-100/50 flex items-center justify-center">
+                      {/* Point Circle - non-interactive, clicks pass through */}
+                      <div className="flex items-center justify-center relative">
+                        <div className="h-6 w-6 rounded-full border-2 border-blue-500 bg-blue-100/50 flex items-center justify-center pointer-events-none">
                           <div className="h-2 w-2 rounded-full bg-blue-500" />
                         </div>
-                        {/* Point Label */}
-                        <div className="absolute top-0 -right-6 bg-blue-500 text-white px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap">
-                          P{i + 1}
+                        {/* Point Label with Edit Button - interactive area */}
+                        <div className="absolute top-0 -right-6 flex items-center gap-1 pointer-events-auto group">
+                          <div className="bg-blue-500 text-white px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap">
+                            {pointLabels[i] || `P${i + 1}`}
+                          </div>
+                          {/* Edit Button - appears on hover */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingPointIndex(i);
+                              setTempLabel(pointLabels[i] || "");
+                            }}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded p-0.5 shadow-sm hover:bg-blue-50"
+                            title="Edit label"
+                          >
+                            <Edit2 className="h-3 w-3 text-blue-600" />
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -491,6 +567,34 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
             Test on More Files
           </button>
 
+          <button 
+            onClick={() => {
+              if (annotations.length > 0 && displayImage) {
+                // Convert annotations to YOLO format
+                const { yoloContent, classList } = convertAnnotationsToYOLO(annotations);
+            
+                // Create a text file from the YOLO content
+                const blob = new Blob([yoloContent], { type: 'text/plain' });
+                const file = new File([blob], `${displayImage.id}_annotation.txt`, { type: 'text/plain' });
+                
+                // Upload the annotation file
+                uploadAnnotation({
+                  projectId: projectId,
+                  imageId: String(displayImage.id),
+                  file: file
+                });
+                
+                // Log class mapping for reference
+                toast.success(`Uploaded with ${classList.length} class(es): ${classList.join(', ')}`);
+              }
+            }}
+            disabled={annotations.length === 0 || isUploadingAnnotation}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <CloudUpload className="h-4 w-4" />
+            {isUploadingAnnotation ? "Uploading..." : "Upload Annotation"}
+          </button>
+
           <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">
             <Download className="h-4 w-4" />
             Download Image
@@ -511,6 +615,80 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
           </button>
         </div>
       </div>
+
+      {/* Label Editor Dialog */}
+      <Dialog open={editingPointIndex !== null} onOpenChange={(open) => !open && setEditingPointIndex(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Point Label</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="point-label" className="text-sm font-medium text-slate-700">
+                Label for Point {editingPointIndex !== null ? editingPointIndex + 1 : ''}
+              </label>
+              <input
+                id="point-label"
+                type="text"
+                value={tempLabel}
+                onChange={(e) => setTempLabel(e.target.value)}
+                placeholder={`P${editingPointIndex !== null ? editingPointIndex + 1 : ''}`}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-[#6841ff] focus:outline-none focus:ring-2 focus:ring-[#6841ff]/20"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && editingPointIndex !== null) {
+                    if (tempLabel.trim()) {
+                      setPointLabels(prev => ({ ...prev, [editingPointIndex]: tempLabel.trim() }));
+                    } else {
+                      setPointLabels(prev => {
+                        const updated = { ...prev };
+                        delete updated[editingPointIndex];
+                        return updated;
+                      });
+                    }
+                    setEditingPointIndex(null);
+                    setTempLabel("");
+                  }
+                }}
+              />
+              <p className="text-xs text-slate-500">
+                Enter a custom label or leave empty to use default (P{editingPointIndex !== null ? editingPointIndex + 1 : ''})
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => {
+                setEditingPointIndex(null);
+                setTempLabel("");
+              }}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                if (editingPointIndex !== null) {
+                  if (tempLabel.trim()) {
+                    setPointLabels(prev => ({ ...prev, [editingPointIndex]: tempLabel.trim() }));
+                  } else {
+                    setPointLabels(prev => {
+                      const updated = { ...prev };
+                      delete updated[editingPointIndex];
+                      return updated;
+                    });
+                  }
+                  setEditingPointIndex(null);
+                  setTempLabel("");
+                }
+              }}
+              className="rounded-lg bg-[#6841ff] px-4 py-2 text-sm font-medium text-white hover:bg-[#5936db]"
+            >
+              Save
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
         <DialogContent className="sm:max-w-xl">
