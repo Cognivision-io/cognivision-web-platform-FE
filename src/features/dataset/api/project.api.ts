@@ -118,10 +118,15 @@ export const projectApi = {
     projectId: number;
     imageId: string;
     file: File;
+    labelMap?: Record<string, string>;
   }) => {
     const formData = new FormData();
     formData.append("file", payload.file);
     formData.append("imageId", payload.imageId);
+    if (payload.labelMap) {
+      formData.append("labelmap", JSON.stringify(payload.labelMap));
+    }
+    formData.append("name", payload.file.name);
     
     const response = await api.post(`/project/${payload.projectId}/upload/annotation`, formData, {
       headers: {
