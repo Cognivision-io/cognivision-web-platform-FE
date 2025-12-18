@@ -74,20 +74,20 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
 
   // Helper function to convert annotations to YOLO format
   const convertAnnotationsToYOLO = (annotations: AnnotationItem[]): { yoloContent: string; classList: string[] } => {
-   
+
     // Separate user-labeled and auto-generated labels
     const allClasses = annotations.map(ann => ann.class || 'unlabeled');
     const userLabels = allClasses.filter(cls => !cls.startsWith('Object_'));
     const hasUnlabeled = allClasses.some(cls => cls.startsWith('Object_'));
-    
+
     // Build class list: user labels first (sorted), then 'unlabeled' if any exist
     const uniqueUserLabels = Array.from(new Set(userLabels)).sort();
-    const classList = hasUnlabeled 
+    const classList = hasUnlabeled
       ? [...uniqueUserLabels, 'unlabeled']
       : uniqueUserLabels;
-    
-    
-    
+
+
+
     const yoloLines = annotations.map((ann, index) => {
       // Map annotation class to class ID
       let className = ann.class || 'unlabeled';
@@ -96,20 +96,20 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
         className = 'unlabeled';
       }
       const classId = classList.indexOf(className);
-      
+
       if (ann.polygon && ann.imageWidth && ann.imageHeight) {
         // Normalize polygon coordinates to 0-1 range
         const normalizedCoords = ann.polygon.map(([x, y]) => {
           return `${(x / ann.imageWidth!).toFixed(6)} ${(y / ann.imageHeight!).toFixed(6)}`;
         }).join(' ');
-        
+
         const yoloLine = `${classId} ${normalizedCoords}`;
-        
+
         return yoloLine;
       }
       return '';
     }).filter(line => line);
-    
+
     const finalYoloFormat = yoloLines.join('\n');
 
     return {
@@ -257,7 +257,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
               // Get the class label from the corresponding point (if available)
               const pointIndex = objIndex < collectedPoints.length ? objIndex : 0;
               const className = pointLabels[pointIndex] || `Object_${annotations.length + objIndex + 1}`;
-              
+
               const annotation: AnnotationItem = {
                 class: className,
                 confidence: 1.0,
@@ -567,23 +567,23 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
             Test on More Files
           </button>
 
-          <button 
+          <button
             onClick={() => {
               if (annotations.length > 0 && displayImage) {
                 // Convert annotations to YOLO format
                 const { yoloContent, classList } = convertAnnotationsToYOLO(annotations);
-            
+
                 // Create a text file from the YOLO content
                 const blob = new Blob([yoloContent], { type: 'text/plain' });
                 const file = new File([blob], `${displayImage.id}_annotation.txt`, { type: 'text/plain' });
-                
+
                 // Upload the annotation file
                 uploadAnnotation({
                   projectId: projectId,
                   imageId: String(displayImage.id),
                   file: file
                 });
-                
+
                 // Log class mapping for reference
                 toast.success(`Uploaded with ${classList.length} class(es): ${classList.join(', ')}`);
               }

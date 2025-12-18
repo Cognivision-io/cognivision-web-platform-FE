@@ -4,16 +4,24 @@ import { useParams } from "next/navigation";
 import { useUnannotatedImagesQuery, useImageDetailQuery } from "@/features/dataset/queries/image.query";
 import { useState } from "react";
 import { AnnotateStepProps } from "@/interfaces/project.interface";
+import { useProjectQuery } from "@/features/dataset/queries/project.query";
 
+
+import { formatProjectDate } from "@/features/dataset/utils/dataset.utils";
 
 export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
   const params = useParams();
   const projectId = Number(params.id);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  const { data: projectData, isLoading: isLoadingProject } = useProjectQuery(projectId);
   const { data: imagesData, isLoading: isLoadingUnannotated } = useUnannotatedImagesQuery(projectId, 0, 50, {
     enabled: !uploadedData
-  }); 
+  });
+
+  const timestamp = projectData?.data?.project?.updated || projectData?.data?.project?.created;
+
+  const { header: formattedDateHeader, badge: formattedDateBadge } = formatProjectDate(timestamp);
 
   const currentUploadImageId = uploadedData?.imageIds[currentImageIndex];
   const { data: imageDetail, isLoading: isLoadingDetail } = useImageDetailQuery(
@@ -23,15 +31,16 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
   );
 
   const isLoading = uploadedData ? isLoadingDetail : isLoadingUnannotated;
-  
+
   // Normalize the image object. 
   // If uploadedData is present, the API returns { data: { image: ... } }
   // If not, useUnannotatedImagesQuery returns { results: [...] }
-  const currentImage = uploadedData 
-    ? imageDetail?.data?.image 
+  const currentImage = uploadedData
+    ? imageDetail?.data?.image
     : imagesData?.results?.[currentImageIndex];
-    
+
   const totalImages = uploadedData ? uploadedData.imageIds.length : (imagesData?.results?.length || 0);
+
 
   return (
     <div className="p-8">
@@ -39,10 +48,10 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold text-slate-900">
-            Uploaded on 10/03/25 at 10:02 pm
+            {formattedDateHeader}
           </h2>
           <div className="mt-2 inline-flex items-center rounded-md bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-            Uploaded Oct 3, 2025 (10:02 PM)
+            {formattedDateBadge}
           </div>
         </div>
         <div className="flex gap-3">
@@ -65,44 +74,44 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
         {/* Left: Image Preview */}
         <div className="flex items-center justify-center rounded-xl bg-[#f8f9fc] p-8 min-h-[400px]">
           {isLoading ? (
-             <div className="flex flex-col items-center gap-2">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <span className="text-sm text-slate-500">Loading images...</span>
-             </div>
+            <div className="flex flex-col items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="text-sm text-slate-500">Loading images...</span>
+            </div>
           ) : currentImage ? (
             <div className="relative aspect-square w-full max-w-md">
-                <div className="flex h-full w-full items-center justify-center">
-                  <img
-                    src={currentImage.urls?.original || currentImage.url} 
-                    alt={currentImage.name}
-                    className="h-full w-full object-contain mix-blend-multiply"
-                  />
+              <div className="flex h-full w-full items-center justify-center">
+                <img
+                  src={currentImage.urls?.original || currentImage.url}
+                  alt={currentImage.name}
+                  className="h-full w-full object-contain mix-blend-multiply"
+                />
+              </div>
+              {/* Simple pagination controls for preview if multiple images exist */}
+              {totalImages > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={currentImageIndex === 0}
+                    onClick={() => setCurrentImageIndex(prev => Math.max(0, prev - 1))}
+                  >
+                    Prev
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={currentImageIndex === totalImages - 1}
+                    onClick={() => setCurrentImageIndex(prev => Math.min(totalImages - 1, prev + 1))}
+                  >
+                    Next
+                  </Button>
                 </div>
-                {/* Simple pagination controls for preview if multiple images exist */}
-                {totalImages > 1 && (
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                         <Button 
-                            size="sm" 
-                            variant="secondary" 
-                            disabled={currentImageIndex === 0}
-                            onClick={() => setCurrentImageIndex(prev => Math.max(0, prev - 1))}
-                         >
-                            Prev
-                         </Button>
-                         <Button 
-                            size="sm" 
-                            variant="secondary" 
-                            disabled={currentImageIndex === totalImages - 1}
-                            onClick={() => setCurrentImageIndex(prev => Math.min(totalImages - 1, prev + 1))}
-                         >
-                            Next
-                         </Button>
-                    </div>
-                )}
+              )}
             </div>
           ) : (
             <div className="text-center text-slate-500">
-                No unannotated images found.
+              No unannotated images found.
             </div>
           )}
         </div>
