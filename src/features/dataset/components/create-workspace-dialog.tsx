@@ -383,12 +383,16 @@ export const CreateWorkspaceDialog = () => {
                           setValue("selectedType", "classification")
                         }
                         className={cn(
-                          "w-full px-7 py-6 text-left transition",
+                          "relative w-full px-7 py-6 text-left transition",
                           selectedType === "classification"
-                            ? "bg-slate-50"
+                            ? "bg-[#cfd2ff]"
                             : "bg-white hover:bg-slate-50"
                         )}
                       >
+                        {selectedType === "classification" && (
+                          <span className="pointer-events-none absolute inset-0 outline outline-2 outline-[#4a2cf0] outline-offset-[-2px]" />
+                        )}
+
                         <div className="flex items-start justify-between gap-5">
                           <div>
                             <div className="text-[18px] font-semibold text-slate-900">
@@ -436,12 +440,16 @@ export const CreateWorkspaceDialog = () => {
                           setValue("selectedType", "instance-segmentation")
                         }
                         className={cn(
-                          "w-full px-7 py-6 text-left transition",
+                          "relative w-full px-7 py-6 text-left transition",
                           selectedType === "instance-segmentation"
-                            ? "bg-slate-50"
+                            ? "bg-[#cfd2ff]"
                             : "bg-white hover:bg-slate-50"
                         )}
                       >
+                        {selectedType === "instance-segmentation" && (
+                          <span className="pointer-events-none absolute inset-0 outline outline-2 outline-[#4a2cf0] outline-offset-[-2px]" />
+                        )}
+
                         <div>
                           <div className="text-[18px] font-semibold text-slate-900">
                             Instance Segmentation
