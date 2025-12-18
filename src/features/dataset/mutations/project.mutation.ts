@@ -62,7 +62,7 @@ export const useUploadAnnotationMutation = (
   options?: UseMutationOptions<
     any,
     ProjectError,
-    { projectId: number; imageId: string; file: File }
+    { projectId: number; imageId: string; file: File; labelMap?: Record<string, string> }
   >
 ) => {
   return useMutation({

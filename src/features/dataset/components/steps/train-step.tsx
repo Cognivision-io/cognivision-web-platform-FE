@@ -577,11 +577,18 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
                 const blob = new Blob([yoloContent], { type: 'text/plain' });
                 const file = new File([blob], `${displayImage.id}_annotation.txt`, { type: 'text/plain' });
 
+                // Create label map : { "0": "class_name" }
+                const labelMap: Record<string, string> = {};
+                classList.forEach((cls, idx) => {
+                  labelMap[String(idx)] = cls;
+                });
+
                 // Upload the annotation file
                 uploadAnnotation({
                   projectId: projectId,
                   imageId: String(displayImage.id),
-                  file: file
+                  file: file,
+                  labelMap
                 });
 
                 // Log class mapping for reference
