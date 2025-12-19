@@ -135,4 +135,9 @@ export const projectApi = {
     });
     return response.data;
   },
+
+  createVersion: async (id: number, payload: any) => {
+    const response = await api.post(`/project/${id}/create-version`, payload);
+    return response.data;
+  },
 };

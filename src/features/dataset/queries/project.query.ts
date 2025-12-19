@@ -52,3 +52,15 @@ export const useDeleteProjectMutation = () => {
     },
   });
 };
+
+export const useCreateVersionMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: any }) => 
+      projectApi.createVersion(id, payload),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_QUERY_KEY, id] });
+    },
+  });
+};
