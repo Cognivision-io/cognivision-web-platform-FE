@@ -13,7 +13,7 @@ import { useProjectQuery } from "@/features/dataset/queries/project.query";
 import { useUnannotatedImagesQuery } from "@/features/dataset/queries/image.query";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-
+import { CreateVersionScreen } from "../version/create-version-screen";
 
 export const TestStep = () => {
   const router = useRouter();
@@ -23,10 +23,13 @@ export const TestStep = () => {
   const { data: imagesResponse } = useUnannotatedImagesQuery(projectId, 0, 3);
   
   const project = projectResponse?.data?.project;
+  console.log(projectResponse);
   const versions = projectResponse?.data?.versions || [];
   
+  const [isCreating, setIsCreating] = useState(false);
   // Default to first version or a mock if none
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(
+
     versions.length > 0 ? versions[0].id : null
   );
 
@@ -56,7 +59,10 @@ export const TestStep = () => {
         
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {/* Create New Version Button */}
-            <button className="w-full flex flex-col items-start gap-1 p-3 rounded-lg border-2 border-dashed border-[#6841ff]/30 bg-[#6841ff]/5 hover:bg-[#6841ff]/10 transition-colors group">
+            <button 
+              onClick={() => setIsCreating(true)}
+              className="w-full flex-col items-start gap-1 p-3 rounded-lg border-2 border-dashed border-[#6841ff]/30 bg-[#6841ff]/5 hover:bg-[#6841ff]/10 transition-colors group"
+            >
                <div className="flex items-center gap-2 text-[#6841ff] font-semibold">
                    <Plus className="h-4 w-4" />
                    <span>Create New Version</span>
@@ -116,7 +122,15 @@ export const TestStep = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {isCreating ? (
+        <CreateVersionScreen 
+          onBack={() => setIsCreating(false)} 
+          project={project}
+          versions={versions}
+          projectId={projectId}
+        />
+      ) : (
+        <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="px-8 py-6 border-b border-slate-200 bg-white flex items-center justify-between">
             <div>
@@ -248,6 +262,7 @@ export const TestStep = () => {
 
         </div>
       </div>
+      )}
     </div>
   );
 };
