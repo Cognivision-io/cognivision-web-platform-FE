@@ -24,11 +24,21 @@ import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/stores/auth-store";
 
 const DatasetPage = () => {
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
+
+  // Get user initials
+  const getUserInitials = () => {
+    if (!user) return "U";
+    const firstInitial = user.firstName?.charAt(0).toUpperCase() || "";
+    const lastInitial = user.lastName?.charAt(0).toUpperCase() || "";
+    return firstInitial + lastInitial || "U";
+  };
 
   const { data, isLoading } = useProjectsQuery({
     page: 1,
@@ -60,7 +70,7 @@ const DatasetPage = () => {
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center lg:flex-col lg:items-end">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#6841ff]/12 text-sm font-semibold text-[#6841ff]">
-                H
+                {getUserInitials()}
               </div>
 
               <button className="inline-flex items-center gap-2 rounded-full border border-[#e1e4f5] bg-white px-4 py-2 text-xs font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-[#ced3f0]">

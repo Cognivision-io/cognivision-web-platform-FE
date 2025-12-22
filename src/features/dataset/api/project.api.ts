@@ -140,4 +140,21 @@ export const projectApi = {
     const response = await api.post(`/project/${id}/create-version`, payload);
     return response.data;
   },
+
+  trainModel: async (payload: {
+    projectId: number;
+    versionNumber: string;
+    modelType: string;
+  }) => {
+    const response = await api.post(
+      `/project/${payload.projectId}/train-model/${payload.versionNumber}`,
+      {},
+      {
+        params: {
+          modelType: payload.modelType,
+        },
+      }
+    );
+    return response.data;
+  },
 };

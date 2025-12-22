@@ -7,6 +7,7 @@ import {
 import type { AxiosError } from "axios";
 import { projectApi } from "@/features/dataset/api/project.api";
 import type { GetProjectsResponse } from "@/interfaces/project.interface";
+import { toast } from "sonner";
 
 type ProjectError = AxiosError<{ message?: string | string[] }>;
 
@@ -49,6 +50,15 @@ export const useDeleteProjectMutation = () => {
     mutationFn: (id: string) => projectApi.deleteProject(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+      toast.success("Project deleted successfully");
+    },
+    onError: (error: ProjectError) => {
+      const errorMessage = error?.response?.data?.message;
+      toast.error(
+        typeof errorMessage === "string" 
+          ? errorMessage 
+          : "Failed to delete project"
+      );
     },
   });
 };
