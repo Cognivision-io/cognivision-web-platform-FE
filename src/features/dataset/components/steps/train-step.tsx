@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { useDropzone } from "react-dropzone";
 import { ArrowRight, CloudUpload } from "lucide-react";
+import { downloadImage } from "@/features/dataset/utils/dataset.utils";
 
 interface TrainStepProps {
   onNext: () => void;
@@ -38,6 +39,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   // Track IDs from initial uploadedData AND new uploads in this step
   const [extendedImageIds, setExtendedImageIds] = useState<string[]>(uploadedData?.imageIds || []);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [hasUploadedAnnotations, setHasUploadedAnnotations] = useState(false);
   const imageUploadRef = useRef<HTMLInputElement>(null);
 
   const queryClient = useQueryClient();
@@ -65,6 +67,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   const { mutate: uploadAnnotation, isPending: isUploadingAnnotation } = useUploadAnnotationMutation({
     onSuccess: () => {
       toast.success("Annotation uploaded successfully!");
+      setHasUploadedAnnotations(true);
     },
     onError: (error) => {
       console.error("Upload annotation error:", error);
@@ -548,16 +551,6 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
         </p>
 
         <div className="mt-6 space-y-3">
-          <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#6841ff] bg-white py-2.5 text-sm font-semibold text-[#6841ff] shadow-sm transition-colors hover:bg-[#f5f3ff]">
-            <Box className="h-4 w-4" />
-            Deploy Your Model
-          </button>
-
-          <div className="flex items-center gap-2">
-            <div className="h-px flex-1 bg-slate-200" />
-            <span className="text-[10px] font-medium text-slate-400">OR</span>
-            <div className="h-px flex-1 bg-slate-200" />
-          </div>
 
           <button
             onClick={() => setIsUploadModalOpen(true)}
@@ -602,7 +595,24 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
             {isUploadingAnnotation ? "Uploading..." : "Upload Annotation"}
           </button>
 
-          <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">
+          <button 
+            onClick={async () => {
+              if (displayImage) {
+                try {
+                  const imageUrl = getImageUrl(displayImage);
+                  const filename = displayImage.name || `image_${displayImage.id || 'download'}.jpg`;
+                  await downloadImage(imageUrl, filename);
+                  toast.success("Image downloaded successfully");
+                } catch (error) {
+                  toast.error("Failed to download image");
+                }
+              } else {
+                toast.error("No image selected");
+              }
+            }}
+            disabled={!displayImage}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <Download className="h-4 w-4" />
             Download Image
           </button>
@@ -611,15 +621,16 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
         <div className="mt-auto space-y-3 pt-6">
           <button
             onClick={onNext}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#6841ff] py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#5936db]"
+            disabled={!hasUploadedAnnotations}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#6841ff] py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#5936db] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next Step
             <ArrowRight className="h-4 w-4" />
           </button>
 
-          <button className="w-full rounded-lg border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">
+          {/* <button className="w-full rounded-lg border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">
             Relabel Objects
-          </button>
+          </button> */}
         </div>
       </div>
 

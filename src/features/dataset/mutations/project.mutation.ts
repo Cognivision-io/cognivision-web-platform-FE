@@ -71,3 +71,19 @@ export const useUploadAnnotationMutation = (
     ...options,
   });
 };
+
+export const TRAIN_MODEL_MUTATION_KEY = ["project", "trainModel"] as const;
+
+export const useTrainModelMutation = (
+  options?: UseMutationOptions<
+    any,
+    ProjectError,
+    { projectId: number; versionNumber: string; modelType: string }
+  >
+) => {
+  return useMutation({
+    mutationKey: TRAIN_MODEL_MUTATION_KEY,
+    mutationFn: projectApi.trainModel,
+    ...options,
+  });
+};

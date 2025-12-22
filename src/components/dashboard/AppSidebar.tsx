@@ -51,6 +51,7 @@ export function AppSidebar() {
   const router = useRouter();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const { mutateAsync: triggerLogout, isPending: isLoggingOut } =
     useLogoutMutation();
@@ -84,7 +85,7 @@ export function AppSidebar() {
 
           {!collapsed && (
             <div className="space-y-1">
-              <p className="font-medium">Hania</p>
+              <p className="font-medium">{user?.firstName || "User"}</p>
               <p className="text-xs text-muted-foreground">• 1 Member</p>
             </div>
           )}
@@ -163,12 +164,14 @@ export function AppSidebar() {
                 <SidebarMenuButton size="lg" className="h-12">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      H
+                      {user?.firstName?.charAt(0).toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
                   {!collapsed && (
                     <div className="flex flex-col items-start flex-1">
-                      <span className="text-sm font-medium">Hania Hasan</span>
+                      <span className="text-sm font-medium">
+                        {user?.firstName} {user?.lastName || ""}
+                      </span>
                     </div>
                   )}
                 </SidebarMenuButton>

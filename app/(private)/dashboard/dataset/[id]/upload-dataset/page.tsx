@@ -89,7 +89,7 @@ const UploadDatasetPage = () => {
           )}
 
           {currentStep === 3 && (
-            <TestStep onBack={() => setCurrentStep(2)} />
+            <TestStep />
           )}
         </div>
       </div>

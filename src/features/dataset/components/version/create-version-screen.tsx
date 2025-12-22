@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { PreprocessingModal } from "./modals/preprocessing-modal";
 import { AugmentationModal } from "./modals/augmentation-modal";
 import { useCreateVersionMutation } from "@/features/dataset/queries/project.query";
+import { toast } from "sonner";
 
 interface CreateVersionScreenProps {
   onBack: () => void;
@@ -37,8 +38,6 @@ export const CreateVersionScreen = ({ onBack, project, versions, projectId }: Cr
     { id: 'a1', name: 'Flip', detail: 'Horizontal: True, Vertical: False' },
     { id: 'a2', name: 'Brightness', detail: 'Brighten: True, Darken: False, Percent: 91%' }
   ]);
-  const [versionNotes, setVersionNotes] = useState("");
-  const [versionSize, setVersionSize] = useState("1x");
 
   const createVersionMutation = useCreateVersionMutation();
 
@@ -53,7 +52,7 @@ export const CreateVersionScreen = ({ onBack, project, versions, projectId }: Cr
       versionName,
       preprocessing: {},
       augmentation: {
-        "image": { "versions": parseInt(versionSize) || 1 }
+        "image": { "versions": 1 }
       }
     };
 
@@ -149,9 +148,11 @@ export const CreateVersionScreen = ({ onBack, project, versions, projectId }: Cr
         id: projectId,
         payload
       });
+      toast.success("Version created successfully!");
       onBack();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create version:", error);
+      toast.error(error?.response?.data?.message || "Failed to create version");
     }
   };
 
