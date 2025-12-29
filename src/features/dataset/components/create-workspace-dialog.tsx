@@ -196,7 +196,7 @@ export const CreateWorkspaceDialog = () => {
                   </h2>
 
                   <div className="mt-3 flex items-center gap-2.5 text-[14px] leading-none">
-                    <span className="text-slate-500">Hania</span>
+                    <span className="text-slate-500">{user?.firstName || "User"}</span>
                     <span className="h-1 w-1 rounded-full bg-slate-300" />
                     <span className="rounded-full bg-[#eef0f5] px-3 py-1 text-[12px] font-medium text-slate-600">
                       My First Project

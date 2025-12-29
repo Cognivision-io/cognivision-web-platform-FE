@@ -4,6 +4,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useProjectQuery } from "@/features/dataset/queries/project.query";
 import { ArrowLeft, Upload, Settings, Calendar, Image as ImageIcon, Eye, Shield, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TestModelDialog } from "@/features/dataset/components/test-model/test-model-dialog";
+
 import { formatDistanceToNow } from "date-fns";
 
 const ProjectDetailPage = () => {
@@ -287,10 +289,19 @@ const ProjectDetailPage = () => {
                     </div>
                   )}
                   {version.model && (
-                    <div className="mt-3 rounded-md bg-green-50 p-3">
+                    <div className="mt-3 flex items-center justify-between rounded-md bg-green-50 p-3">
                       <p className="text-xs font-medium text-green-800">
                         Model trained: mAP {version.model.map}
                       </p>
+                      <TestModelDialog version={version} project={project}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 border-green-200 bg-white text-xs hover:bg-green-100 hover:text-green-900"
+                          >
+                            Test Model
+                          </Button>
+                      </TestModelDialog>
                     </div>
                   )}
                 </div>

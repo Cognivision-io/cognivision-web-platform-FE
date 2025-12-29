@@ -157,3 +157,24 @@ export interface AnnotateStepProps {
   onNext: () => void;
   uploadedData?: { roboflowProjectId: string; imageIds: string[] } | null;
 }
+
+
+export interface RoboflowPrediction {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  confidence: number;
+  class: string;
+  class_id: number;
+  detection_id: string;
+}
+
+export interface RoboflowInferenceResponse {
+  time: number;
+  image: {
+    width: number;
+    height: number;
+  };
+  predictions: RoboflowPrediction[];
+}
