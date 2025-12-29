@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
 import {
   CloudUpload,
   Crop,
@@ -43,7 +42,7 @@ const steps = [
 ];
 
 const UploadDatasetPage = () => {
-  const params = useParams<{ id: string | string[] }>();
+ 
   const [currentStep, setCurrentStep] = useState(0);
   const [uploadedData, setUploadedData] = useState<{
     roboflowProjectId: string;
