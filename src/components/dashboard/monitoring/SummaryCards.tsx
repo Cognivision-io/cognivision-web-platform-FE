@@ -3,13 +3,21 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
+import type { RoboflowInferenceStats, TimeRange } from "@/interfaces/monitoring.interface";
 
-export default function SummaryCards() {
+interface SummaryCardsProps {
+    data?: RoboflowInferenceStats;
+    isLoading: boolean;
+    timeRange: TimeRange;
+    onTimeRangeChange: (range: TimeRange) => void;
+}
+
+export default function SummaryCards({ data, isLoading, timeRange, onTimeRangeChange }: SummaryCardsProps) {
     const cards = [
         {
             id: "accuracy",
             label: "Accuracy",
-            value: "85%",
+            value: data?.avg_confidence ? `${(data.avg_confidence * 100).toFixed(1)}%` : "--",
             img: "/monitoring/accuracy.svg",
             bg: "from-primary to-primary/80",
             labelClass: "text-2xl font-semibold text-slate-900",
@@ -18,7 +26,7 @@ export default function SummaryCards() {
         {
             id: "predictions",
             label: "Predictions Count",
-            value: "12",
+            value: data?.num_inferences?.toString() ?? "--",
             img: "/monitoring/predictions-count.svg",
             bg: "from-emerald-500 to-emerald-500/80",
             labelClass: "text-sm font-medium text-slate-700",
@@ -27,7 +35,7 @@ export default function SummaryCards() {
         {
             id: "errors",
             label: "Errors",
-            value: "5%",
+            value: data?.num_errors?.toString() ?? "--",
             img: "/monitoring/error.svg",
             bg: "from-sky-400 to-sky-400/80",
             labelClass: "text-sm font-medium text-slate-700",
@@ -49,14 +57,24 @@ export default function SummaryCards() {
 
                             <div className="flex-1">
                                 <p className={c.labelClass}>{c.label}</p>
-                                <p className={c.valueClass}>{c.value}</p>
+                                <p className={c.valueClass}>
+                                    {isLoading ? "Loading..." : c.value}
+                                </p>
                             </div>
 
                             <div className="ml-auto flex items-end">
-                                <button className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1 text-sm text-white">
-                                    <span>Month</span>
-                                    <ChevronDown className="h-3 w-3" />
-                                </button>
+                                <div className="relative">
+                                    <select
+                                        value={timeRange}
+                                        onChange={(e) => onTimeRangeChange(e.target.value as TimeRange)}
+                                        className="appearance-none rounded-md bg-primary px-3 py-1 pr-8 text-sm text-white"
+                                    >
+                                        <option value="7">7 days</option>
+                                        <option value="30">30 days</option>
+                                        <option value="90">90 days</option>
+                                    </select>
+                                    <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-white" />
+                                </div>
                             </div>
                         </div>
                     </CardHeader>

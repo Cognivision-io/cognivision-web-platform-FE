@@ -1,42 +1,70 @@
 "use client";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import type { RoboflowInferenceStats } from "@/interfaces/monitoring.interface";
 
-export default function VersionTable() {
+interface VersionTableProps {
+    data?: RoboflowInferenceStats;
+    isLoading: boolean;
+}
+
+export default function VersionTable({ data, isLoading }: VersionTableProps) {
+    const modelStats = data?.inference_stats || [];
+
     return (
         <Card>
             <CardHeader>
-                <h3 className="text-base font-semibold">Model Version table</h3>
+                <h3 className="text-base font-semibold">Model Statistics</h3>
             </CardHeader>
             <CardContent>
-                <table className="w-full table-auto">
-                    <thead>
-                        <tr className="text-left text-xs text-muted-foreground">
-                            <th className="py-2">Field Name</th>
-                            <th className="py-2">Description</th>
-                            <th className="py-2">Example</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr className="border-t">
-                            <td className="py-3 text-sm font-medium">Version ID / Name</td>
-                            <td className="py-3 text-sm text-muted-foreground">Auto-generated or user-labeled version identifier</td>
-                            <td className="py-3 text-sm">v1</td>
-                        </tr>
-
-                        <tr className="border-t">
-                            <td className="py-3 text-sm font-medium">Training Date</td>
-                            <td className="py-3 text-sm text-muted-foreground">When this version was trained</td>
-                            <td className="py-3 text-sm">2025-10-06</td>
-                        </tr>
-
-                        <tr className="border-t">
-                            <td className="py-3 text-sm font-medium">Model Type</td>
-                            <td className="py-3 text-sm text-muted-foreground">Type of model trained</td>
-                            <td className="py-3 text-sm">Object Detection</td>
-                        </tr>
-                    </tbody>
-                </table>
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                        <p className="text-sm text-muted-foreground">Loading...</p>
+                    </div>
+                ) : modelStats.length === 0 ? (
+                    <div className="flex items-center justify-center py-8">
+                        <p className="text-sm text-muted-foreground">No model statistics available</p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full table-auto">
+                            <thead>
+                                <tr className="text-left text-xs text-muted-foreground">
+                                    <th className="py-2">Model Name</th>
+                                    <th className="py-2">Predicted Class</th>
+                                    <th className="py-2">Inferences</th>
+                                    <th className="py-2">Avg Confidence</th>
+                                    <th className="py-2">Avg Response Time</th>
+                                    <th className="py-2">Deployment Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {modelStats.map((stat, idx) => (
+                                    <tr key={idx} className="border-t">
+                                        <td className="py-3 text-sm font-medium">{stat.model_name}</td>
+                                        <td className="py-3 text-sm text-muted-foreground">
+                                            {stat.predicted_class || "N/A"}
+                                        </td>
+                                        <td className="py-3 text-sm">
+                                            {stat.num_inferences ?? "N/A"}
+                                        </td>
+                                        <td className="py-3 text-sm">
+                                            {stat.avg_confidence 
+                                                ? `${(stat.avg_confidence * 100).toFixed(1)}%` 
+                                                : "N/A"}
+                                        </td>
+                                        <td className="py-3 text-sm">
+                                            {stat.avg_response_time 
+                                                ? `${(stat.avg_response_time * 1000).toFixed(0)}ms` 
+                                                : "N/A"}
+                                        </td>
+                                        <td className="py-3 text-sm capitalize">{stat.deployment_types}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );
