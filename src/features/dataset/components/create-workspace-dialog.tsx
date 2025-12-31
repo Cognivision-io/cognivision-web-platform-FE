@@ -142,12 +142,19 @@ export const CreateWorkspaceDialog = () => {
       workspaceId = user.workspaces[0];
     }
 
+    const apiProjectType =
+      data.selectedType === "classification"
+        ? data.labelMode === "multi"
+          ? "multi-label-classification"
+          : "single-label-classification"
+        : data.selectedType;
+
     createProject({
       name: data.name,
       annotation: data.annotation,
       description: "This project is for detecting fruits in images.", // Hardcoded for now
       license: "Public Domain", // Hardcoded for now
-      type: data.selectedType as ProjectType,
+      type: apiProjectType,
       workspace: workspaceId,
     });
   };
@@ -379,9 +386,12 @@ export const CreateWorkspaceDialog = () => {
                       {/* Classification */}
                       <button
                         type="button"
-                        onClick={() =>
-                          setValue("selectedType", "classification")
-                        }
+                        onClick={() => {
+                          setValue("selectedType", "classification");
+                          if (!labelMode) {
+                            setValue("labelMode", "single");
+                          }
+                        }}
                         className={cn(
                           "relative w-full px-7 py-6 text-left transition",
                           selectedType === "classification"

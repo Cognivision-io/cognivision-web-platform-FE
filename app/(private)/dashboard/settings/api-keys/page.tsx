@@ -1,6 +1,49 @@
-import { Eye, Link2, Trash2 } from "lucide-react";
+"use client";
+
+import { useCallback, useState } from "react";
+import { Eye, EyeOff, Link2, Trash2 } from "lucide-react";
+
+import CustomToast from "@/components/ui/sonner";
 
 const ApiKeysPage = () => {
+  const privateApiKey = "o0K9kdy2ZLjrw6iCkUT";
+  const publishableApiKey = "rf_wUkEmRMybTRW0GCjjYRQLj4V9aR2";
+
+  const [isPrivateKeyVisible, setIsPrivateKeyVisible] = useState(false);
+  const [isPublishableKeyVisible, setIsPublishableKeyVisible] = useState(false);
+
+  const maskedPrivateKey = "*".repeat(privateApiKey.length);
+  const maskedPublishableKey = "*".repeat(publishableApiKey.length);
+
+  const copyToClipboard = useCallback(async (value: string) => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        CustomToast.success("Copied to clipboard");
+        return;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = value;
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      textarea.style.top = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const successful = document.execCommand("copy");
+      document.body.removeChild(textarea);
+
+      if (!successful) {
+        throw new Error("Copy command failed");
+      }
+      CustomToast.success("Copied to clipboard");
+    } catch (error) {
+      console.error("Failed to copy to clipboard", error);
+      CustomToast.error("Failed to copy. Please try again.");
+    }
+  }, []);
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -32,20 +75,28 @@ const ApiKeysPage = () => {
           <div className="mt-4 rounded-md border border-[#e5e7eb] bg-[#f9fafb] px-4 py-2.5">
             <div className="flex items-center gap-3">
               <p className="flex-1 truncate text-[12px] text-[#111827]">
-                o0K9kdy2ZLjrw6iCkUT
+                {isPrivateKeyVisible ? privateApiKey : maskedPrivateKey}
               </p>
               <div className="flex items-center gap-3 text-[#9ca3af]">
                 <button
                   type="button"
                   className="transition-colors hover:text-[#4b5563]"
-                  aria-label="Reveal key"
+                  aria-label={
+                    isPrivateKeyVisible ? "Hide API key" : "Reveal API key"
+                  }
+                  onClick={() => setIsPrivateKeyVisible((prev) => !prev)}
                 >
-                  <Eye className="h-4 w-4" />
+                  {isPrivateKeyVisible ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
                 <button
                   type="button"
                   className="transition-colors hover:text-[#4b5563]"
                   aria-label="Copy key"
+                  onClick={() => void copyToClipboard(privateApiKey)}
                 >
                   <Link2 className="h-4 w-4" />
                 </button>
@@ -77,13 +128,32 @@ const ApiKeysPage = () => {
           <div className="mt-4 rounded-md border border-[#e5e7eb] bg-[#f9fafb] px-4 py-2.5">
             <div className="flex items-center gap-3">
               <p className="flex-1 truncate text-[12px] text-[#111827]">
-                rf_wUkEmRMybTRW0GCjjYRQLj4V9aR2
+                {isPublishableKeyVisible
+                  ? publishableApiKey
+                  : maskedPublishableKey}
               </p>
               <div className="flex items-center gap-3 text-[#9ca3af]">
                 <button
                   type="button"
                   className="transition-colors hover:text-[#4b5563]"
+                  aria-label={
+                    isPublishableKeyVisible
+                      ? "Hide API key"
+                      : "Reveal API key"
+                  }
+                  onClick={() => setIsPublishableKeyVisible((prev) => !prev)}
+                >
+                  {isPublishableKeyVisible ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className="transition-colors hover:text-[#4b5563]"
                   aria-label="Copy key"
+                  onClick={() => void copyToClipboard(publishableApiKey)}
                 >
                   <Link2 className="h-4 w-4" />
                 </button>
