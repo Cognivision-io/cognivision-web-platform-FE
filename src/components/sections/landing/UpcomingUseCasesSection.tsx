@@ -78,18 +78,15 @@ const UpcomingUseCasesSection = () => {
   return (
     <section className="bg-[#F4F7FE] py-20 md:py-24 overflow-hidden">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-        <div className="max-w-3xl">
+        <div className="max-w-6xl">
           <h2 className="text-[32px] font-extrabold leading-tight text-black sm:text-[36px]">
             Upcoming use cases
           </h2>
           <p className="mt-6 text-[15px] leading-[1.9] text-[#111827]">
             Bring real-world intelligence to any industry with powerful vision
             and AR capabilities detect, measure, and understand everything in
-            real time.
-          </p>
-          <p className="mt-2 text-[15px] leading-[1.9] text-[#111827]">
-            From sports to healthcare to retail, our SDK adapts to every
-            environment&nbsp;turning visual data into instant, actionable
+            real time. From sports to healthcare to retail, our SDK adapts to
+            every environment turning visual data into instant, actionable
             insights.
           </p>
         </div>

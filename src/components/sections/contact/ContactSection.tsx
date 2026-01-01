@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Mail, Phone, Globe2, Linkedin, Instagram, Globe } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -88,24 +88,25 @@ const ContactSection = () => {
 
               {/* Social icons row */}
               <div className="mt-10 flex items-center gap-4 md:mt-16">
-                <button
-                  type="button"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white shadow-[0_10px_20px_rgba(0,0,0,0.35)]"
+                <a
+                  href="https://www.linkedin.com/company/meetcognivision/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="CogniVision on LinkedIn"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white shadow-[0_10px_20px_rgba(0,0,0,0.35)] transition hover:-translate-y-0.5 hover:opacity-95 hover:bg-white hover:text-black"
                 >
                   <Linkedin size={16} />
-                </button>
-                <button
-                  type="button"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white shadow-[0_10px_20px_rgba(0,0,0,0.35)]"
+                </a>
+
+                <a
+                  href="https://www.instagram.com/cogni_vision/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="CogniVision on Instagram"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white shadow-[0_10px_20px_rgba(0,0,0,0.35)] transition hover:-translate-y-0.5 hover:opacity-95 hover:bg-white hover:text-black"
                 >
                   <Instagram size={16} />
-                </button>
-                <button
-                  type="button"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white shadow-[0_10px_20px_rgba(0,0,0,0.35)]"
-                >
-                  <Globe size={16} />
-                </button>
+                </a>
               </div>
             </div>
           </div>
