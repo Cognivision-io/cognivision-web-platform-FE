@@ -12,7 +12,6 @@ export function proxy(request: NextRequest) {
   if (PUBLIC_FILE.test(pathname)) {
     return NextResponse.next();
   }
-
   const sessionToken = request.cookies.get(AUTH_SESSION_COOKIE)?.value;
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
   const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
