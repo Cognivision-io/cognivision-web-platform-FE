@@ -168,7 +168,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       {/* User Profile */}
-      <SidebarFooter style={{ padding: 0 }}>
+      <SidebarFooter className={`mb-4 ${collapsed ? "px-2" : "px-6"}`}>
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>

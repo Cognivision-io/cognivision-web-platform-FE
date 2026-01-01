@@ -20,6 +20,15 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const normalizeLoginErrorMessage = (rawMessage: string) => {
+    const normalized = rawMessage
+      .trim()
+      .replace(/[.!?]+$/, "")
+      .toLowerCase();
+    if (normalized === "entity not found") return "User not found";
+    return capitalize(rawMessage);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
@@ -30,7 +39,7 @@ const LoginPage = () => {
         return;
       }
 
-      CustomToast.success(capitalize(response.message ?? "Success"));
+      CustomToast.success("Login Successful");
 
       const token = response.data.tokens.token;
       const userPayload = response.data.user;
@@ -65,9 +74,11 @@ const LoginPage = () => {
       }
 
       if (Array.isArray(message)) {
-        message.forEach((msg: string) => CustomToast.error(capitalize(msg)));
+        message.forEach((msg: string) =>
+          CustomToast.error(normalizeLoginErrorMessage(msg))
+        );
       } else if (typeof message === "string") {
-        CustomToast.error(capitalize(message));
+        CustomToast.error(normalizeLoginErrorMessage(message));
       } else {
         CustomToast.error("Something went wrong. Please try again.");
       }
