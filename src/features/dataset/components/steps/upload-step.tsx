@@ -12,7 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDropzone } from "react-dropzone";
-import { useUploadImagesMutation, useUploadFolderMutation } from "@/features/dataset/mutations/upload.mutation";
+import {
+  useUploadImagesMutation,
+  useUploadFolderMutation,
+} from "@/features/dataset/mutations/upload.mutation";
 import { useProjectQuery } from "@/features/dataset/queries/project.query";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
@@ -26,7 +29,9 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
   const [batchName, setBatchName] = useState("");
   const [tags, setTags] = useState("");
   const [files, setFiles] = useState<File[]>([]);
-  const [previewImages, setPreviewImages] = useState<{ file: File; preview: string }[]>([]);
+  const [previewImages, setPreviewImages] = useState<
+    { file: File; preview: string }[]
+  >([]);
   const [uploadProgress, setUploadProgress] = useState(false);
 
   const params = useParams();
@@ -37,7 +42,8 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
   const handleSuccess = (data: any) => {
     setUploadProgress(false);
     const roboflowProjectId = data.projectId;
-    const imageIds = data.results?.successful?.map((item: any) => item.result.id) || [];
+    const imageIds =
+      data.results?.successful?.map((item: any) => item.result.id) || [];
 
     toast.success("Uploaded successfully");
     onNext({ roboflowProjectId, imageIds });
@@ -85,7 +91,9 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
   const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
     if (selectedFiles.length > 0) {
-      const validFiles = selectedFiles.filter(file => file.type.startsWith('image/'));
+      const validFiles = selectedFiles.filter((file) =>
+        file.type.startsWith("image/")
+      );
       const newPreviews = validFiles.map((file) => ({
         file,
         preview: URL.createObjectURL(file),
@@ -116,7 +124,7 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
 
     // Check if files have webkitRelativePath determining if it was a folder upload
     // Typically mixed uploads are tricky, but if we use the folder button, all might share logic
-    // For simplicity, if we used the folder input, we might want to call uploadFolder, 
+    // For simplicity, if we used the folder input, we might want to call uploadFolder,
     // but the backend logic for uploadImages is similar if we just pass files.
     // However, the user specifically asked for /project/upload-folder if user upload folder.
     // The dropzone flattens files. The folderInputRef gives files with webkitRelativePath.
@@ -124,25 +132,27 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
     // Simplification: If any file has a path separator in webkitRelativePath, treat as folder upload?
     // Or simpler: Use uploadImages for drag/drop and file selection, uploadFolder for folder selection logic.
     // Given the state is merged, we'll try to determine best generic strategy.
-    // If we assume purely on how they were added: 
+    // If we assume purely on how they were added:
     // It's hard to distinguish once merged into 'files' array without tracking source.
 
     // Let's check if any file has a non-empty webkitRelativePath indicating folder structure.
-    const isFolderUpload = files.some(f => f.webkitRelativePath && f.webkitRelativePath.includes('/'));
+    const isFolderUpload = files.some(
+      (f) => f.webkitRelativePath && f.webkitRelativePath.includes("/")
+    );
 
     if (isFolderUpload) {
       uploadFolder({
         projectId: uploadProjectId,
         batch: batchName,
         files,
-        id: projectId
+        id: projectId,
       });
     } else {
       uploadImages({
         projectId: uploadProjectId,
         batch: batchName,
         files,
-        id: projectId
+        id: projectId,
       });
     }
   };
@@ -168,9 +178,7 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-sm font-semibold text-slate-900">
-            Tags:
-          </Label>
+          <Label className="text-sm font-semibold text-slate-900">Tags:</Label>
           <Input
             value={tags}
             onChange={(e) => setTags(e.target.value)}
@@ -190,7 +198,10 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {previewImages.map((img, index) => (
-              <div key={index} className="relative aspect-square group rounded-lg overflow-hidden border border-slate-200">
+              <div
+                key={index}
+                className="relative aspect-square group rounded-lg overflow-hidden border border-slate-200"
+              >
                 <Image
                   src={img.preview}
                   alt="preview"
@@ -225,14 +236,20 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
           </div>
 
           <div className="mt-8 flex justify-end gap-3">
-            <Button variant="outline" onClick={() => {
-              setFiles([]);
-              setPreviewImages([]);
-            }} disabled={uploadProgress}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setFiles([]);
+                setPreviewImages([]);
+              }}
+              disabled={uploadProgress}
+            >
               Cancel
             </Button>
             <Button onClick={handleUpload} disabled={uploadProgress}>
-              {uploadProgress && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {uploadProgress && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               {uploadProgress ? "Uploading..." : "Start Upload"}
             </Button>
           </div>
@@ -243,10 +260,11 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
           {/* Drag and Drop Area */}
           <div
             {...getRootProps()}
-            className={`flex min-h-[400px] flex-col rounded-xl border-2 border-dashed transition-colors ${isDragActive
-              ? "border-primary bg-primary/5"
-              : "border-[#e1e4f5] bg-white"
-              } p-8`}
+            className={`flex min-h-[400px] flex-col rounded-xl border-2 border-dashed transition-colors ${
+              isDragActive
+                ? "border-primary bg-primary/5"
+                : "border-[#e1e4f5] bg-white"
+            } p-8`}
           >
             <input {...getInputProps()} />
             <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
@@ -267,7 +285,7 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
                   variant="outline"
                   onClick={open}
                   type="button"
-                  className="h-10 gap-2 rounded-lg border-slate-300 font-medium text-slate-700 hover:bg-slate-50"
+                  className="h-10 gap-2 rounded-lg border-slate-300 font-medium text-slate-700 hover:bg-slate-100 hover:text-black"
                 >
                   <FileText className="h-4 w-4" />
                   Select File(s)
@@ -277,7 +295,7 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
                     variant="outline"
                     type="button"
                     onClick={() => folderInputRef.current?.click()}
-                    className="h-10 gap-2 rounded-lg border-slate-300 font-medium text-slate-700 hover:bg-slate-50"
+                    className="h-10 gap-2 rounded-lg border-slate-300 font-medium text-slate-700 hover:bg-slate-100 hover:text-black"
                   >
                     <Folder className="h-4 w-4" />
                     Select Folder
@@ -346,7 +364,6 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
           </div>
         </div>
       )}
-
     </>
   );
 };

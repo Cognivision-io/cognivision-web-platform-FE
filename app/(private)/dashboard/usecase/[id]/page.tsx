@@ -97,7 +97,7 @@ const UseCaseDetailPage = () => {
                 type="button"
                 variant="outline"
                 asChild
-                className="h-12 rounded-lg border-2 border-[#d7ccff] bg-white px-6 text-base font-semibold text-primary hover:border-[#b8a0ff] hover:bg-[#f7f3ff]"
+                className="h-12 rounded-lg border-2 border-[#d7ccff] bg-white px-6 text-base font-semibold text-primary hover:border-[#b8a0ff] hover:bg-[#f7f3ff] hover:text-primary"
               >
                 <Link href={`/dashboard/usecase/${id}/upload-dataset`}>
                   <CloudUpload className="h-5 w-5" />

@@ -69,6 +69,11 @@ export function AppSidebar() {
     }
   };
 
+  const isActiveRoute = (pathname: string, href: string) => {
+    if (href === "/dashboard") return pathname === "/dashboard"; // keep dashboard strict
+    return pathname === href || pathname.startsWith(href + "/");
+  };
+
   return (
     <Sidebar collapsible="icon" className="border-r">
       <SidebarContent className="pt-6">
@@ -95,35 +100,42 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    className={cn(
-                      "mb-1 h-10",
-                      pathname === item.url
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                    )}
-                  >
-                    <Link
-                      href={item.url}
-                      className="flex flex-1 items-center gap-2"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && (
-                        <span className="flex-1">{item.title}</span>
+              {mainItems.map((item) => {
+                const isActive = isActiveRoute(pathname, item.url);
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      className={cn(
+                        "mb-1 h-10",
+                        isActive
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                        isActive
+                          ? "active:bg-primary/10 active:text-primary"
+                          : "active:bg-accent active:text-accent-foreground"
                       )}
-                      <span
-                        className={cn(
-                          "ml-auto hidden h-full w-1 rounded bg-primary md:inline-block",
-                          pathname === item.url ? "opacity-100" : "opacity-0"
+                    >
+                      <Link
+                        href={item.url}
+                        className="flex flex-1 items-center gap-2"
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {!collapsed && (
+                          <span className="flex-1">{item.title}</span>
                         )}
-                      />
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                        <span
+                          className={cn(
+                            "ml-auto hidden h-full w-1 rounded bg-primary md:inline-block",
+                            isActive ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -137,7 +149,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       asChild
-                      className="text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      className="text-muted-foreground hover:bg-accent hover:text-accent-foreground active:bg-accent active:text-accent-foreground"
                     >
                       <Link
                         href={item.url}

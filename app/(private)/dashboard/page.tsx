@@ -1,23 +1,40 @@
 import Link from "next/link";
-import { BarChart3, ChevronRight, Factory, HardHat, Microscope, ShieldCheck, Sprout } from "lucide-react";
+import {
+  BarChart3,
+  ChevronRight,
+  Factory,
+  HardHat,
+  Microscope,
+  ShieldCheck,
+  Sprout,
+} from "lucide-react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useCaseTemplates } from "@/data/use-case-templates";
 
 const upcomingUseCases = [
   {
     title: "Construction",
-    description: "Verify 3D scans, monitor safety zones, and validate site progress.",
+    description:
+      "Verify 3D scans, monitor safety zones, and validate site progress.",
     icon: HardHat,
   },
   {
     title: "Agriculture",
-    description: "Detect crop health, yield, and ripeness directly from field footage.",
+    description:
+      "Detect crop health, yield, and ripeness directly from field footage.",
     icon: Sprout,
   },
   {
     title: "Manufacturing",
-    description: "Catch defects on assembly lines with high-speed anomaly detection.",
+    description:
+      "Catch defects on assembly lines with high-speed anomaly detection.",
     icon: Factory,
   },
   {
@@ -27,7 +44,8 @@ const upcomingUseCases = [
   },
   {
     title: "Security",
-    description: "Power ethical surveillance with redaction and context alerts.",
+    description:
+      "Power ethical surveillance with redaction and context alerts.",
     icon: ShieldCheck,
   },
 ];
@@ -40,10 +58,12 @@ const DashboardPage = () => {
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary/70">
             Explore templates
           </p>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-900">Pick a use case template</h1>
+          <h1 className="mt-2 text-3xl font-semibold text-slate-900">
+            Pick a use case template
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Choose the industry workflow you want to launch—each option opens a tailored VisionKit
-            experience.
+            Choose the industry workflow you want to launch—each option opens a
+            tailored VisionKit experience.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -59,10 +79,14 @@ const DashboardPage = () => {
                 </div>
                 <div>
                   <p className="text-lg font-semibold">{useCase.title}</p>
-                  <p className="text-xs text-muted-foreground">Tap to explore workflow</p>
+                  <p className="text-xs text-muted-foreground">
+                    Tap to explore workflow
+                  </p>
                 </div>
               </div>
-              <p className="mt-4 text-sm text-muted-foreground">{useCase.description}</p>
+              <p className="mt-4 text-sm text-muted-foreground">
+                {useCase.description}
+              </p>
               <div className="mt-5 flex items-center gap-2 text-sm font-semibold text-primary">
                 <span>Open template</span>
                 <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -79,7 +103,10 @@ const DashboardPage = () => {
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {upcomingUseCases.map((useCase) => (
-            <Card key={useCase.title} className="transition-all hover:shadow-lg">
+            <Card
+              key={useCase.title}
+              className="transition-all hover:shadow-lg"
+            >
               <CardHeader>
                 <div className="mb-3 flex h-24 w-full items-center justify-center rounded-lg bg-muted">
                   <useCase.icon className="h-10 w-10 text-primary" />
@@ -87,7 +114,9 @@ const DashboardPage = () => {
                 <CardTitle className="text-base">{useCase.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-xs">{useCase.description}</CardDescription>
+                <CardDescription className="text-xs">
+                  {useCase.description}
+                </CardDescription>
               </CardContent>
             </Card>
           ))}
