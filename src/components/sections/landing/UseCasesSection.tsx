@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const UseCasesSection = () => {
   return (
@@ -27,13 +28,14 @@ const UseCasesSection = () => {
                 the jack, eliminating manual tools and disputes during gameplay.
               </p>
 
-              <button
+              <Link
+                href={"/login"}
                 type="button"
                 className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#5628e0] px-6 py-2.5 text-[14px] font-semibold text-white shadow-[0_16px_36px_rgba(86,40,224,0.5)]"
               >
                 <span>Explore More</span>
                 <ArrowRight size={16} />
-              </button>
+              </Link>
             </div>
 
             <div className="mt-4 overflow-hidden rounded-b-[26px]">
@@ -63,7 +65,7 @@ const UseCasesSection = () => {
             {/* Left text panel */}
             <div className="flex items-center justify-center bg-linear-to-r from-black via-black to-black/60 px-10 py-10 md:px-14 md:py-14">
               <div className="max-w-md text-white">
-                <h3 className="text-[46px] font-extrabold leading-snug md:text-[30px]">
+                <h3 className="text-[56px] font-extrabold leading-snug md:text-[44px]">
                   WGTS (Who’s
                   <br />
                   Got The Shot)

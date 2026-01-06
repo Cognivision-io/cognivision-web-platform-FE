@@ -65,7 +65,7 @@ const LandingPage = () => {
 
             <Link
               href="/register"
-              className="mt-8 inline-flex items-center justify-center self-center md:self-start rounded-full bg-[#5b25e5] px-7 py-3 text-base font-semibold text-white shadow-[0_16px_38px_rgba(68,43,199,0.35)] transition duration-150 hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center self-center md:self-start rounded-full bg-[#5b25e5] px-7 py-3 text-base font-semibold text-white shadow-[0_16px_38px_rgba(68,43,199,0.35)] transition duration-150 hover:-translate-y-0.5"
             >
               Get Started
             </Link>
