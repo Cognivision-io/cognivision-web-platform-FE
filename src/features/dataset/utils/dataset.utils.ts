@@ -7,7 +7,6 @@ export const formatProjectDate = (timestamp?: number | string | null) => {
   }
 
   const date = new Date(Number(timestamp) * 1000);
-
   const header = `Uploaded on ${date.toLocaleDateString("en-US", {
     day: "2-digit",
     month: "2-digit",
