@@ -8,6 +8,7 @@ import { useProjectQuery } from "@/features/dataset/queries/project.query";
 import { useAutoAnnotationBatchDirectMutation, useCreateProjectMutation, useUploadAnnotationMutation } from "@/features/dataset/mutations/project.mutation";
 import { useUploadImagesMutation } from "@/features/dataset/mutations/upload.mutation";
 import type { AnnotationItem } from "@/interfaces/project.interface";
+import type { Image } from "@/interfaces/image.interface";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
 import { toast } from "sonner";
@@ -353,8 +354,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
             {trainFiles.map((file, i) => (
               <SidebarImageItem
                 key={file.id || i}
-                fileId={file.id}
-                roboflowProjectId={roboflowProjectId}
+                image={file}
                 isSelected={selectedFileIndex === i}
                 onClick={() => setSelectedFileIndex(i)}
               />
@@ -761,18 +761,19 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
 };
 
 const SidebarImageItem = memo(({
-  fileId,
-  roboflowProjectId,
+  image,
   isSelected,
   onClick
 }: {
-  fileId: string;
-  roboflowProjectId: string;
+  image: Image;
   isSelected: boolean;
   onClick: () => void;
 }) => {
-  const { data } = useImageDetailQuery(roboflowProjectId, fileId, { enabled: !!roboflowProjectId && !!fileId });
-  const imageUrl = data?.data?.image?.urls?.thumb || data?.data?.image?.urls?.original || data?.data?.image?.url || "";
+  const imageUrl =
+    image.urls?.thumb ||
+    image.urls?.original ||
+    image.url ||
+    (image.owner ? `https://source.roboflow.com/${image.owner}/${image.id}/thumb.jpg` : "");
 
   return (
     <button
