@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TestModelDialog } from "@/features/dataset/components/test-model/test-model-dialog";
+import { ProjectImagesTabs } from "@/features/dataset/components/project-images-tabs";
 
 import { formatDistanceToNow } from "date-fns";
 
@@ -182,6 +183,14 @@ const ProjectDetailPage = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Images */}
+        <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
+          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+            Images
+          </h3>
+          <ProjectImagesTabs projectId={projectId} />
         </div>
 
         {/* Data Splits */}

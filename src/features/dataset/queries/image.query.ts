@@ -4,6 +4,7 @@ import type { GetImagesResponse } from "@/interfaces/image.interface";
 import type { AxiosError } from "axios";
 
 export const UNANNOTATED_IMAGES_QUERY_KEY = ["project", "unannotated-images"] as const;
+export const ANNOTATED_IMAGES_QUERY_KEY = ["project", "annotated-images"] as const;
 
 export const useUnannotatedImagesQuery = (
   id: number,
@@ -14,6 +15,20 @@ export const useUnannotatedImagesQuery = (
   return useQuery({
     queryKey: [...UNANNOTATED_IMAGES_QUERY_KEY, id, offset, limit],
     queryFn: () => projectApi.getUnannotatedImages(id, offset, limit),
+    enabled: !!id,
+    ...options,
+  });
+};
+
+export const useAnnotatedImagesQuery = (
+  id: number,
+  offset: number = 0,
+  limit: number = 50,
+  options?: Omit<UseQueryOptions<GetImagesResponse, AxiosError>, "queryKey" | "queryFn">
+) => {
+  return useQuery({
+    queryKey: [...ANNOTATED_IMAGES_QUERY_KEY, id, offset, limit],
+    queryFn: () => projectApi.getAnnotatedImages(id, offset, limit),
     enabled: !!id,
     ...options,
   });

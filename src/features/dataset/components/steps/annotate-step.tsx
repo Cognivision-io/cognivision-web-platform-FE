@@ -1,11 +1,13 @@
 import { Pencil, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
-import { useUnannotatedImagesQuery, useImageDetailQuery } from "@/features/dataset/queries/image.query";
+import {
+  useUnannotatedImagesQuery,
+  useImageDetailQuery,
+} from "@/features/dataset/queries/image.query";
 import { useState } from "react";
 import { AnnotateStepProps } from "@/interfaces/project.interface";
 import { useProjectQuery } from "@/features/dataset/queries/project.query";
-
 
 import { formatProjectDate } from "@/features/dataset/utils/dataset.utils";
 
@@ -14,14 +16,18 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
   const projectId = Number(params.id);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const { data: projectData, isLoading: isLoadingProject } = useProjectQuery(projectId);
-  const { data: imagesData, isLoading: isLoadingUnannotated } = useUnannotatedImagesQuery(projectId, 0, 50, {
-    enabled: !uploadedData
-  });
+  const { data: projectData, isLoading: isLoadingProject } =
+    useProjectQuery(projectId);
+  const { data: imagesData, isLoading: isLoadingUnannotated } =
+    useUnannotatedImagesQuery(projectId, 0, 50, {
+      enabled: !uploadedData,
+    });
 
-  const timestamp = projectData?.data?.project?.updated || projectData?.data?.project?.created;
+  const timestamp =
+    projectData?.data?.project?.updated || projectData?.data?.project?.created;
 
-  const { header: formattedDateHeader, badge: formattedDateBadge } = formatProjectDate(timestamp);
+  const { header: formattedDateHeader, badge: formattedDateBadge } =
+    formatProjectDate(timestamp);
 
   const currentUploadImageId = uploadedData?.imageIds[currentImageIndex];
   const { data: imageDetail, isLoading: isLoadingDetail } = useImageDetailQuery(
@@ -32,15 +38,16 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
 
   const isLoading = uploadedData ? isLoadingDetail : isLoadingUnannotated;
 
-  // Normalize the image object. 
+  // Normalize the image object.
   // If uploadedData is present, the API returns { data: { image: ... } }
   // If not, useUnannotatedImagesQuery returns { results: [...] }
   const currentImage = uploadedData
     ? imageDetail?.data?.image
     : imagesData?.results?.[currentImageIndex];
 
-  const totalImages = uploadedData ? uploadedData.imageIds.length : (imagesData?.results?.length || 0);
-
+  const totalImages = uploadedData
+    ? uploadedData.imageIds.length
+    : imagesData?.results?.length || 0;
 
   return (
     <div className="p-8">
@@ -94,7 +101,9 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
                     size="sm"
                     variant="secondary"
                     disabled={currentImageIndex === 0}
-                    onClick={() => setCurrentImageIndex(prev => Math.max(0, prev - 1))}
+                    onClick={() =>
+                      setCurrentImageIndex((prev) => Math.max(0, prev - 1))
+                    }
                   >
                     Prev
                   </Button>
@@ -102,7 +111,11 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
                     size="sm"
                     variant="secondary"
                     disabled={currentImageIndex === totalImages - 1}
-                    onClick={() => setCurrentImageIndex(prev => Math.min(totalImages - 1, prev + 1))}
+                    onClick={() =>
+                      setCurrentImageIndex((prev) =>
+                        Math.min(totalImages - 1, prev + 1)
+                      )
+                    }
                   >
                     Next
                   </Button>
@@ -137,7 +150,7 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
             </button>
 
             {/* Auto-Label */}
-            <button className="flex w-full items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 text-left transition-all hover:border-slate-300 hover:bg-slate-50">
+            {/* <button className="flex w-full items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 text-left transition-all hover:border-slate-300 hover:bg-slate-50">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
                 <Sparkles className="h-5 w-5" />
               </div>
@@ -150,7 +163,7 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
                   label your entire batch.
                 </div>
               </div>
-            </button>
+            </button> */}
           </div>
 
           {/* Temporary Navigation for Dev */}

@@ -4,6 +4,32 @@ import type {
   CreateProjectResponse,
   GetProjectsResponse,
 } from "@/interfaces/project.interface";
+import type { GetImagesResponse, Image } from "@/interfaces/image.interface";
+
+const ROBOFLOW_SOURCE_BASE = "https://source.roboflow.com";
+
+const buildRoboflowUrls = (image: Image, includeAnnotation: boolean = false): Image => {
+  if (!image?.owner || !image?.id) {
+    return image;
+  }
+
+  const baseUrl = `${ROBOFLOW_SOURCE_BASE}/${image.owner}/${image.id}`;
+  const thumbUrl = `${baseUrl}/thumb.jpg`;
+  const urls = {
+    ...image.urls,
+    thumb: image.urls?.thumb ?? thumbUrl,
+    original: image.urls?.original ?? thumbUrl,
+    ...(includeAnnotation
+      ? { annotation: image.urls?.annotation ?? `${baseUrl}/annotation-PASC.png` }
+      : {}),
+  };
+
+  return {
+    ...image,
+    url: image.url ?? urls.original ?? thumbUrl,
+    urls,
+  };
+};
 
 export const projectApi = {
   createProject: async (payload: CreateProjectPayload) => {
@@ -75,12 +101,31 @@ export const projectApi = {
   getUnannotatedImages: async (id: number, offset: number = 0, limit: number = 50) => {
     const response = await api.get(`/project/${id}/unannotated-images`, {
       params: {
-        offset: 0,
-        limit: 500,
+        offset,
+        limit,
       },
     });
-    // Unwrap the response to match GetImagesResponse interface
-    return response.data.data as import("@/interfaces/image.interface").GetImagesResponse;
+    const data = response.data.data as GetImagesResponse;
+    return {
+      ...data,
+      limit: data.limit ?? limit,
+      results: (data.results || []).map((image) => buildRoboflowUrls(image)),
+    };
+  },
+
+  getAnnotatedImages: async (id: number, offset: number = 0, limit: number = 50) => {
+    const response = await api.get(`/project/${id}/annotated-images`, {
+      params: {
+        offset,
+        limit,
+      },
+    });
+    const data = response.data.data as GetImagesResponse;
+    return {
+      ...data,
+      limit: data.limit ?? limit,
+      results: (data.results || []).map((image) => buildRoboflowUrls(image, true)),
+    };
   },
 
   deleteProject: async (id: string) => {
