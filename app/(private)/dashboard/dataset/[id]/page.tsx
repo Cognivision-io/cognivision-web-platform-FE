@@ -2,7 +2,16 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useProjectQuery } from "@/features/dataset/queries/project.query";
-import { ArrowLeft, Upload, Settings, Calendar, Image as ImageIcon, Eye, Shield, Tag } from "lucide-react";
+import {
+  ArrowLeft,
+  Upload,
+  Settings,
+  Calendar,
+  Image as ImageIcon,
+  Eye,
+  Shield,
+  Tag,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TestModelDialog } from "@/features/dataset/components/test-model/test-model-dialog";
 
@@ -19,7 +28,9 @@ const ProjectDetailPage = () => {
     return (
       <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-center">
-          <div className="text-lg text-slate-500">Loading project details...</div>
+          <div className="text-lg text-slate-500">
+            Loading project details...
+          </div>
         </div>
       </div>
     );
@@ -29,7 +40,9 @@ const ProjectDetailPage = () => {
     return (
       <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-4">
-          <div className="text-lg text-red-600">Failed to load project details</div>
+          <div className="text-lg text-red-600">
+            Failed to load project details
+          </div>
           <Button onClick={() => router.back()}>Go Back</Button>
         </div>
       </div>
@@ -49,22 +62,26 @@ const ProjectDetailPage = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-3xl font-semibold text-slate-900">{project.name}</h1>
+          <h1 className="text-3xl font-semibold text-slate-900">
+            {project.name}
+          </h1>
         </div>
 
         {/* Action Buttons */}
         <div className="flex gap-3">
           <Button
-            onClick={() => router.push(`/dashboard/dataset/${params.id}/upload-dataset`)}
+            onClick={() =>
+              router.push(`/dashboard/dataset/${params.id}/upload-dataset`)
+            }
             className="bg-[#6841ff] hover:bg-[#5835e6]"
           >
             <Upload className="mr-2 h-4 w-4" />
             Upload Data
           </Button>
-          <Button variant="outline">
+          {/* <Button variant="outline">
             <Settings className="mr-2 h-4 w-4" />
             Settings
-          </Button>
+          </Button> */}
         </div>
 
         {/* Project Info Grid */}
@@ -77,15 +94,21 @@ const ProjectDetailPage = () => {
             <div className="space-y-3">
               <div>
                 <p className="text-xs text-slate-500">Name</p>
-                <p className="text-base font-medium text-slate-900">{workspace.name}</p>
+                <p className="text-base font-medium text-slate-900">
+                  {workspace.name}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">URL</p>
-                <p className="text-base font-medium text-slate-900">{workspace.url}</p>
+                <p className="text-base font-medium text-slate-900">
+                  {workspace.url}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">Members</p>
-                <p className="text-base font-medium text-slate-900">{workspace.members}</p>
+                <p className="text-base font-medium text-slate-900">
+                  {workspace.members}
+                </p>
               </div>
             </div>
           </div>
@@ -109,7 +132,10 @@ const ProjectDetailPage = () => {
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-slate-400" />
                 <p className="text-sm text-slate-500">
-                  Created {formatDistanceToNow(new Date(project.created * 1000), { addSuffix: true })}
+                  Created{" "}
+                  {formatDistanceToNow(new Date(project.created * 1000), {
+                    addSuffix: true,
+                  })}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -132,19 +158,27 @@ const ProjectDetailPage = () => {
                   <ImageIcon className="h-4 w-4" />
                   Images
                 </span>
-                <span className="text-base font-semibold text-slate-900">{project.images}</span>
+                <span className="text-base font-semibold text-slate-900">
+                  {project.images}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-slate-600">Unannotated</span>
-                <span className="text-base font-semibold text-amber-600">{project.unannotated}</span>
+                <span className="text-base font-semibold text-amber-600">
+                  {project.unannotated}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-slate-600">Versions</span>
-                <span className="text-base font-semibold text-slate-900">{project.versions}</span>
+                <span className="text-base font-semibold text-slate-900">
+                  {project.versions}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-slate-600">Annotation Type</span>
-                <span className="text-xs font-medium text-slate-900">{project.annotation}</span>
+                <span className="text-xs font-medium text-slate-900">
+                  {project.annotation}
+                </span>
               </div>
             </div>
           </div>
@@ -158,8 +192,13 @@ const ProjectDetailPage = () => {
             </h3>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               {Object.entries(project.splits).map(([key, value]) => (
-                <div key={key} className="rounded-lg border border-[#e3e5f1] bg-[#f8f9fc] p-4">
-                  <p className="mb-1 text-xs uppercase tracking-wide text-slate-500">{key}</p>
+                <div
+                  key={key}
+                  className="rounded-lg border border-[#e3e5f1] bg-[#f8f9fc] p-4"
+                >
+                  <p className="mb-1 text-xs uppercase tracking-wide text-slate-500">
+                    {key}
+                  </p>
                   <p className="text-2xl font-bold text-slate-900">{value}</p>
                 </div>
               ))}
@@ -196,62 +235,68 @@ const ProjectDetailPage = () => {
         )}
 
         {/* Preprocessing Settings */}
-        {project.preprocessing && Object.keys(project.preprocessing).length > 0 && (
-          <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
-              Preprocessing
-            </h3>
-            <div className="space-y-3">
-              {project.preprocessing.resize && (
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Resize</p>
-                  <p className="text-sm text-slate-600">
-                    {project.preprocessing.resize.format} {project.preprocessing.resize.width} x{" "}
-                    {project.preprocessing.resize.height}
-                  </p>
-                </div>
-              )}
-              {project.preprocessing["auto-orient"] && (
-                <div>
-                  <p className="text-sm text-slate-600">Auto-orient enabled</p>
-                </div>
-              )}
+        {project.preprocessing &&
+          Object.keys(project.preprocessing).length > 0 && (
+            <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Preprocessing
+              </h3>
+              <div className="space-y-3">
+                {project.preprocessing.resize && (
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Resize</p>
+                    <p className="text-sm text-slate-600">
+                      {project.preprocessing.resize.format}{" "}
+                      {project.preprocessing.resize.width} x{" "}
+                      {project.preprocessing.resize.height}
+                    </p>
+                  </div>
+                )}
+                {project.preprocessing["auto-orient"] && (
+                  <div>
+                    <p className="text-sm text-slate-600">
+                      Auto-orient enabled
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Augmentation Settings */}
-        {project.augmentation && Object.keys(project.augmentation).length > 0 && (
-          <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
-              Augmentation
-            </h3>
-            <div className="space-y-3">
-              {project.augmentation.image && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Image versions: {project.augmentation.image.versions}
-                  </p>
-                </div>
-              )}
-              {project.augmentation.flip && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Flip: {project.augmentation.flip.horizontal ? "Horizontal" : ""}{" "}
-                    {project.augmentation.flip.vertical ? "Vertical" : ""}
-                  </p>
-                </div>
-              )}
-              {project.augmentation.brightness && (
-                <div>
-                  <p className="text-sm text-slate-600">
-                    Brightness: ±{project.augmentation.brightness.percent}%
-                  </p>
-                </div>
-              )}
+        {project.augmentation &&
+          Object.keys(project.augmentation).length > 0 && (
+            <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Augmentation
+              </h3>
+              <div className="space-y-3">
+                {project.augmentation.image && (
+                  <div>
+                    <p className="text-sm text-slate-600">
+                      Image versions: {project.augmentation.image.versions}
+                    </p>
+                  </div>
+                )}
+                {project.augmentation.flip && (
+                  <div>
+                    <p className="text-sm text-slate-600">
+                      Flip:{" "}
+                      {project.augmentation.flip.horizontal ? "Horizontal" : ""}{" "}
+                      {project.augmentation.flip.vertical ? "Vertical" : ""}
+                    </p>
+                  </div>
+                )}
+                {project.augmentation.brightness && (
+                  <div>
+                    <p className="text-sm text-slate-600">
+                      Brightness: ±{project.augmentation.brightness.percent}%
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Versions List */}
         {versions && versions.length > 0 && (
@@ -267,9 +312,14 @@ const ProjectDetailPage = () => {
                 >
                   <div className="mb-2 flex items-start justify-between">
                     <div>
-                      <h4 className="font-semibold text-slate-900">{version.name}</h4>
+                      <h4 className="font-semibold text-slate-900">
+                        {version.name}
+                      </h4>
                       <p className="text-xs text-slate-500">
-                        Created {formatDistanceToNow(new Date(version.created * 1000), { addSuffix: true })}
+                        Created{" "}
+                        {formatDistanceToNow(new Date(version.created * 1000), {
+                          addSuffix: true,
+                        })}
                       </p>
                     </div>
                     <span className="text-sm font-medium text-slate-600">
@@ -294,13 +344,13 @@ const ProjectDetailPage = () => {
                         Model trained: mAP {version.model.map}
                       </p>
                       <TestModelDialog version={version} project={project}>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 border-green-200 bg-white text-xs hover:bg-green-100 hover:text-green-900"
-                          >
-                            Test Model
-                          </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 border-green-200 bg-white text-xs hover:bg-green-100 hover:text-green-900"
+                        >
+                          Test Model
+                        </Button>
                       </TestModelDialog>
                     </div>
                   )}

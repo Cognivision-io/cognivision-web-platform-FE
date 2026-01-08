@@ -62,7 +62,7 @@ const DatasetPage = () => {
           {/* Title */}
           <div>
             <h1 className="text-[32px] font-semibold leading-tight text-slate-900">
-              Dataset
+              Projects
             </h1>
           </div>
 
@@ -124,6 +124,15 @@ const DatasetPage = () => {
               <div
                 key={project.id}
                 className="flex items-center gap-4 rounded-lg border border-[#e3e5f1] bg-white px-5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.04)] w-[60%] cursor-pointer transition-all hover:border-[#6841ff]/30 hover:shadow-[0_10px_24px_rgba(104,65,255,0.08)]"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleProjectClick(project.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleProjectClick(project.id);
+                  }
+                }}
               >
                 {/* Thumbnail */}
                 <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#e4e6f2] bg-[#f7f7fd] text-slate-300">
@@ -144,7 +153,7 @@ const DatasetPage = () => {
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button 
+                        <button
                           onClick={(e) => e.stopPropagation()}
                           className="text-slate-500 transition hover:text-slate-800"
                         >

@@ -35,7 +35,7 @@ import CustomToast from "../ui/sonner";
 
 const mainItems = [
   { title: "Use Case", url: "/dashboard", icon: Network },
-  { title: "Dataset", url: "/dashboard/dataset", icon: Database },
+  { title: "Projects", url: "/dashboard/dataset", icon: Database },
   { title: "Deployments", url: "/dashboard/deployments", icon: Rocket },
   { title: "Monitoring", url: "/dashboard/monitoring", icon: BarChart3 },
   { title: "Setting", url: "/dashboard/settings", icon: Settings },
