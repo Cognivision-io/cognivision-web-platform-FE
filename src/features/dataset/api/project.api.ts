@@ -41,7 +41,8 @@ export const projectApi = {
         roboflowProjectId: payload.projectId,
         batch: payload.batch,
         concurrency: 10,
-        id: payload.id
+        id: payload.id,
+        totalFiles: payload.files.length,
       },
       headers: {
         "Content-Type": "multipart/form-data",
@@ -63,7 +64,8 @@ export const projectApi = {
         roboflowProjectId: payload.projectId,
         batch: payload.batch,
         concurrency: 10,
-        id: payload.id
+        id: payload.id,
+        totalFiles: payload.files.length,
       },
       headers: {
         "Content-Type": "multipart/form-data",
