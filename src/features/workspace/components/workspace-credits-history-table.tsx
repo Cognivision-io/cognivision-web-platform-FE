@@ -7,9 +7,11 @@ import {
   type GridPaginationModel,
 } from "@mui/x-data-grid";
 import { format } from "date-fns";
+import { ChevronDown } from "lucide-react";
 
 import { useWorkspaceCreditsHistoryQuery } from "@/features/workspace/queries/workspace.query";
 import type { WorkspaceCreditHistoryEntry } from "@/interfaces/workspace.interface";
+import { cn } from "@/lib/utils";
 
 const formatCredits = (value?: number | string | null) => {
   const numericValue = typeof value === "number" ? value : Number(value);
@@ -66,13 +68,18 @@ type WorkspaceCreditsHistoryTableProps = {
   workspaceId?: number;
   workspaceName?: string;
   className?: string;
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
 };
 
 export const WorkspaceCreditsHistoryTable = ({
   workspaceId,
   workspaceName,
   className,
+  collapsible = false,
+  defaultCollapsed = false,
 }: WorkspaceCreditsHistoryTableProps) => {
+  const [isExpanded, setIsExpanded] = useState(!defaultCollapsed);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize: 10,
@@ -229,63 +236,82 @@ export const WorkspaceCreditsHistoryTable = ({
             A detailed ledger for {workspaceName ?? "this workspace"}.
           </p>
         </div>
-        <div className="rounded-full border border-[#e3e6f5] bg-[#f7f8ff] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#5b6280]">
-          {totalRows} records
+        <div className="flex items-center gap-2">
+          <div className="rounded-full border border-[#e3e6f5] bg-[#f7f8ff] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#5b6280]">
+            {totalRows} records
+          </div>
+          {collapsible && (
+            <button
+              type="button"
+              onClick={() => setIsExpanded((prev) => !prev)}
+              className="inline-flex items-center gap-2 rounded-full border border-[#e3e6f5] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#5b6280] transition hover:border-[#cad2f0]"
+            >
+              <span>{isExpanded ? "Hide history" : "View history"}</span>
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 transition-transform",
+                  isExpanded ? "rotate-180" : ""
+                )}
+              />
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="min-h-[420px]">
-        <DataGrid
-          autoHeight
-          rows={historyRows}
-          columns={columns}
-          loading={isLoading}
-          disableRowSelectionOnClick
-          disableColumnMenu
-          pagination
-          paginationMode="server"
-          rowCount={totalRows}
-          pageSizeOptions={[10, 20, 50]}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          slots={{
-            noRowsOverlay: CreditHistoryEmptyState,
-            noResultsOverlay: CreditHistoryEmptyState,
-          }}
-          sx={{
-            border: "1px solid #e6e9f5",
-            borderRadius: 16,
-            backgroundColor: "#ffffff",
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "#f3f5ff",
-              color: "#1b2559",
-              fontSize: 11,
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "0.24em",
-              borderBottom: "1px solid #e4e8f8",
-            },
-            "& .MuiDataGrid-columnSeparator": {
-              color: "#e4e8f8",
-            },
-            "& .MuiDataGrid-cell": {
-              borderBottom: "1px solid #eef1fb",
-              color: "#1f2937",
-              alignItems: "center",
-            },
-            "& .MuiDataGrid-row:hover": {
-              backgroundColor: "#f7f8ff",
-            },
-            "& .MuiDataGrid-footerContainer": {
-              borderTop: "1px solid #e4e8f8",
-              backgroundColor: "#fafbff",
-            },
-            "& .MuiDataGrid-overlay": {
+      {(!collapsible || isExpanded) && (
+        <div className="min-h-[420px]">
+          <DataGrid
+            autoHeight
+            rows={historyRows}
+            columns={columns}
+            loading={isLoading}
+            disableRowSelectionOnClick
+            disableColumnMenu
+            pagination
+            paginationMode="server"
+            rowCount={totalRows}
+            pageSizeOptions={[10, 20, 50]}
+            paginationModel={paginationModel}
+            onPaginationModelChange={setPaginationModel}
+            slots={{
+              noRowsOverlay: CreditHistoryEmptyState,
+              noResultsOverlay: CreditHistoryEmptyState,
+            }}
+            sx={{
+              border: "1px solid #e6e9f5",
+              borderRadius: 16,
               backgroundColor: "#ffffff",
-            },
-          }}
-        />
-      </div>
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "#f3f5ff",
+                color: "#1b2559",
+                fontSize: 11,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.24em",
+                borderBottom: "1px solid #e4e8f8",
+              },
+              "& .MuiDataGrid-columnSeparator": {
+                color: "#e4e8f8",
+              },
+              "& .MuiDataGrid-cell": {
+                borderBottom: "1px solid #eef1fb",
+                color: "#1f2937",
+                alignItems: "center",
+              },
+              "& .MuiDataGrid-row:hover": {
+                backgroundColor: "#f7f8ff",
+              },
+              "& .MuiDataGrid-footerContainer": {
+                borderTop: "1px solid #e4e8f8",
+                backgroundColor: "#fafbff",
+              },
+              "& .MuiDataGrid-overlay": {
+                backgroundColor: "#ffffff",
+              },
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

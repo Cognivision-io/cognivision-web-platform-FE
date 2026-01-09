@@ -17,6 +17,8 @@ import {
   Users,
 } from "lucide-react";
 import { CreateProjectDialog } from "@/features/dataset/components/create-project-dialog";
+import { WorkspaceCreditsHistoryTable } from "@/features/workspace/components/workspace-credits-history-table";
+import { WorkspaceCreditsSummaryCard } from "@/features/workspace/components/workspace-credits-summary-card";
 import {
   useProjectsQuery,
   useDeleteProjectMutation,
@@ -216,6 +218,21 @@ const DatasetPage = () => {
             />
           </div>
         </div>
+
+        {selectedWorkspace && (
+          <div className="space-y-4">
+            <WorkspaceCreditsSummaryCard
+              workspaceId={selectedWorkspace.id}
+              workspaceName={selectedWorkspace.name}
+            />
+            <WorkspaceCreditsHistoryTable
+              workspaceId={selectedWorkspace.id}
+              workspaceName={selectedWorkspace.name}
+              collapsible
+              defaultCollapsed
+            />
+          </div>
+        )}
 
         {/* Project list */}
         <div className="space-y-4 pt-2">

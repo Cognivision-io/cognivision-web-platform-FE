@@ -14,16 +14,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { TestModelDialog } from "@/features/dataset/components/test-model/test-model-dialog";
 import { ProjectImagesTabs } from "@/features/dataset/components/project-images-tabs";
-import { WorkspaceCreditsSummaryCard } from "@/features/workspace/components/workspace-credits-summary-card";
-import { WorkspaceCreditsHistoryTable } from "@/features/workspace/components/workspace-credits-history-table";
-import { useAuthStore } from "@/stores/auth-store";
-
 import { formatDistanceToNow } from "date-fns";
 
 const ProjectDetailPage = () => {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
   const projectId = parseInt(params.id);
 
   const { data, isLoading, error } = useProjectQuery(projectId);
@@ -54,8 +49,6 @@ const ProjectDetailPage = () => {
   }
 
   const { workspace, project, versions } = data.data;
-  const workspaceId =
-    workspace.id ?? project.workspaceId ?? user?.workspaces?.[0];
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">
@@ -120,10 +113,6 @@ const ProjectDetailPage = () => {
               </div>
             </div>
 
-            <WorkspaceCreditsSummaryCard
-              workspaceId={workspaceId}
-              workspaceName={workspace.name}
-            />
           </div>
 
           {/* Project Info Card */}
@@ -196,11 +185,6 @@ const ProjectDetailPage = () => {
             </div>
           </div>
         </div>
-
-        <WorkspaceCreditsHistoryTable
-          workspaceId={workspaceId}
-          workspaceName={workspace.name}
-        />
 
         {/* Images */}
         <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
