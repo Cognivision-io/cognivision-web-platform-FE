@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Box, Check, ChevronRight, Download, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,14 +19,36 @@ export const TestStep = () => {
   const { data: imagesResponse } = useUnannotatedImagesQuery(projectId, 0, 3);
 
   const project = projectResponse?.data?.project;
-  console.log(projectResponse);
   const versions = projectResponse?.data?.versions || [];
 
   const [isCreating, setIsCreating] = useState(false);
-  // Default to first version or a mock if none
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(
-    versions.length > 0 ? versions[0].id : null
+    null
   );
+  const [hasCreatedNewVersion, setHasCreatedNewVersion] = useState(false);
+  const [createdVersionId, setCreatedVersionId] = useState<string | null>(null);
+  const [createdVersionName, setCreatedVersionName] = useState<string | null>(
+    null
+  );
+
+  const latestVersion = useMemo(() => {
+    if (!versions.length) return null;
+    return [...versions].sort((a, b) => (b.created || 0) - (a.created || 0))[0];
+  }, [versions]);
+
+  useEffect(() => {
+    if (selectedVersionId) return;
+    if (!latestVersion?.id) return;
+    setSelectedVersionId(latestVersion.id);
+  }, [latestVersion?.id, selectedVersionId]);
+
+  useEffect(() => {
+    if (!createdVersionName) return;
+    const created = versions.find((v) => v.name === createdVersionName);
+    if (!created?.id) return;
+    setCreatedVersionId(created.id);
+    setSelectedVersionId(created.id);
+  }, [createdVersionName, versions]);
 
   const { mutate: trainModel, isPending: isTrainingModel } =
     useTrainModelMutation({
@@ -42,6 +64,10 @@ export const TestStep = () => {
     });
 
   const handleDeployModel = () => {
+    if (!hasCreatedNewVersion) {
+      toast.error("Create a new version before deploying a model");
+      return;
+    }
     if (!selectedVersion) {
       toast.error("Please select a version to deploy");
       return;
@@ -60,6 +86,7 @@ export const TestStep = () => {
     versions.find((v) => v.id === selectedVersionId) || versions[0];
 
   const selectedImages = imagesResponse?.results?.slice(0, 3) || [];
+  const canDeploy = hasCreatedNewVersion && !!selectedVersion && !isTrainingModel;
 
   return (
     <div className="flex bg-[#f8f9fc] min-h-[600px]">
@@ -139,6 +166,14 @@ export const TestStep = () => {
       {isCreating ? (
         <CreateVersionScreen
           onBack={() => setIsCreating(false)}
+          onCreated={({ versionId, versionName }) => {
+            setHasCreatedNewVersion(true);
+            setCreatedVersionName(versionName);
+            if (versionId) {
+              setCreatedVersionId(versionId);
+              setSelectedVersionId(versionId);
+            }
+          }}
           project={project}
           versions={versions}
           projectId={projectId}
@@ -202,7 +237,12 @@ export const TestStep = () => {
               <Button
                 variant="outline"
                 onClick={handleDeployModel}
-                disabled={isTrainingModel || !selectedVersion}
+                disabled={!canDeploy}
+                title={
+                  !hasCreatedNewVersion
+                    ? "Create a new version to deploy a model"
+                    : undefined
+                }
                 className="h-9 gap-2 border-[#6841ff] text-[#6841ff] hover:bg-[#f5f3ff] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Box className="h-4 w-4" />

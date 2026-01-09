@@ -20,12 +20,19 @@ import { toast } from "sonner";
 
 interface CreateVersionScreenProps {
   onBack: () => void;
+  onCreated?: (created: { versionId?: string; versionName: string }) => void;
   project: any;
   versions: any[];
   projectId: number;
 }
 
-export const CreateVersionScreen = ({ onBack, project, versions, projectId }: CreateVersionScreenProps) => {
+export const CreateVersionScreen = ({
+  onBack,
+  onCreated,
+  project,
+  versions,
+  projectId,
+}: CreateVersionScreenProps) => {
   const [currentStep, setCurrentStep] = useState(3); // Start at step 3 as per screenshot
   const [isPreprocessingModalOpen, setIsPreprocessingModalOpen] = useState(false);
   const [isAugmentationModalOpen, setIsAugmentationModalOpen] = useState(false);
@@ -144,11 +151,17 @@ export const CreateVersionScreen = ({ onBack, project, versions, projectId }: Cr
     });
 
     try {
-      await createVersionMutation.mutateAsync({
+      const response: any = await createVersionMutation.mutateAsync({
         id: projectId,
         payload
       });
       toast.success("Version created successfully!");
+      const createdVersionId =
+        response?.data?.version?.id ??
+        response?.version?.id ??
+        response?.data?.id ??
+        response?.id;
+      onCreated?.({ versionId: createdVersionId, versionName });
       onBack();
     } catch (error: any) {
       console.error("Failed to create version:", error);
