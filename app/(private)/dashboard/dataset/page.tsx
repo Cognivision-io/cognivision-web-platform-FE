@@ -12,6 +12,7 @@ import {
   ChevronDown,
   Edit,
   ImageIcon,
+  Link2,
   MoreHorizontal,
   Search,
   Users,
@@ -36,6 +37,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
+import { useWorkspaceApiKeyQuery } from "@/features/workspace/queries/workspace.query";
+import CustomToast from "@/components/ui/sonner";
 
 const DatasetPage = () => {
   const router = useRouter();
@@ -90,6 +93,38 @@ const DatasetPage = () => {
     () => workspaces.find((workspace) => workspace.id === selectedWorkspaceId),
     [workspaces, selectedWorkspaceId]
   );
+
+  const { data: workspaceApiKeyResponse, isLoading: apiKeyLoading } =
+    useWorkspaceApiKeyQuery(selectedWorkspace?.id);
+  const workspaceApiKey = workspaceApiKeyResponse?.data?.apiKey || "";
+
+  const copyToClipboard = async (value: string) => {
+    try {
+      if (!value) return;
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        CustomToast.success("Copied API key");
+        return;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = value;
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      textarea.style.top = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const successful = document.execCommand("copy");
+      document.body.removeChild(textarea);
+
+      if (!successful) throw new Error("Copy command failed");
+      CustomToast.success("Copied API key");
+    } catch (error) {
+      console.error("Failed to copy API key", error);
+      CustomToast.error("Failed to copy. Please try again.");
+    }
+  };
 
   const filteredProjects = useMemo(() => {
     if (!selectedWorkspaceId) return projects;
@@ -221,6 +256,36 @@ const DatasetPage = () => {
 
         {selectedWorkspace && (
           <div className="space-y-4">
+            <div className="rounded-xl border border-[#e1e4f5] bg-white px-6 py-5 shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <p className="text-[13px] font-semibold text-slate-900">
+                    Workspace API Key
+                  </p>
+                  <p className="text-[12px] text-slate-500">
+                    Use this key to authenticate API requests for this workspace.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 items-center gap-3 rounded-lg border border-[#e1e4f5] bg-[#f9fafb] px-4">
+                    <span className="max-w-[320px] truncate font-mono text-[12px] text-slate-900">
+                      {apiKeyLoading ? "Loading..." : workspaceApiKey || "—"}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#e1e4f5] bg-white px-4 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition hover:border-[#ced3f0] disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => void copyToClipboard(workspaceApiKey)}
+                    disabled={!workspaceApiKey || apiKeyLoading}
+                    aria-label="Copy workspace API key"
+                  >
+                    <Link2 className="h-4 w-4 text-slate-500" />
+                    Copy
+                  </button>
+                </div>
+              </div>
+            </div>
             <WorkspaceCreditsSummaryCard
               workspaceId={selectedWorkspace.id}
               workspaceName={selectedWorkspace.name}

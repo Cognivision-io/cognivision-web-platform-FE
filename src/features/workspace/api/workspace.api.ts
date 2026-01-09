@@ -2,6 +2,7 @@ import api from "@/lib/axios";
 import {
   CreateWorkspacePayload,
   CreateWorkspaceResponse,
+  GetWorkspaceApiKeyResponse,
   GetWorkspaceResponse,
   GetWorkspacesResponse,
   UpdateWorkspacePayload,
@@ -57,6 +58,12 @@ export const workspaceApi = {
     const response = await api.get<WorkspaceCreditHistoryResponse>(
       `/workspace/${workspaceId}/credits/history`,
       { params: query }
+    );
+    return response.data;
+  },
+  getApiKey: async (workspaceId: number) => {
+    const response = await api.get<GetWorkspaceApiKeyResponse>(
+      `/workspace/${workspaceId}/api-key`
     );
     return response.data;
   },

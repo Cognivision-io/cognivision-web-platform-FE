@@ -87,3 +87,12 @@ export type WorkspaceCreditHistoryResponse = {
   };
   message: string;
 };
+
+export type GetWorkspaceApiKeyResponse = {
+  statusCode: number;
+  data: {
+    apiKey: string;
+    projects: unknown[];
+  };
+  message: string;
+};

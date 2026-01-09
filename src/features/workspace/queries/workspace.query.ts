@@ -2,6 +2,7 @@ import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { workspaceApi } from "@/features/workspace/api/workspace.api";
 import type {
+  GetWorkspaceApiKeyResponse,
   GetWorkspaceResponse,
   GetWorkspacesResponse,
   WorkspaceCreditHistoryResponse,
@@ -17,6 +18,7 @@ export const WORKSPACE_CREDITS_HISTORY_QUERY_KEY = [
   "workspace",
   "credits-history",
 ] as const;
+export const WORKSPACE_API_KEY_QUERY_KEY = ["workspace", "api-key"] as const;
 
 export const useWorkspacesQuery = (
   params: { page?: number; limit?: number; search?: string },
@@ -82,6 +84,21 @@ export const useWorkspaceCreditsHistoryQuery = (
         limit: params.limit,
       }),
     enabled: !!params.workspaceId,
+    ...options,
+  });
+};
+
+export const useWorkspaceApiKeyQuery = (
+  workspaceId?: number,
+  options?: Omit<
+    UseQueryOptions<GetWorkspaceApiKeyResponse, WorkspaceError>,
+    "queryKey" | "queryFn"
+  >
+) => {
+  return useQuery({
+    queryKey: [...WORKSPACE_API_KEY_QUERY_KEY, workspaceId],
+    queryFn: () => workspaceApi.getApiKey(workspaceId as number),
+    enabled: !!workspaceId,
     ...options,
   });
 };
