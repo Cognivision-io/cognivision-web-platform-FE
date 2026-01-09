@@ -102,7 +102,7 @@ const LandingPage = () => {
         </div>
       </div>
 
-      <section className="bg-white px-6 py-20">
+      <section id="about" className="bg-white px-6 py-20">
         <div className="mx-auto max-w-6xl">
           {/* Top content: LEFT aligned */}
           <div className="max-w-6xl">
@@ -261,6 +261,120 @@ const LandingPage = () => {
 
       <UseCasesSection />
       <UpcomingUseCasesSection />
+
+      <section id="pricing" className="bg-white px-6 py-16 md:py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#7c83a3]">
+                Pricing
+              </p>
+              <h2 className="mt-3 text-[32px] font-extrabold leading-tight text-black sm:text-[36px]">
+                Flexible pricing that grows with your team
+              </h2>
+              <p className="mt-4 text-[16px] leading-[1.8] text-[#4b5563]">
+                Choose a plan that matches your stage. Start with a lightweight
+                workspace and scale to enterprise-grade deployments as your
+                vision workflows expand.
+              </p>
+            </div>
+            <Link
+              href="/contact-us"
+              className="inline-flex items-center justify-center rounded-full bg-linear-to-r from-[#5b25e5] to-[#6d37ff] px-6 py-3 text-sm font-semibold text-white shadow-[0_14px_32px_rgba(76,35,215,0.25)] transition hover:-translate-y-0.5"
+            >
+              Talk to sales
+            </Link>
+          </div>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {[
+              {
+                title: "Starter",
+                description:
+                  "Kickstart pilots with essential tooling and a focused team workspace.",
+              },
+              {
+                title: "Growth",
+                description:
+                  "Scale multi-project teams with automation, monitoring, and collaboration.",
+              },
+              {
+                title: "Enterprise",
+                description:
+                  "Custom governance, private deployments, and dedicated success support.",
+              },
+            ].map((plan) => (
+              <div
+                key={plan.title}
+                className="rounded-2xl border border-[#e3e6f5] bg-[#f8f9ff] p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]"
+              >
+                <h3 className="text-[18px] font-semibold text-[#111827]">
+                  {plan.title}
+                </h3>
+                <p className="mt-3 text-[14px] leading-[1.7] text-[#6b7280]">
+                  {plan.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="docs" className="bg-[#f6f7fb] px-6 py-16 md:py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#7c83a3]">
+                Documentation
+              </p>
+              <h2 className="mt-3 text-[32px] font-extrabold leading-tight text-black sm:text-[36px]">
+                Everything you need to build with Cognivision
+              </h2>
+              <p className="mt-4 text-[16px] leading-[1.8] text-[#4b5563]">
+                Explore SDK guides, API references, and deployment checklists to
+                accelerate your vision workflows.
+              </p>
+            </div>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center rounded-full border border-[#5b25e5] px-6 py-3 text-sm font-semibold text-[#1f1b3a] transition hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(76,35,215,0.18)]"
+            >
+              Open docs
+            </Link>
+          </div>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {[
+              {
+                title: "Quickstart",
+                description: "Launch your first workspace and deploy a model.",
+              },
+              {
+                title: "API Reference",
+                description:
+                  "Detailed endpoints, payloads, and integration examples.",
+              },
+              {
+                title: "SDK Guides",
+                description:
+                  "Implementation patterns for web, mobile, and edge apps.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-[#e3e6f5] bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]"
+              >
+                <h3 className="text-[18px] font-semibold text-[#111827]">
+                  {item.title}
+                </h3>
+                <p className="mt-3 text-[14px] leading-[1.7] text-[#6b7280]">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       <ContactSection />
       <Footer />
     </div>

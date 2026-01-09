@@ -45,7 +45,7 @@ const ContactSection = () => {
   };
 
   return (
-    <section className="bg-[#f4f7fe] px-6 py-16 md:py-20">
+    <section id="contact" className="bg-[#f4f7fe] px-6 py-16 md:py-20">
       <div className="mx-auto max-w-6xl rounded-[32px] bg-[#f5f7fd] shadow-[0_30px_80px_rgba(15,23,42,0.12)]">
         <div className="flex flex-col md:flex-row">
           {/* Left: Contact info panel */}

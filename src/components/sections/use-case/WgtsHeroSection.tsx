@@ -48,7 +48,7 @@ const WgtsHeroSection: React.FC = () => {
 
             <div className="relative rounded-[40px] bg-transparent">
               <Image
-                src="/assets/wgts-hero-devices.png"
+                src="/public/as"
                 alt="WGTS app preview"
                 width={800}
                 height={900}

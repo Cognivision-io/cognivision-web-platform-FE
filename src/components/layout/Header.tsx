@@ -6,8 +6,8 @@ import { ArrowUpRight } from "lucide-react";
 
 const navItems = [
   { label: "About us", href: "/about-us", highlight: true },
-  { label: "Use Cases", href: "/use-cases", highlight: true },
-  { label: "Docs", href: "/docs", highlight: true },
+  { label: "Use Cases", href: "/use-case", highlight: true },
+  { label: "Docs", href: "/#docs", highlight: false },
   { label: "Contact", href: "/contact-us", highlight: true },
 ];
 
@@ -43,7 +43,9 @@ const Header = () => {
           {/* Nav (hidden on small screens) */}
           <nav className="hidden items-center gap-8 text-white lg:flex">
             {navItems.map((item) => {
-              const isActive = pathname === item.href.replace("/#", "/");
+              const basePath = item.href.split("#")[0] || "/";
+              const isAnchor = item.href.includes("#");
+              const isActive = !isAnchor && pathname === basePath;
 
               return (
                 <Link

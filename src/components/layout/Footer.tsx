@@ -3,6 +3,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 const Footer = () => {
@@ -53,19 +54,19 @@ const Footer = () => {
               </p>
               <ul className="space-y-2">
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/#about" className="hover:text-white">
                     Advantages
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/#use-cases" className="hover:text-white">
                     Products
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/use-case" className="hover:text-white">
                     Solutions
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -76,29 +77,29 @@ const Footer = () => {
               </p>
               <ul className="space-y-2">
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/login" className="hover:text-white">
                     Login
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/#pricing" className="hover:text-white">
                     Pricing
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/contact-us" className="hover:text-white">
                     Support Plans
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/register" className="hover:text-white">
                     Get Started
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/#docs" className="hover:text-white">
                     Documentation
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

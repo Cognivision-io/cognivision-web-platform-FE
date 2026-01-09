@@ -7,7 +7,7 @@ import Link from "next/link";
 
 const UseCasesSection = () => {
   return (
-    <section className="bg-[#f5f7fb] px-6 py-16 md:py-24">
+    <section id="use-cases" className="bg-[#f5f7fb] px-6 py-16 md:py-24">
       <div className="mx-auto max-w-6xl">
         {/* Section heading */}
         <h2 className="text-[32px] font-extrabold leading-tight text-black sm:text-[36px]">
