@@ -323,12 +323,6 @@ const DatasetPage = () => {
                       addSuffix: true,
                     })}
                   </p>
-
-                  <div className="mt-1 flex items-center gap-2 text-xs font-medium text-slate-600">
-                    <span>{project.images || 0} Images</span>
-                    <span className="h-1 w-1 rounded-full bg-slate-300" />
-                    <span>{project.models || 0} Models</span>
-                  </div>
                 </div>
               </div>
             ))

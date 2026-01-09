@@ -39,14 +39,17 @@ const formatTaskLabel = (value?: string | null) => {
   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 };
 
-const formatAmount = (value?: string | null, transactionType?: string | null) => {
+const formatAmount = (
+  value?: string | null,
+  transactionType?: string | null
+) => {
   const numericValue = Number(value);
   const sign =
     transactionType === "addition"
       ? "+"
       : transactionType === "deduction"
-        ? "-"
-        : "";
+      ? "-"
+      : "";
   if (Number.isNaN(numericValue)) {
     return `${sign}${value ?? "--"}`;
   }
@@ -131,13 +134,13 @@ export const WorkspaceCreditsHistoryTable = ({
           const badgeClasses = isAddition
             ? "bg-[#e8f7ef] text-[#117b4f]"
             : isDeduction
-              ? "bg-[#fdecec] text-[#b42318]"
-              : "bg-[#eef2ff] text-[#4b5563]";
+            ? "bg-[#fdecec] text-[#b42318]"
+            : "bg-[#eef2ff] text-[#4b5563]";
           const label = isAddition
             ? "Addition"
             : isDeduction
-              ? "Deduction"
-              : "Other";
+            ? "Deduction"
+            : "Other";
           return (
             <span
               className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${badgeClasses}`}
@@ -170,8 +173,8 @@ export const WorkspaceCreditsHistoryTable = ({
           const toneClass = isAddition
             ? "text-[#117b4f]"
             : isDeduction
-              ? "text-[#b42318]"
-              : "text-[#374151]";
+            ? "text-[#b42318]"
+            : "text-[#374151]";
           return (
             <span className={`text-[12px] font-semibold ${toneClass}`}>
               {formatAmount(params.value as string, type)}
@@ -230,7 +233,7 @@ export const WorkspaceCreditsHistoryTable = ({
       <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-[16px] font-semibold text-[#111827]">
-            Credit history
+            Credit History
           </h2>
           <p className="text-[12px] text-[#7a819f]">
             A detailed ledger for {workspaceName ?? "this workspace"}.
@@ -279,7 +282,7 @@ export const WorkspaceCreditsHistoryTable = ({
             }}
             sx={{
               border: "1px solid #e6e9f5",
-              borderRadius: 16,
+              borderRadius: 3,
               backgroundColor: "#ffffff",
               "& .MuiDataGrid-columnHeaders": {
                 backgroundColor: "#f3f5ff",
