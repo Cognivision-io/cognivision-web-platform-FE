@@ -2,6 +2,13 @@
 
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   ChevronDown,
   Edit,
   ImageIcon,
@@ -9,11 +16,13 @@ import {
   Search,
   Users,
 } from "lucide-react";
-import { CreateWorkspaceDialog } from "@/features/dataset/components/create-workspace-dialog";
+import { CreateProjectDialog } from "@/features/dataset/components/create-project-dialog";
 import {
   useProjectsQuery,
   useDeleteProjectMutation,
 } from "@/features/dataset/queries/project.query";
+import { useWorkspacesQuery } from "@/features/workspace/queries/workspace.query";
+import { CreateWorkspaceDialog } from "@/features/workspace/components/create-workspace-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
@@ -31,6 +40,9 @@ const DatasetPage = () => {
   const user = useAuthStore((state) => state.user);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(
+    null
+  );
 
   // Get user initials
   const getUserInitials = () => {
@@ -40,19 +52,68 @@ const DatasetPage = () => {
     return firstInitial + lastInitial || "U";
   };
 
-  const { data, isLoading } = useProjectsQuery({
+  const { data: workspacesData, isLoading: workspacesLoading } =
+    useWorkspacesQuery({
+      page: 1,
+      limit: 50,
+    });
+
+  const { data: projectsData, isLoading: projectsLoading } = useProjectsQuery({
     page: 1,
-    limit: 10,
+    limit: 50,
     search: debouncedSearch,
   });
 
   const { mutate: deleteProject } = useDeleteProjectMutation();
 
-  const projects = data?.data?.data || [];
+  const workspaces = workspacesData?.data?.data || [];
+  const projects = projectsData?.data?.data || [];
+
+  useEffect(() => {
+    if (workspaces.length === 0) {
+      setSelectedWorkspaceId(null);
+      return;
+    }
+
+    const hasSelectedWorkspace = workspaces.some(
+      (workspace) => workspace.id === selectedWorkspaceId
+    );
+
+    if (!selectedWorkspaceId || !hasSelectedWorkspace) {
+      setSelectedWorkspaceId(workspaces[0].id);
+    }
+  }, [workspaces, selectedWorkspaceId]);
+
+  const selectedWorkspace = useMemo(
+    () => workspaces.find((workspace) => workspace.id === selectedWorkspaceId),
+    [workspaces, selectedWorkspaceId]
+  );
+
+  const filteredProjects = useMemo(() => {
+    if (!selectedWorkspaceId) return projects;
+    const projectIds = new Set(
+      (selectedWorkspace?.projects ?? [])
+        .map((projectId) => Number(projectId))
+        .filter((projectId) => !Number.isNaN(projectId))
+    );
+
+    return projects.filter((project) => {
+      if (project.workspaceId === selectedWorkspaceId) return true;
+      const projectId = Number(project.id);
+      if (Number.isNaN(projectId)) return false;
+      return projectIds.has(projectId);
+    });
+  }, [projects, selectedWorkspace, selectedWorkspaceId]);
 
   const handleProjectClick = (projectId: string) => {
     router.push(`/dashboard/dataset/${projectId}`);
   };
+
+  const handleWorkspaceCreated = (workspaceId: number) => {
+    setSelectedWorkspaceId(workspaceId);
+  };
+
+  const canCreateProject = !!selectedWorkspaceId;
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">
@@ -64,6 +125,11 @@ const DatasetPage = () => {
             <h1 className="text-[32px] font-semibold leading-tight text-slate-900">
               Projects
             </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              {selectedWorkspace
+                ? `Workspace: ${selectedWorkspace.name}`
+                : "Select a workspace to see its projects."}
+            </p>
           </div>
 
           {/* Right actions */}
@@ -81,11 +147,43 @@ const DatasetPage = () => {
           </div>
         </div>
 
-        {/* Filters: search + sort */}
-        {/* Search + Sort + New Project in one row */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          {/* Left side: Search */}
-          <div className="flex w-full space-x-3">
+          <div className="flex w-full flex-col gap-3 md:flex-row md:items-center">
+            <div className="w-full md:max-w-[240px]">
+              <Select
+                value={selectedWorkspaceId ? String(selectedWorkspaceId) : ""}
+                onValueChange={(value) => {
+                  const nextId = Number(value);
+                  if (Number.isNaN(nextId)) return;
+                  setSelectedWorkspaceId(nextId);
+                }}
+              >
+                <SelectTrigger className="h-10 w-full rounded-lg border border-[#e1e4f5] bg-white px-4 text-sm font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.02)] focus:ring-0">
+                  <SelectValue placeholder="Select workspace" />
+                </SelectTrigger>
+                <SelectContent>
+                  {workspacesLoading ? (
+                    <SelectItem value="loading" disabled>
+                      Loading workspaces...
+                    </SelectItem>
+                  ) : workspaces.length === 0 ? (
+                    <SelectItem value="empty" disabled>
+                      No workspaces available
+                    </SelectItem>
+                  ) : (
+                    workspaces.map((workspace) => (
+                      <SelectItem
+                        key={workspace.id}
+                        value={String(workspace.id)}
+                      >
+                        {workspace.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="relative w-full md:max-w-[300px]">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
@@ -97,7 +195,6 @@ const DatasetPage = () => {
               />
             </div>
 
-            {/* Right side: sort + new project */}
             <button className="inline-flex w-full items-center justify-between gap-3 rounded-lg border border-[#e1e4f5] bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition hover:border-[#ced3f0] md:w-auto">
               <span className="text-xs font-medium text-slate-500">Sort :</span>
               <span className="text-sm font-semibold text-slate-900">
@@ -106,21 +203,40 @@ const DatasetPage = () => {
               <ChevronDown className="h-4 w-4 text-slate-400" />
             </button>
           </div>
+
           <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
-            <CreateWorkspaceDialog />
+            <CreateWorkspaceDialog
+              nextOrder={workspaces.length + 1}
+              onCreated={(workspace) => handleWorkspaceCreated(workspace.id)}
+            />
+            <CreateProjectDialog
+              workspaces={workspaces}
+              defaultWorkspaceId={selectedWorkspaceId ?? undefined}
+              disabled={!canCreateProject}
+            />
           </div>
         </div>
 
         {/* Project list */}
         <div className="space-y-4 pt-2">
-          {isLoading ? (
-            <div className="text-center text-sm text-slate-500">Loading...</div>
-          ) : projects.length === 0 ? (
+          {workspacesLoading ? (
             <div className="text-center text-sm text-slate-500">
-              No projects found.
+              Loading workspaces...
+            </div>
+          ) : workspaces.length === 0 ? (
+            <div className="rounded-xl border border-[#e1e4f5] bg-white px-6 py-6 text-center text-sm text-slate-500 shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
+              No workspaces yet. Create one to start your first project.
+            </div>
+          ) : projectsLoading ? (
+            <div className="text-center text-sm text-slate-500">
+              Loading projects...
+            </div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="text-center text-sm text-slate-500">
+              No projects found in this workspace.
             </div>
           ) : (
-            projects.map((project) => (
+            filteredProjects.map((project) => (
               <div
                 key={project.id}
                 className="flex items-center gap-4 rounded-lg border border-[#e3e5f1] bg-white px-5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.04)] w-[60%] cursor-pointer transition-all hover:border-[#6841ff]/30 hover:shadow-[0_10px_24px_rgba(104,65,255,0.08)]"

@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -23,7 +23,7 @@ import { Hash, ImageIcon, Plus, Workflow, X } from "lucide-react";
 import { useCreateProjectMutation } from "@/features/dataset/mutations/project.mutation";
 import { useQueryClient } from "@tanstack/react-query";
 import { PROJECTS_QUERY_KEY } from "@/features/dataset/queries/project.query";
-import { useAuthStore } from "@/stores/auth-store";
+import type { Workspace } from "@/interfaces/workspace.interface";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -44,6 +44,7 @@ type ProjectType =
 type LabelMode = "" | "single" | "multi";
 
 const schema = yup.object({
+  workspaceId: yup.string().required("Workspace is required"),
   name: yup.string().required("Project Name is required"),
   annotation: yup.string().required("Annotation Group is required"),
   tool: yup.string().oneOf(["traditional", "rapid"]).default("traditional"),
@@ -94,9 +95,18 @@ function RadioOption({
   );
 }
 
-export const CreateWorkspaceDialog = () => {
+type CreateProjectDialogProps = {
+  workspaces: Workspace[];
+  defaultWorkspaceId?: number;
+  disabled?: boolean;
+};
+
+export const CreateProjectDialog = ({
+  workspaces,
+  defaultWorkspaceId,
+  disabled = false,
+}: CreateProjectDialogProps) => {
   const [open, setOpen] = useState(false);
-  const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -110,6 +120,7 @@ export const CreateWorkspaceDialog = () => {
   } = useForm<FormData>({
     resolver: yupResolver(schema),
     defaultValues: {
+      workspaceId: defaultWorkspaceId ? String(defaultWorkspaceId) : "",
       name: "",
       annotation: "",
       tool: "traditional",
@@ -118,6 +129,12 @@ export const CreateWorkspaceDialog = () => {
       useCase: "",
     },
   });
+
+  useEffect(() => {
+    if (defaultWorkspaceId) {
+      setValue("workspaceId", String(defaultWorkspaceId));
+    }
+  }, [defaultWorkspaceId, setValue]);
 
   const tool = watch("tool") as Tool;
   const selectedType = watch("selectedType") as ProjectType;
@@ -137,9 +154,10 @@ export const CreateWorkspaceDialog = () => {
   });
 
   const onSubmit = (data: FormData) => {
-    let workspaceId = 1;
-    if (user?.workspaces && user.workspaces.length > 0) {
-      workspaceId = user.workspaces[0];
+    const workspaceId = Number(data.workspaceId);
+    if (!workspaceId) {
+      toast.error("Please select a workspace");
+      return;
     }
 
     const apiProjectType =
@@ -174,7 +192,10 @@ export const CreateWorkspaceDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="h-10 rounded-lg bg-primary px-3 text-sm font-semibold shadow-[0_12px_30px_rgba(91,33,255,0.35)] hover:bg-primary/90">
+        <Button
+          disabled={disabled}
+          className="h-10 rounded-lg bg-primary px-3 text-sm font-semibold shadow-[0_12px_30px_rgba(91,33,255,0.35)] hover:bg-primary/90"
+        >
           <Plus className="h-4 w-4" />
           New Project
         </Button>
@@ -199,11 +220,11 @@ export const CreateWorkspaceDialog = () => {
               <div className="sticky top-0 z-40 bg-white px-7 pb-3 pt-4 md:px-12">
                 <div className="pt-6 md:pt-8">
                   <h2 className="text-[30px] font-semibold leading-[1.08] text-slate-900 md:text-[34px]">
-                    Let&apos;s create your Workspace.
+                    Let&apos;s create your Project.
                   </h2>
 
                   <div className="mt-3 flex items-center gap-2.5 text-[14px] leading-none">
-                    <span className="text-slate-500">{user?.firstName || "User"}</span>
+                    <span className="text-slate-500">New project</span>
                     <span className="h-1 w-1 rounded-full bg-slate-300" />
                     <span className="rounded-full bg-[#eef0f5] px-3 py-1 text-[12px] font-medium text-slate-600">
                       My First Project
@@ -219,6 +240,41 @@ export const CreateWorkspaceDialog = () => {
                 <form id="create-project-form" onSubmit={handleSubmit(onSubmit)}>
                   {/* Top fields */}
                   <div className="grid gap-x-5 gap-y-5 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label className="text-[13px] font-semibold text-slate-900">
+                        Workspace
+                      </Label>
+                      <Controller
+                        name="workspaceId"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger className="h-10 w-full rounded-[12px] border-slate-300 bg-white px-4 text-[14px] font-medium text-slate-700 shadow-none focus:ring-0">
+                              <SelectValue placeholder="Select workspace" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {workspaces.map((workspace) => (
+                                <SelectItem
+                                  key={workspace.id}
+                                  value={String(workspace.id)}
+                                >
+                                  {workspace.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.workspaceId && (
+                        <p className="text-xs text-red-500">
+                          {errors.workspaceId.message}
+                        </p>
+                      )}
+                    </div>
+
                     <div className="space-y-2">
                       <Label className="text-[13px] font-semibold text-slate-900">
                         Project Name
@@ -501,7 +557,7 @@ export const CreateWorkspaceDialog = () => {
                     disabled={isPending}
                     className="h-12 rounded-[14px] bg-primary px-10 text-[14px] font-medium text-white hover:bg-primary/90"
                   >
-                    {isPending ? "Creating..." : "Create Workspace"}
+                    {isPending ? "Creating..." : "Create Project"}
                   </Button>
                 </div>
               </div>

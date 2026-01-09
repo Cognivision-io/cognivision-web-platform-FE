@@ -5,7 +5,6 @@ import { useProjectQuery } from "@/features/dataset/queries/project.query";
 import {
   ArrowLeft,
   Upload,
-  Settings,
   Calendar,
   Image as ImageIcon,
   Eye,
@@ -15,12 +14,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { TestModelDialog } from "@/features/dataset/components/test-model/test-model-dialog";
 import { ProjectImagesTabs } from "@/features/dataset/components/project-images-tabs";
+import { WorkspaceCreditsSummaryCard } from "@/features/workspace/components/workspace-credits-summary-card";
+import { WorkspaceCreditsHistoryTable } from "@/features/workspace/components/workspace-credits-history-table";
+import { useAuthStore } from "@/stores/auth-store";
 
 import { formatDistanceToNow } from "date-fns";
 
 const ProjectDetailPage = () => {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
   const projectId = parseInt(params.id);
 
   const { data, isLoading, error } = useProjectQuery(projectId);
@@ -51,6 +54,8 @@ const ProjectDetailPage = () => {
   }
 
   const { workspace, project, versions } = data.data;
+  const workspaceId =
+    workspace.id ?? project.workspaceId ?? user?.workspaces?.[0];
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">
@@ -87,31 +92,38 @@ const ProjectDetailPage = () => {
 
         {/* Project Info Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Workspace Card */}
-          <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
-              Workspace
-            </h3>
-            <div className="space-y-3">
-              <div>
-                <p className="text-xs text-slate-500">Name</p>
-                <p className="text-base font-medium text-slate-900">
-                  {workspace.name}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">URL</p>
-                <p className="text-base font-medium text-slate-900">
-                  {workspace.url}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">Members</p>
-                <p className="text-base font-medium text-slate-900">
-                  {workspace.members}
-                </p>
+          <div className="flex flex-col gap-6">
+            {/* Workspace Card */}
+            <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Workspace
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-slate-500">Name</p>
+                  <p className="text-base font-medium text-slate-900">
+                    {workspace.name}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">URL</p>
+                  <p className="text-base font-medium text-slate-900">
+                    {workspace.url}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Members</p>
+                  <p className="text-base font-medium text-slate-900">
+                    {workspace.members}
+                  </p>
+                </div>
               </div>
             </div>
+
+            <WorkspaceCreditsSummaryCard
+              workspaceId={workspaceId}
+              workspaceName={workspace.name}
+            />
           </div>
 
           {/* Project Info Card */}
@@ -184,6 +196,11 @@ const ProjectDetailPage = () => {
             </div>
           </div>
         </div>
+
+        <WorkspaceCreditsHistoryTable
+          workspaceId={workspaceId}
+          workspaceName={workspace.name}
+        />
 
         {/* Images */}
         <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">

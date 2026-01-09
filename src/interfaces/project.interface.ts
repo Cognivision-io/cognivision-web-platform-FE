@@ -30,6 +30,7 @@ export type CreateProjectResponse = {
 };
 
 export interface RoboflowWorkspace {
+  id?: number;
   name: string;
   url: string;
   members: number;
@@ -48,6 +49,7 @@ export interface RoboflowProjectMetadata {
   public: boolean;
   multilabel: boolean;
   license: string;
+  workspaceId?: number;
   splits: Record<string, number>;
   colors: Record<string, string>;
   classes: Record<string, number>;
