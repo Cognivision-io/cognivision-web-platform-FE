@@ -8,7 +8,10 @@ import type { GetImagesResponse, Image } from "@/interfaces/image.interface";
 
 const ROBOFLOW_SOURCE_BASE = "https://source.roboflow.com";
 
-const buildRoboflowUrls = (image: Image, includeAnnotation: boolean = false): Image => {
+const buildRoboflowUrls = (
+  image: Image,
+  includeAnnotation: boolean = false
+): Image => {
   if (!image?.owner || !image?.id) {
     return image;
   }
@@ -20,7 +23,10 @@ const buildRoboflowUrls = (image: Image, includeAnnotation: boolean = false): Im
     thumb: image.urls?.thumb ?? thumbUrl,
     original: image.urls?.original ?? thumbUrl,
     ...(includeAnnotation
-      ? { annotation: image.urls?.annotation ?? `${baseUrl}/annotation-PASC.png` }
+      ? {
+          annotation:
+            image.urls?.annotation ?? `${baseUrl}/annotation-PASC.png`,
+        }
       : {}),
   };
 
@@ -52,11 +58,18 @@ export const projectApi = {
   },
 
   getProject: async (id: number) => {
-    const response = await api.get<import("@/interfaces/project.interface").GetProjectResponse>(`/project/${id}`);
+    const response = await api.get<
+      import("@/interfaces/project.interface").GetProjectResponse
+    >(`/project/${id}`);
     return response.data;
   },
 
-  uploadImages: async (payload: { projectId: string; batch?: string; files: File[], id?: string }) => {
+  uploadImages: async (payload: {
+    projectId: string;
+    batch?: string;
+    files: File[];
+    id?: string;
+  }) => {
     const formData = new FormData();
     payload.files.forEach((file) => {
       formData.append("file", file);
@@ -67,7 +80,8 @@ export const projectApi = {
         roboflowProjectId: payload.projectId,
         batch: payload.batch,
         concurrency: 10,
-        id: payload.id
+        id: payload.id,
+        totalFiles: payload?.files?.length,
       },
       headers: {
         "Content-Type": "multipart/form-data",
@@ -76,7 +90,12 @@ export const projectApi = {
     return response.data;
   },
 
-  uploadFolder: async (payload: { projectId: string; batch?: string; files: File[], id: string }) => {
+  uploadFolder: async (payload: {
+    projectId: string;
+    batch?: string;
+    files: File[];
+    id: string;
+  }) => {
     const formData = new FormData();
     payload.files.forEach((file) => {
       // Use webkitRelativePath to preserve folder structure for upload-folder endpoint
@@ -89,7 +108,7 @@ export const projectApi = {
         roboflowProjectId: payload.projectId,
         batch: payload.batch,
         concurrency: 10,
-        id: payload.id
+        id: payload.id,
       },
       headers: {
         "Content-Type": "multipart/form-data",
@@ -98,7 +117,11 @@ export const projectApi = {
     return response.data;
   },
 
-  getUnannotatedImages: async (id: number, offset: number = 0, limit: number = 50) => {
+  getUnannotatedImages: async (
+    id: number,
+    offset: number = 0,
+    limit: number = 50
+  ) => {
     const response = await api.get(`/project/${id}/unannotated-images`, {
       params: {
         offset,
@@ -113,7 +136,11 @@ export const projectApi = {
     };
   },
 
-  getAnnotatedImages: async (id: number, offset: number = 0, limit: number = 50) => {
+  getAnnotatedImages: async (
+    id: number,
+    offset: number = 0,
+    limit: number = 50
+  ) => {
     const response = await api.get(`/project/${id}/annotated-images`, {
       params: {
         offset,
@@ -124,7 +151,9 @@ export const projectApi = {
     return {
       ...data,
       limit: data.limit ?? limit,
-      results: (data.results || []).map((image) => buildRoboflowUrls(image, true)),
+      results: (data.results || []).map((image) =>
+        buildRoboflowUrls(image, true)
+      ),
     };
   },
 
@@ -134,7 +163,11 @@ export const projectApi = {
   },
 
   getImageDetail: async (roboflowProjectId: string, imageId: string) => {
-    const response = await api.get(`/project/image-detail/${encodeURIComponent(roboflowProjectId)}/${imageId}`);
+    const response = await api.get(
+      `/project/image-detail/${encodeURIComponent(
+        roboflowProjectId
+      )}/${imageId}`
+    );
     return response.data;
   },
 
@@ -172,12 +205,16 @@ export const projectApi = {
       formData.append("labelmap", JSON.stringify(payload.labelMap));
     }
     formData.append("name", payload.file.name);
-    
-    const response = await api.post(`/project/${payload.projectId}/upload/annotation`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+
+    const response = await api.post(
+      `/project/${payload.projectId}/upload/annotation`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
     return response.data;
   },
 
