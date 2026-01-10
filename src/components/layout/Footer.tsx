@@ -22,7 +22,7 @@ const Footer = () => {
             </div>
 
             <div className="w-full space-y-4">
-              <h3 className="text-[16px] font-semibold text-white">
+              <h3 className="font-heading text-[16px] font-semibold text-[#D9D9D9]">
                 Start Now
               </h3>
 
@@ -49,56 +49,41 @@ const Footer = () => {
           {/* Right: link columns */}
           <div className="flex w-full justify-start gap-16 text-[13px] text-[#f9fafb] md:ml-auto md:w-auto md:justify-end">
             <div className="space-y-3">
-              <p className="text-[13px] font-semibold tracking-[0.18em] text-[#9ca3af]">
+              <p className="text-[13px] font-heading font-semibold tracking-[0.18em] text-[#9ca3af]">
                 WHY COGNIVISION
               </p>
               <ul className="space-y-2">
                 <li>
                   <Link href="/#about" className="hover:text-white">
-                    Advantages
+                    About Us
                   </Link>
                 </li>
                 <li>
                   <Link href="/#use-cases" className="hover:text-white">
-                    Products
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/use-case" className="hover:text-white">
-                    Solutions
+                    Use Cases
                   </Link>
                 </li>
               </ul>
             </div>
 
             <div className="space-y-3">
-              <p className="text-[13px] font-semibold tracking-[0.18em] text-[#9ca3af]">
+              <p className="text-[13px] font-heading font-semibold tracking-[0.18em] text-[#9ca3af]">
                 GET STARTED
               </p>
               <ul className="space-y-2">
-                <li>
-                  <Link href="/login" className="hover:text-white">
-                    Login
-                  </Link>
-                </li>
                 <li>
                   <Link href="/#pricing" className="hover:text-white">
                     Pricing
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact-us" className="hover:text-white">
-                    Support Plans
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/register" className="hover:text-white">
-                    Get Started
-                  </Link>
-                </li>
-                <li>
                   <Link href="/#docs" className="hover:text-white">
                     Documentation
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact-us" className="hover:text-white">
+                    Contact
                   </Link>
                 </li>
               </ul>

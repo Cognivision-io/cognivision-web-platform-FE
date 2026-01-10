@@ -4,7 +4,7 @@ import ConnectWithTeamSection from "@/components/sections/contact/ConnectWithTea
 
 const ContactUsPage = () => {
   return (
-    <div className="min-h-screen bg-[#f4f7fe] text-[#0f172a]">
+    <div>
       <Header />
       <ConnectWithTeamSection />
       <Footer />
