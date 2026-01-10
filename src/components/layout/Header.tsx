@@ -4,83 +4,92 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 
+const PURPLE = "#5b2fe8";
+
 const navItems = [
-  { label: "Use Cases", href: "/use-case", hasDropdown: true },
-  { label: "About Us", href: "/about-us" },
+  { label: "About", href: "/about" },
+  { label: "Solutions", href: "/solutions", hasDropdown: true },
   { label: "Pricing", href: "/pricing" },
-  { label: "Docs", href: "/#docs", isAnchor: true },
+  { label: "Docs", href: "/docs" },
   { label: "Contact", href: "/contact-us" },
 ];
+
+function cn(...classes: Array<string | false | undefined | null>) {
+  return classes.filter(Boolean).join(" ");
+}
 
 export default function Header() {
   const pathname = usePathname();
 
-  const isActive = (href: string, isAnchor?: boolean) => {
-    if (isAnchor) return false;
+  const isActive = (href: string) => {
     const base = href.split("#")[0] || "/";
     return pathname === base;
   };
 
   return (
-    <header className="relative w-full overflow-hidden bg-white">
-      <div className="absolute inset-x-0 top-0 h-px bg-black/10" />
-
-      {/* Purple wave background */}
-      <img
-        src="/Vector.png"
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[80%] object-cover lg:block"
-      />
-
-      {/* ✅ 3-column grid: left logo, center nav, right CTA */}
-      <div className="relative z-10 mx-auto grid h-[92px] max-w-6xl grid-cols-[auto_1fr_auto] items-center px-5 sm:px-6 lg:px-0">
-        {/* Left: Logo */}
-        <div className="flex items-center">
+    <header className="sticky top-0 z-50 w-full bg-white">
+      <div className="shadow-[0_6px_20px_rgba(17,24,39,0.06)]">
+        <div className="mx-auto grid h-[78px] max-w-6xl grid-cols-[auto_1fr_auto] items-center px-5 sm:px-6 lg:px-0">
+          {/* Left: Logo */}
           <Link href="/" className="flex items-center gap-3">
+            {/* use your exact logo asset */}
             <img
-              src="/logo-black-text.svg"
+              src="/logo-text-black.svg"
               alt="CogniVision.io"
-              className="h-9 w-auto"
+              className="h-9 w-auto select-none"
+              draggable={false}
             />
           </Link>
-        </div>
 
-        {/* Center: NAV (true center) */}
-        <div className="flex justify-center">
-          <nav className="hidden items-center gap-10 text-white lg:flex">
+          {/* Center: Nav */}
+          <nav className="hidden items-center justify-center gap-10 lg:flex">
             {navItems.map((item) => {
-              const active = isActive(item.href, item.isAnchor);
+              const active = isActive(item.href);
 
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={[
-                    "group inline-flex items-center gap-2",
-                    "text-[14px] font-bold tracking-wide",
-                    "transition-opacity hover:opacity-90",
-                    active ? "underline underline-offset-[10px]" : "",
-                  ].join(" ")}
+                  className={cn(
+                    "inline-flex items-center gap-1.5",
+                    "text-[15px] font-medium tracking-wide",
+                    "transition-colors duration-150",
+                    active ? "font-semibold" : "hover:text-black",
+                    active ? "text-[#5b2fe8]" : "text-[#111827]"
+                  )}
+                  style={active ? { color: PURPLE } : undefined}
                 >
                   <span>{item.label}</span>
                   {item.hasDropdown && (
-                    <ChevronDown className="h-4 w-4 opacity-90" />
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4",
+                        active ? "opacity-100" : "opacity-80"
+                      )}
+                    />
                   )}
                 </Link>
               );
             })}
           </nav>
-        </div>
 
-        {/* Right: CTA */}
-        <div className="flex justify-end">
-          <Link
-            href="/register"
-            className="inline-flex items-center justify-center rounded-full bg-white px-6 py-2.5 text-[14px] font-semibold text-black shadow-[0_14px_28px_rgba(0,0,0,0.25)] transition-transform duration-150 hover:-translate-y-0.5"
-          >
-            Get Started
-          </Link>
+          {/* Right: CTA */}
+          <div className="flex justify-end">
+            <Link
+              href="/register"
+              className={cn(
+                "inline-flex items-center justify-center",
+                "rounded-lg",
+                "px-5 py-2.5",
+                "text-[14px] font-semibold text-white",
+                "shadow-[0_10px_18px_rgba(91,47,232,0.22)]",
+                "transition-transform duration-150 hover:-translate-y-0.5 active:translate-y-0"
+              )}
+              style={{ backgroundColor: PURPLE }}
+            >
+              Get Started
+            </Link>
+          </div>
         </div>
       </div>
     </header>

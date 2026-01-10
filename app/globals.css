@@ -1,3 +1,4 @@
+@config "../tailwind.config.ts";
 @import "tailwindcss";
 
 /* 1) Your design tokens (raw CSS variables) */
@@ -96,6 +97,10 @@
 
 /* 2) Tell Tailwind what utilities to generate from those tokens */
 @theme {
+  /* fonts */
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-orbitron), ui-sans-serif, system-ui, sans-serif;
+
   /* main semantic colors */
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));

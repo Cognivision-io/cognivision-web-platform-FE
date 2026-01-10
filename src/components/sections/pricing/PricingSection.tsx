@@ -9,8 +9,10 @@ import {
   Globe,
   Lock,
   MessagesSquare,
+  Coins,
 } from "lucide-react";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import { GlowSection } from "@/components/layout/GlowLayout";
 
 type Billing = "monthly" | "annual";
 
@@ -128,46 +130,48 @@ function IncludedList({ title, items }: { title: string; items: string[] }) {
   );
 }
 
-function PricingCard({ plan }: { plan: Plan }) {
+function PricingCard({ plan, dimmed }: { plan: Plan; dimmed?: boolean }) {
   return (
-    <div className="rounded-xl bg-white shadow-sm">
+    <div
+      className={cn(
+        "rounded-xl shadow-sm transition-colors duration-200",
+        dimmed ? "bg-white/60" : "bg-white"
+      )}
+    >
       {/* Head */}
-      <div className="px-6 pt-6">
+      <div className="px-6 pt-6 flex flex-col min-h-[280px]">
         <div className="text-[20px] font-semibold" style={{ color: PURPLE }}>
           {plan.title}
         </div>
         <div className="mt-1 text-[13px] text-[#6b7280]">{plan.subtitle}</div>
 
         <div className="mt-8">
-          <div className="flex items-end gap-2">
-            <div
-              className={cn(
-                "text-[40px] font-semibold text-[#111827]",
-                plan.key === "core" ? "leading-none" : ""
-              )}
-            >
+          {/* Price row slot */}
+          <div className="h-[52px] flex items-end gap-2">
+            <div className="text-[40px] font-semibold leading-[1] text-[#111827]">
               {plan.priceLabel}
             </div>
 
             {plan.strikeLabel ? (
-              <div className="pb-2 text-[14px] text-[#9ca3af] line-through">
+              <div className="pb-1 text-[14px] text-[#9ca3af] line-through">
                 {plan.strikeLabel}
               </div>
-            ) : null}
+            ) : (
+              <div className="pb-1 text-[14px] text-transparent">.</div>
+            )}
           </div>
 
-          {plan.priceMeta ? (
-            <div className="mt-2 text-[13px] text-[#6b7280]">
-              {plan.priceMeta}
-            </div>
-          ) : plan.key === "public" ? (
-            <div className="mt-2 text-[13px] text-[#6b7280]">
-              No credit card required.
-            </div>
-          ) : null}
+          {/* Meta row slot */}
+          <div className="mt-2 h-[22px] text-[13px] leading-[22px] text-[#6b7280]">
+            {plan.priceMeta
+              ? plan.priceMeta
+              : plan.key === "public"
+              ? "No credit card required."
+              : "\u00A0"}
+          </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-auto pt-6">
           <a
             href={plan.cta.href}
             className="inline-flex h-11 w-full items-center justify-center rounded-md text-[13px] font-semibold text-white"
@@ -239,7 +243,7 @@ export function PricingSection() {
             label: "free credits",
           },
           {
-            icon: <Database className="h-4 w-4" />,
+            icon: <Coins className="h-4 w-4" />,
             value: "$4/credit",
             label: "",
           },
@@ -279,7 +283,7 @@ export function PricingSection() {
             sub: "(Annual commitments receive all credits immediately)",
           },
           {
-            icon: <Database className="h-4 w-4" />,
+            icon: <Coins className="h-4 w-4" />,
             value: "$4/credit",
             label: "",
           },
@@ -317,7 +321,7 @@ export function PricingSection() {
             label: "",
           },
           {
-            icon: <Database className="h-4 w-4" />,
+            icon: <Coins className="h-4 w-4" />,
             value: "Custom",
             label: "",
           },
@@ -346,11 +350,14 @@ export function PricingSection() {
   }, [billing]);
 
   return (
-    <section className="w-full bg-[#f5f7ff]">
+    <GlowSection bgClassName="bg-white">
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 lg:px-0">
         {/* Title */}
         <div className="text-center">
-          <h1 className="mx-auto max-w-4xl text-[44px] font-semibold leading-[1.15] text-[#111827]">
+          <h1
+            className="mx-auto max-w-4xl font-[Orbitron]
+           text-[44px] font-semibold leading-[1.15] text-[#111827]"
+          >
             One platform to deploy computer vision.
             <br />
             Start today.
@@ -364,10 +371,10 @@ export function PricingSection() {
         {/* Cards */}
         <div className="mt-12 grid gap-1 lg:grid-cols-3">
           {plans.map((p) => (
-            <PricingCard key={p.key} plan={p} />
+            <PricingCard key={p.key} plan={p} dimmed={p.key !== "core"} />
           ))}
         </div>
       </div>
-    </section>
+    </GlowSection>
   );
 }
