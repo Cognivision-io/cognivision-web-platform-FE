@@ -350,12 +350,12 @@ export function PricingSection() {
   }, [billing]);
 
   return (
-    <GlowSection bgClassName="bg-white">
+    <GlowSection bgClassName="bg-white" className="overflow-visible">
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 lg:px-0">
         {/* Title */}
         <div className="text-center">
           <h1
-            className="mx-auto max-w-4xl font-[Orbitron]
+            className="mx-auto max-w-4xl font-heading
            text-[44px] font-semibold leading-[1.15] text-[#111827]"
           >
             One platform to deploy computer vision.

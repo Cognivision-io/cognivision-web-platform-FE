@@ -98,8 +98,8 @@
 /* 2) Tell Tailwind what utilities to generate from those tokens */
 @theme {
   /* fonts */
-  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-orbitron), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: Poppins, ui-sans-serif, system-ui, sans-serif;
+  --font-heading: Orbitron, ui-sans-serif, system-ui, sans-serif;
 
   /* main semantic colors */
   --color-background: hsl(var(--background));
