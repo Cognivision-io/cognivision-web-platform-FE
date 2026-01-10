@@ -2,79 +2,87 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowUpRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 const navItems = [
-  { label: "About us", href: "/about-us", highlight: true },
-  { label: "Use Cases", href: "/use-case", highlight: true },
-  { label: "Docs", href: "/#docs", highlight: false },
-  { label: "Contact", href: "/contact-us", highlight: true },
+  { label: "Use Cases", href: "/use-case", hasDropdown: true },
+  { label: "About Us", href: "/about-us" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Docs", href: "/#docs", isAnchor: true },
+  { label: "Contact", href: "/contact-us" },
 ];
 
-const Header = () => {
+export default function Header() {
   const pathname = usePathname();
-  const navLinkBase =
-    "transition-opacity hover:opacity-80 text-[13px] font-medium";
+
+  const isActive = (href: string, isAnchor?: boolean) => {
+    if (isAnchor) return false;
+    const base = href.split("#")[0] || "/";
+    return pathname === base;
+  };
 
   return (
-    <header className="relative w-full bg-white">
-      {/* Purple vector background – only on laptops/desktop */}
+    <header className="relative w-full overflow-hidden bg-white">
+      <div className="absolute inset-x-0 top-0 h-px bg-black/10" />
+
+      {/* Purple wave background */}
       <img
         src="/Vector.png"
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[78%] object-cover lg:block"
+        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[80%] object-cover lg:block"
       />
 
-      <div className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-0 lg:py-5">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          {/* render the svg here logo black text */}
-          <img
-            src="/logo-black-text.svg"
-            alt="Company Logo"
-            className="h-9 w-auto"
-          />
-        </Link>
+      {/* ✅ 3-column grid: left logo, center nav, right CTA */}
+      <div className="relative z-10 mx-auto grid h-[92px] max-w-6xl grid-cols-[auto_1fr_auto] items-center px-5 sm:px-6 lg:px-0">
+        {/* Left: Logo */}
+        <div className="flex items-center">
+          <Link href="/" className="flex items-center gap-3">
+            <img
+              src="/logo-black-text.svg"
+              alt="CogniVision.io"
+              className="h-9 w-auto"
+            />
+          </Link>
+        </div>
 
-        {/* Right side – nav + CTA */}
-        <div className="flex items-center gap-6">
-          {/* Nav (hidden on small screens) */}
-          <nav className="hidden items-center gap-8 text-white lg:flex">
+        {/* Center: NAV (true center) */}
+        <div className="flex justify-center">
+          <nav className="hidden items-center gap-10 text-white lg:flex">
             {navItems.map((item) => {
-              const basePath = item.href.split("#")[0] || "/";
-              const isAnchor = item.href.includes("#");
-              const isActive = !isAnchor && pathname === basePath;
+              const active = isActive(item.href, item.isAnchor);
 
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`${navLinkBase} ${
-                    item.highlight && isActive
-                      ? "font-semibold underline underline-offset-[6px]"
-                      : isActive
-                      ? "opacity-100"
-                      : ""
-                  }`}
+                  className={[
+                    "group inline-flex items-center gap-2",
+                    "text-[14px] font-bold tracking-wide",
+                    "transition-opacity hover:opacity-90",
+                    active ? "underline underline-offset-[10px]" : "",
+                  ].join(" ")}
                 >
-                  {item.label}
+                  <span>{item.label}</span>
+                  {item.hasDropdown && (
+                    <ChevronDown className="h-4 w-4 opacity-90" />
+                  )}
                 </Link>
               );
             })}
           </nav>
+        </div>
 
-          {/* Get Started CTA */}
+        {/* Right: CTA */}
+        <div className="flex justify-end">
           <Link
             href="/register"
-            className="inline-flex items-center gap-3 rounded-full bg-white px-5 py-2.5 text-[13px] font-semibold text-black shadow-[0_12px_26px_rgba(0,0,0,0.18)]"
+            className="inline-flex items-center justify-center rounded-full bg-white px-6 py-2.5 text-[14px] font-semibold text-black shadow-[0_14px_28px_rgba(0,0,0,0.25)] transition-transform duration-150 hover:-translate-y-0.5"
           >
-            <span>Get Started</span>
+            Get Started
           </Link>
         </div>
       </div>
     </header>
   );
-};
-
-export default Header;
+}
