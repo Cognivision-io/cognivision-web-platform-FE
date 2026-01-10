@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import type { FormEvent } from "react";
 import { ArrowUpRight } from "lucide-react";
@@ -26,7 +26,7 @@ const ConnectWithTeamSection = () => {
 
           <div className="grid gap-6 sm:grid-cols-2">
             {/* Learn about product card */}
-            <article className="flex h-full flex-col justify-between rounded-3xl border border-[#e5e7eb] bg-white px-6 py-6 shadow-sm">
+            <article className="flex h-full flex-col justify-between rounded-3xl border border-[#84888B] bg-white px-6 py-6 shadow-sm">
               <div>
                 <h3 className="text-[18px] font-semibold text-black">
                   Learn about
@@ -40,15 +40,14 @@ const ConnectWithTeamSection = () => {
               </div>
               <button
                 type="button"
-                className="mt-6 inline-flex items-center gap-2 text-[13px] font-medium text-[#4f46e5]"
+                className="mt-6 inline-flex items-center gap-1 text-[13px] font-medium text-black"
               >
-                <span>View Demo Video</span>
                 <ArrowUpRight size={16} />
+                <span>Book a Demo</span>
               </button>
             </article>
 
-            {/* Submit a support ticket card */}
-            <article className="flex h-full flex-col justify-between rounded-3xl border border-[#e5e7eb] bg-white px-6 py-6 shadow-sm">
+            <article className="flex h-full flex-col justify-between rounded-3xl border border-[#84888B] bg-white px-6 py-6 shadow-sm">
               <div>
                 <h3 className="text-[18px] font-semibold text-black">
                   Submit a
@@ -62,10 +61,10 @@ const ConnectWithTeamSection = () => {
               </div>
               <button
                 type="button"
-                className="mt-6 inline-flex items-center gap-2 text-[13px] font-medium text-[#4f46e5]"
+                className="mt-6 inline-flex items-center gap-1 text-[13px] font-medium text-black"
               >
-                <span>Visit Support tickets</span>
                 <ArrowUpRight size={16} />
+                <span>Visit Support tickets</span>
               </button>
             </article>
           </div>
@@ -79,8 +78,8 @@ const ConnectWithTeamSection = () => {
           >
             {/* First / Last name */}
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#111827]">
+              <div className="bg-[#f5f7ff]">
+                <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
                   <span className="mr-1 text-red-500">*</span>First Name:
                 </label>
                 <input
@@ -89,8 +88,8 @@ const ConnectWithTeamSection = () => {
                   className="w-full rounded-md bg-[#f5f7ff] px-4 py-3 text-sm text-[#111827] outline-none"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#111827]">
+              <div className="bg-[#f5f7ff]">
+                <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
                   <span className="mr-1 text-red-500">*</span>Last Name:
                 </label>
                 <input
@@ -103,8 +102,8 @@ const ConnectWithTeamSection = () => {
 
             {/* Email / Company */}
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#111827]">
+              <div className="bg-[#f5f7ff]">
+                <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
                   <span className="mr-1 text-red-500">*</span>Email Address:
                 </label>
                 <input
@@ -113,8 +112,8 @@ const ConnectWithTeamSection = () => {
                   className="w-full rounded-md bg-[#f5f7ff] px-4 py-3 text-sm text-[#111827] outline-none"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#111827]">
+              <div className="bg-[#f5f7ff]">
+                <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
                   <span className="mr-1 text-red-500">*</span>Company:
                 </label>
                 <input
@@ -127,8 +126,8 @@ const ConnectWithTeamSection = () => {
 
             {/* Title / Phone */}
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#111827]">
+              <div className="bg-[#f5f7ff]">
+                <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
                   <span className="mr-1 text-red-500">*</span>Title:
                 </label>
                 <input
@@ -137,8 +136,8 @@ const ConnectWithTeamSection = () => {
                   className="w-full rounded-md bg-[#f5f7ff] px-4 py-3 text-sm text-[#111827] outline-none"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#111827]">
+              <div className="bg-[#f5f7ff]">
+                <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
                   <span className="mr-1 text-red-500">*</span>Phone Number:
                 </label>
                 <input
@@ -150,8 +149,8 @@ const ConnectWithTeamSection = () => {
             </div>
 
             {/* Country */}
-            <div className="space-y-1.5">
-              <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#111827]">
+            <div className="bg-[#f5f7ff]">
+              <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
                 <span className="mr-1 text-red-500">*</span>Country:
               </label>
               <select
@@ -171,8 +170,8 @@ const ConnectWithTeamSection = () => {
             </div>
 
             {/* How may we help you */}
-            <div className="space-y-1.5">
-              <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#111827]">
+            <div className="bg-[#f5f7ff]">
+              <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
                 <span className="mr-1 text-red-500">*</span>How may we help
                 you?:
               </label>
@@ -184,8 +183,8 @@ const ConnectWithTeamSection = () => {
             </div>
 
             {/* How did you learn */}
-            <div className="space-y-1.5">
-              <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#111827]">
+            <div className="bg-[#f5f7ff]">
+              <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
                 <span className="mr-1 text-red-500">*</span>
                 How did you learn about Cognivision?:
               </label>

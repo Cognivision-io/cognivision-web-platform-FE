@@ -29,13 +29,12 @@ const Header = () => {
       <div className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-0 lg:py-5">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#f3f0ff] shadow-sm">
-            {/* Replace with your real logo image if you have one */}
-            <span className="text-[18px] font-semibold text-[#4f46e5]">⌘</span>
-          </div>
-          <span className="text-[20px] font-semibold tracking-tight text-black">
-            CogniVision.io
-          </span>
+          {/* render the svg here logo black text */}
+          <img
+            src="/logo-black-text.svg"
+            alt="Company Logo"
+            className="h-9 w-auto"
+          />
         </Link>
 
         {/* Right side – nav + CTA */}
@@ -70,9 +69,6 @@ const Header = () => {
             href="/register"
             className="inline-flex items-center gap-3 rounded-full bg-white px-5 py-2.5 text-[13px] font-semibold text-black shadow-[0_12px_26px_rgba(0,0,0,0.18)]"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#4f46e5] text-white">
-              <ArrowUpRight size={16} />
-            </span>
             <span>Get Started</span>
           </Link>
         </div>
