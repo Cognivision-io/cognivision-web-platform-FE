@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { PlatformSelector } from "@/components/docs/PlatformSelector";
 
 export function DocsNavbar() {
                     const pathname = usePathname();
@@ -42,6 +43,9 @@ export function DocsNavbar() {
                                                                                                                         </Link>
                                                                                                     ))}
                                                                                 </nav>
+                                                                                <div className="ml-auto">
+                                                                                                    <PlatformSelector />
+                                                                                </div>
                                                             </div>
                                         </div>
                     );

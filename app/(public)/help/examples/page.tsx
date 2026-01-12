@@ -1,6 +1,56 @@
+"use client";
+
 import { DocPageHeader } from "@/components/docs/DocPageHeader"
+import { useDocsStore } from "@/stores/docs-store"
 
 export default function ExamplesPage() {
+                    const { platform } = useDocsStore();
+
+                    const basicExample = {
+                                        'swift': `let image = UIImage(named: "example")!
+CogniVision.shared.analyze(image: image, mode: .fast) { result in
+    switch result {
+    case .success(let data):
+        print(data)
+    case .failure(let error):
+        print(error)
+    }
+}`,
+                                        'kotlin': `val image = BitmapFactory.decodeResource(resources, R.drawable.example)
+CogniVision.analyze(image, AnalysisMode.FAST) { result ->
+    result.onSuccess { data ->
+        println(data)
+    }.onFailure { error ->
+        println(error)
+    }
+}`,
+                                        'react-native': `const result = await client.analyze({
+  image: fileInput.files[0],
+  mode: 'fast'
+});
+
+console.log(result.data);`
+                    }[platform];
+
+                    const advancedExample = {
+                                        'swift': `// Upload with progress
+CogniVision.shared.analyze(image: image, onProgress: { progress in
+    print("Upload progress: \\(progress)")
+}) { result in
+    // Handle result
+}`,
+                                        'kotlin': `// Upload with progress
+CogniVision.analyze(image, 
+    onProgress = { progress -> 
+        println("Upload progress: $progress") 
+    }
+) { result ->
+    // Handle result
+}`,
+                                        'react-native': `// React Native specific hook usage would go here
+// ... (same as basic for now or custom logic)`
+                    }[platform];
+
                     return (
                                         <div className="space-y-6 pb-12 px-6">
                                                             <DocPageHeader
@@ -14,17 +64,12 @@ export default function ExamplesPage() {
                                                                                                                         Basic Analysis
                                                                                                     </h3>
                                                                                                     <p className="leading-7">
-                                                                                                                        This example shows how to perform a basic image analysis request.
+                                                                                                                        Analysis syntax for <strong>{platform === 'react-native' ? 'React Native' : platform === 'swift' ? 'Swift' : 'Kotlin'}</strong>.
                                                                                                     </p>
                                                                                                     <div className="relative rounded-lg bg-zinc-950 px-4 py-4 dark:bg-zinc-900">
                                                                                                                         <pre className="overflow-x-auto">
                                                                                                                                             <code className="relative rounded font-mono text-sm text-zinc-50">
-                                                                                                                                                                {`const result = await client.analyze({
-  image: fileInput.files[0],
-  mode: 'fast'
-});
-
-console.log(result.data);`}
+                                                                                                                                                                {basicExample}
                                                                                                                                             </code>
                                                                                                                         </pre>
                                                                                                     </div>
@@ -32,41 +77,15 @@ console.log(result.data);`}
 
                                                                                 <section id="advanced" className="space-y-4">
                                                                                                     <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-                                                                                                                        Advanced Usage with React
+                                                                                                                        Advanced Usage
                                                                                                     </h3>
                                                                                                     <p className="leading-7">
-                                                                                                                        Implementing a file upload handler with progress tracking.
+                                                                                                                        Handling progress updates and callbacks.
                                                                                                     </p>
                                                                                                     <div className="relative rounded-lg bg-zinc-950 px-4 py-4 dark:bg-zinc-900">
                                                                                                                         <pre className="overflow-x-auto">
                                                                                                                                             <code className="relative rounded font-mono text-sm text-zinc-50">
-                                                                                                                                                                {`import { useState } from 'react';
-import { useCogniVision } from './hooks';
-
-export function ImageAnalyzer() {
-  const { analyze, isLoading } = useCogniVision();
-  const [result, setResult] = useState(null);
-
-  const handleUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    try {
-      const data = await analyze(file);
-      setResult(data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  return (
-    <div>
-      <input type="file" onChange={handleUpload} />
-      {isLoading && <p>Analyzing...</p>}
-      {result && <pre>{JSON.stringify(result, null, 2)}</pre>}
-    </div>
-  );
-}`}
+                                                                                                                                                                {advancedExample}
                                                                                                                                             </code>
                                                                                                                         </pre>
                                                                                                     </div>
