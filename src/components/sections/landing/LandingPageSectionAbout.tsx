@@ -8,7 +8,14 @@ const PURPLE = "#5b2fe8";
 
 export default function LandingPageSectionAbout() {
   return (
-    <GlowSection bgClassName="bg-white" className="py-20 sm:py-24">
+    <GlowSection
+      bgClassName="bg-white"
+      className="py-20 sm:py-24"
+      allowGlowBleed
+      randomizeGlows
+      glowCount={3}
+      glowSeed="landing-about"
+    >
       <div className="mx-auto max-w-6xl px-5 sm:px-6 lg:px-0">
         <div className="grid items-center gap-14 lg:grid-cols-2">
           {/* LEFT: collage */}

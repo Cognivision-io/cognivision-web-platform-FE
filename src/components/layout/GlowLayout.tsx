@@ -2,6 +2,19 @@
 
 import React from "react";
 
+type GlowBlob = {
+  /** 0..100-ish positioning, can be outside for bleed */
+  xPct: number;
+  yPct: number;
+  /** optional overrides per glow */
+  sizePx?: number;
+  blurPx?: number;
+  intensity?: number;
+  /** radial focal point (0..100) inside the blob */
+  focalXPct?: number;
+  focalYPct?: number;
+};
+
 type GlowSectionProps = {
   children: React.ReactNode;
   className?: string;
@@ -22,7 +35,49 @@ type GlowSectionProps = {
 
   /** offsets in px (negative pushes outward) */
   offsetPx?: number;
+
+  /**
+   * When true, render the background as a lower z-index layer so glows can
+   * visually bleed into adjacent sections (above their backgrounds).
+   */
+  allowGlowBleed?: boolean;
+
+  /** When true, uses seeded pseudo-random glow placement instead of fixed corners. */
+  randomizeGlows?: boolean;
+
+  /** Optional seed for deterministic glow placement across renders. */
+  glowSeed?: string | number;
+
+  /** Number of glow blobs when `randomizeGlows` is enabled. */
+  glowCount?: number;
+
+  /** Provide explicit glow blobs (overrides `randomizeGlows`). */
+  glows?: GlowBlob[];
 };
+
+function hashStringToUint32(input: string) {
+  // FNV-1a 32-bit
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < input.length; index++) {
+    hash ^= input.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+}
+
+function mulberry32(seed: number) {
+  let value = seed >>> 0;
+  return () => {
+    value += 0x6d2b79f5;
+    let t = Math.imul(value ^ (value >>> 15), 1 | value);
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function lerp(min: number, max: number, t: number) {
+  return min + (max - min) * t;
+}
 
 export function GlowSection({
   children,
@@ -33,45 +88,152 @@ export function GlowSection({
   blurPx = 90,
   sizePx = 560,
   offsetPx = 176, // ~44 * 4, close to your -right-44 style
+  allowGlowBleed = false,
+  randomizeGlows = false,
+  glowSeed,
+  glowCount = 3,
+  glows,
 }: GlowSectionProps) {
-  const size = `${sizePx}px`;
-  const blur = `${blurPx}px`;
+  const reactId = React.useId();
+  const seed =
+    glowSeed ??
+    // useId is stable across SSR/CSR, so this remains deterministic
+    reactId;
+
+  const computedGlows = React.useMemo<GlowBlob[]>(() => {
+    if (glows && glows.length > 0) return glows;
+
+    if (!randomizeGlows) {
+      return [
+        {
+          xPct: 0,
+          yPct: 100,
+          sizePx,
+          blurPx,
+          intensity,
+          focalXPct: 30,
+          focalYPct: 70,
+        },
+        {
+          xPct: 100,
+          yPct: 0,
+          sizePx,
+          blurPx,
+          intensity,
+          focalXPct: 70,
+          focalYPct: 30,
+        },
+      ];
+    }
+
+    const numericSeed =
+      typeof seed === "number" ? seed >>> 0 : hashStringToUint32(String(seed));
+    const random = mulberry32(numericSeed);
+
+    const pickBiased = () => {
+      // Favor edges, but still allow mid-field glows.
+      const edgeBias = random();
+      if (edgeBias < 0.5) {
+        return random() < 0.5 ? lerp(-12, 18, random()) : lerp(82, 112, random());
+      }
+      return lerp(18, 82, random());
+    };
+
+    return Array.from({ length: Math.max(1, glowCount) }, () => {
+      const sizeMultiplier = lerp(0.7, 1.15, random());
+      const blurMultiplier = lerp(0.75, 1.25, random());
+      const intensityMultiplier = lerp(0.6, 1.0, random());
+
+      return {
+        xPct: pickBiased(),
+        yPct: pickBiased(),
+        sizePx: Math.round(sizePx * sizeMultiplier),
+        blurPx: Math.round(blurPx * blurMultiplier),
+        intensity: intensity * intensityMultiplier,
+        focalXPct: Math.round(lerp(35, 65, random())),
+        focalYPct: Math.round(lerp(35, 65, random())),
+      };
+    });
+  }, [
+    blurPx,
+    glowCount,
+    glows,
+    intensity,
+    randomizeGlows,
+    seed,
+    sizePx,
+  ]);
 
   return (
     <section
-      className={["relative w-full overflow-visible", bgClassName, className]
+      className={[
+        "relative w-full overflow-visible",
+        allowGlowBleed ? undefined : bgClassName,
+        className,
+      ]
         .filter(Boolean)
         .join(" ")}
     >
-      {/* Bottom-left glow */}
-      <div
-        className="pointer-events-none absolute rounded-full"
-        style={{
-          left: `-${offsetPx}px`,
-          bottom: `-${Math.round(offsetPx * 0.6)}px`,
-          width: size,
-          height: size,
-          opacity: intensity,
-          filter: `blur(${blur})`,
-          background: `radial-gradient(circle at 30% 70%, rgba(${glowRgb}, 0.95), rgba(${glowRgb}, 0) 70%)`,
-        }}
-      />
+      {allowGlowBleed ? (
+        <div
+          aria-hidden
+          className={["absolute inset-0 z-0", bgClassName]
+            .filter(Boolean)
+            .join(" ")}
+        />
+      ) : null}
 
-      {/* Top-right glow */}
-      <div
-        className="pointer-events-none absolute rounded-full"
-        style={{
-          right: `-${offsetPx}px`,
-          top: `-${Math.round(offsetPx * 0.6)}px`,
-          width: size,
-          height: size,
-          opacity: intensity,
-          filter: `blur(${blur})`,
-          background: `radial-gradient(circle at 70% 30%, rgba(${glowRgb}, 0.95), rgba(${glowRgb}, 0) 70%)`,
-        }}
-      />
+      {computedGlows.map((glow, index) => {
+        const glowSizePx = glow.sizePx ?? sizePx;
+        const glowBlurPx = glow.blurPx ?? blurPx;
 
-      <div className="relative">{children}</div>
+        const focalX = glow.focalXPct ?? 50;
+        const focalY = glow.focalYPct ?? 50;
+
+        // Backward-compatible positioning for the legacy corner glows.
+        const isLegacyCornerGlow = !randomizeGlows && !glows && index < 2;
+        const legacyStyle =
+          isLegacyCornerGlow && index === 0
+            ? { left: `-${offsetPx}px`, bottom: `-${Math.round(offsetPx * 0.6)}px` }
+            : isLegacyCornerGlow && index === 1
+              ? { right: `-${offsetPx}px`, top: `-${Math.round(offsetPx * 0.6)}px` }
+              : null;
+
+        return (
+          <div
+            // eslint-disable-next-line react/no-array-index-key
+            key={index}
+            className={[
+              "pointer-events-none absolute rounded-full",
+              allowGlowBleed ? "z-10" : undefined,
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            style={
+              legacyStyle ?? {
+                left: `${glow.xPct}%`,
+                top: `${glow.yPct}%`,
+                transform: "translate(-50%, -50%)",
+              }
+            }
+          >
+            <div
+              className="h-full w-full rounded-full"
+              style={{
+                width: `${glowSizePx}px`,
+                height: `${glowSizePx}px`,
+                opacity: glow.intensity ?? intensity,
+                filter: `blur(${glowBlurPx}px)`,
+                background: `radial-gradient(circle at ${focalX}% ${focalY}%, rgba(${glowRgb}, 0.95), rgba(${glowRgb}, 0) 70%)`,
+              }}
+            />
+          </div>
+        );
+      })}
+
+      <div className={["relative", allowGlowBleed ? "z-20" : undefined].filter(Boolean).join(" ")}>
+        {children}
+      </div>
     </section>
   );
 }

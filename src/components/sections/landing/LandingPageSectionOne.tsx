@@ -8,7 +8,13 @@ const PURPLE = "#5b2fe8";
 
 export default function LandingPageSectionOne() {
   return (
-    <GlowSection bgClassName="bg-white">
+    <GlowSection
+      bgClassName="bg-white"
+      allowGlowBleed
+      randomizeGlows
+      glowCount={4}
+      glowSeed="landing-hero"
+    >
       <div className="mx-auto max-w-6xl min-h-[calc(100vh-78px)] px-5 py-16 sm:px-6 lg:px-0">
         <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
           <div>

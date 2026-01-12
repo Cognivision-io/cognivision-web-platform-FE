@@ -67,7 +67,14 @@ function FeatureRow({ item }: { item: Feature }) {
 
 export default function LandingPageSectionVisionSDK() {
   return (
-    <GlowSection bgClassName="bg-white" className="py-20 sm:py-24">
+    <GlowSection
+      bgClassName="bg-white"
+      className="py-20 sm:py-24"
+      allowGlowBleed
+      randomizeGlows
+      glowCount={3}
+      glowSeed="landing-vision-sdk"
+    >
       <div className="mx-auto max-w-6xl px-5 sm:px-6 lg:px-0">
         {/* Title */}
         <div className="text-center">

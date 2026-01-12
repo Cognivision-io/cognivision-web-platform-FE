@@ -34,7 +34,14 @@ function UnderlineField({
 
 export default function LandingPageSectionContact() {
   return (
-    <GlowSection bgClassName="bg-[#f6f7ff]" className="py-20 sm:py-24">
+    <GlowSection
+      bgClassName="bg-white"
+      className="py-20 sm:py-24"
+      allowGlowBleed
+      randomizeGlows
+      glowCount={3}
+      glowSeed="landing-contact"
+    >
       <div className="mx-auto max-w-6xl px-5 sm:px-6 lg:px-0">
         {/* Heading */}
         <div className="text-center">

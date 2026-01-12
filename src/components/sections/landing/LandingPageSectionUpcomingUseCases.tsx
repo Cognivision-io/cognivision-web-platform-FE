@@ -116,7 +116,14 @@ function UseCaseCard({ card }: { card: UseCaseCard }) {
 
 export default function LandingPageSectionUpcomingUseCases() {
   return (
-    <GlowSection bgClassName="bg-[#F6F7FF]" className="py-20 sm:py-24">
+    <GlowSection
+      bgClassName="bg-white"
+      className="py-20 sm:py-24"
+      allowGlowBleed
+      randomizeGlows
+      glowCount={3}
+      glowSeed="landing-upcoming-use-cases"
+    >
       <div className="mx-auto max-w-6xl px-5 sm:px-6 lg:px-0">
         {/* Title */}
         <div className="text-center">
