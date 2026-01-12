@@ -39,7 +39,7 @@ export function GlowSection({
 
   return (
     <section
-      className={["relative w-full overflow-hidden", bgClassName, className]
+      className={["relative w-full overflow-visible", bgClassName, className]
         .filter(Boolean)
         .join(" ")}
     >

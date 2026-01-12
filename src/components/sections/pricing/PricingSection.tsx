@@ -350,7 +350,7 @@ export function PricingSection() {
   }, [billing]);
 
   return (
-    <GlowSection bgClassName="bg-white" className="overflow-visible">
+    <GlowSection bgClassName="bg-white">
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 lg:px-0">
         {/* Title */}
         <div className="text-center">
