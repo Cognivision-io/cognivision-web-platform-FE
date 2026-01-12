@@ -35,7 +35,7 @@ function UnderlineField({
 export default function LandingPageSectionContact() {
   return (
     <GlowSection
-      bgClassName="bg-white"
+      bgClassName="bg-[#f6f7ff]"
       className="py-20 sm:py-24"
       allowGlowBleed
       randomizeGlows

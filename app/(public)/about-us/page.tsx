@@ -1,14 +1,16 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import MissionSection from "@/components/sections/about/MissionSection";
-import VisionSection from "@/components/sections/about/VisionSection";
+import AboutPageSectionHero from "@/components/sections/about/AboutPageSectionHero";
+import AboutPageSectionMission from "@/components/sections/about/AboutPageSectionMission";
+import AboutPageSectionVision from "@/components/sections/about/AboutPageSectionVision";
 
 const AboutUsPage = () => {
   return (
-    <div className="min-h-screen bg-[#f5f7fe]">
+    <div>
       <Header />
-      <MissionSection />
-      <VisionSection />
+      <AboutPageSectionHero />
+      <AboutPageSectionMission />
+      <AboutPageSectionVision />
       <Footer />
     </div>
   );

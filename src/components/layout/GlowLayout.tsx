@@ -177,9 +177,10 @@ export function GlowSection({
       {allowGlowBleed ? (
         <div
           aria-hidden
-          className={["absolute inset-0 z-0", bgClassName]
+          className={["absolute inset-0", bgClassName]
             .filter(Boolean)
             .join(" ")}
+          style={{ zIndex: -20 }}
         />
       ) : null}
 
@@ -199,23 +200,22 @@ export function GlowSection({
               ? { right: `-${offsetPx}px`, top: `-${Math.round(offsetPx * 0.6)}px` }
               : null;
 
+        const positioningStyle =
+          legacyStyle ?? {
+            left: `${glow.xPct}%`,
+            top: `${glow.yPct}%`,
+            transform: "translate(-50%, -50%)",
+          };
+
         return (
           <div
             // eslint-disable-next-line react/no-array-index-key
             key={index}
-            className={[
-              "pointer-events-none absolute rounded-full",
-              allowGlowBleed ? "z-10" : undefined,
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            style={
-              legacyStyle ?? {
-                left: `${glow.xPct}%`,
-                top: `${glow.yPct}%`,
-                transform: "translate(-50%, -50%)",
-              }
-            }
+            className="pointer-events-none absolute rounded-full"
+            style={{
+              ...positioningStyle,
+              ...(allowGlowBleed ? { zIndex: -10 } : null),
+            }}
           >
             <div
               className="h-full w-full rounded-full"
@@ -231,9 +231,7 @@ export function GlowSection({
         );
       })}
 
-      <div className={["relative", allowGlowBleed ? "z-20" : undefined].filter(Boolean).join(" ")}>
-        {children}
-      </div>
+      <div className="relative">{children}</div>
     </section>
   );
 }

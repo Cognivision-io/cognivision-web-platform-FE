@@ -117,7 +117,7 @@ function UseCaseCard({ card }: { card: UseCaseCard }) {
 export default function LandingPageSectionUpcomingUseCases() {
   return (
     <GlowSection
-      bgClassName="bg-white"
+      bgClassName="bg-[#F6F7FF]"
       className="py-20 sm:py-24"
       allowGlowBleed
       randomizeGlows
