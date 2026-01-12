@@ -69,7 +69,7 @@ export default function LandingPageSectionVisionSDK() {
   return (
     <GlowSection
       bgClassName="bg-white"
-      className="py-20 sm:py-24"
+      className="min-h-[100svh] py-20 sm:py-24"
       allowGlowBleed
       randomizeGlows
       glowCount={3}

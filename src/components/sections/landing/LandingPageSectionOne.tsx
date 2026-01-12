@@ -10,12 +10,13 @@ export default function LandingPageSectionOne() {
   return (
     <GlowSection
       bgClassName="bg-white"
+      className="min-h-[100svh]"
       allowGlowBleed
       randomizeGlows
       glowCount={4}
       glowSeed="landing-hero"
     >
-      <div className="mx-auto max-w-6xl min-h-[calc(100vh-78px)] px-5 py-16 sm:px-6 lg:px-0">
+      <div className="mx-auto max-w-6xl min-h-[calc(100svh-78px)] px-5 py-16 sm:px-6 lg:px-0">
         <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
           <div>
             <h1 className="font-heading text-[46px] font-semibold leading-[1.08] tracking-wide text-[#0b1020] sm:text-[56px]">

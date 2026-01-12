@@ -118,7 +118,7 @@ export default function LandingPageSectionUpcomingUseCases() {
   return (
     <GlowSection
       bgClassName="bg-[#F6F7FF]"
-      className="py-20 sm:py-24"
+      className="min-h-[100svh] py-20 sm:py-24"
       allowGlowBleed
       randomizeGlows
       glowCount={3}
