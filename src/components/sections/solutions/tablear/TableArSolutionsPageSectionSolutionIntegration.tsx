@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { GlowSection } from "@/components/layout/GlowLayout";
-import { Scan, ScanSearch, TrendingUp } from "lucide-react";
 
 const PURPLE = "#5b2fe8";
 
@@ -12,24 +11,32 @@ type Feature = {
   Icon: React.ComponentType<{ className?: string }>;
 };
 
+import { Box, ScanSearch, Dices, Monitor } from "lucide-react";
+
 const FEATURES: Feature[] = [
   {
-    title: "Object Detection",
+    title: "AR Measurement",
     description:
-      "Automatically identifies the jack and each bowl in real time using YOLO-based machine learning. Delivers fast, accurate object detection directly from the live camera feed.",
+      "Point your phone at the table and see instant, glowing measurement lines between any two minis. Spell ranges, movement distances, and line-of-sight—all calculated in real-time with magical AR overlays.",
+    Icon: Box,
+  },
+  {
+    title: "Mini Scanning",
+    description:
+      "Scan any miniature to instantly tag it with health, status effects, and initiative order. Your physical minis become smart game pieces with floating AR data halos visible only through your device.",
     Icon: ScanSearch,
   },
   {
-    title: "AR Distance Measurement",
+    title: "Dice Roller",
     description:
-      "Calculates precise edge-to-edge distances between the bowls and the jack in real time. Powered by ARKit and Cognivision’s advanced spatial geometry engine for high accuracy.",
-    Icon: Scan,
+      "Roll physical or digital dice with AR fanfare. Auto-calculate modifiers, and track combat stats because sometimes you need dice that can't fall off the table.",
+    Icon: Dices,
   },
   {
-    title: "Real-Time Feedback",
+    title: "DM Console",
     description:
-      "The Cognivision SDK instantly displays measurement overlays within the app interface, enabling real-time distance visualization. It blends AR visuals with live camera input for a seamless, interactive experience. Users get instant, accurate spatial feedback directly within their workflow.",
-    Icon: TrendingUp,
+      "A master control panel for Dungeon Masters. Track all player positions, reveal hidden enemies with dramatic AR animations, control environmental effects, and orchestrate epic battles from your phone or tablet.",
+    Icon: Monitor,
   },
 ];
 
@@ -56,7 +63,7 @@ function FeatureRow({ item }: { item: Feature }) {
   );
 }
 
-export default function SolutionsPageSectionSolutionIntegration() {
+export default function TableArSolutionsPageSectionSolutionIntegration() {
   return (
     <GlowSection
       bgClassName="bg-white"
@@ -85,8 +92,8 @@ export default function SolutionsPageSectionSolutionIntegration() {
           <div className="flex justify-center lg:justify-start">
             <div className="relative h-[520px] w-[560px] max-w-full overflow-hidden rounded-[22px] bg-[#f3f4f6]">
               <Image
-                src="/SolutionHero2.svg"
-                alt="WGTS Solution"
+                src="/SolutionHero8.svg"
+                alt="TableAR Solution"
                 fill
                 priority
                 className="object-cover"

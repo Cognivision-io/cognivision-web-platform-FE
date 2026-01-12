@@ -1,19 +1,20 @@
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
-import SolutionsPageSectionProblem from "@/components/sections/solutions/SolutionsPageSectionProblems";
-import SolutionsPageSectionResources from "@/components/sections/solutions/SolutionsPageSectionResources";
-import SolutionsPageSectionSolutionIntegration from "@/components/sections/solutions/SolutionsPageSectionSolutionIntegration";
-import SolutionsPageSectionWGTS from "@/components/sections/solutions/SolutionsPageSectionWGTS";
+import WgtsSolutionsPageSection from "@/components/sections/solutions/wgts/WgtsSolutionsPageSection";
+import WgtsSolutionsPageSectionResources from "@/components/sections/solutions/wgts/WgtsSolutionsPageSectionResources";
+import WgtsSolutionsPageSectionProblems from "@/components/sections/solutions/wgts/WgtsSolutionsPageSectionProblems";
+import WgtsSolutionsPageSectionSolutionIntegration from "@/components/sections/solutions/wgts/WgtsSolutionsPageSectionSolutionIntegration";
+
 import type { FC } from "react";
 
 const WgtsPage: FC = () => {
   return (
     <div>
       <Header />
-      <SolutionsPageSectionWGTS />
-      <SolutionsPageSectionProblem />
-      <SolutionsPageSectionSolutionIntegration />
-      <SolutionsPageSectionResources />
+      <WgtsSolutionsPageSection />
+      <WgtsSolutionsPageSectionProblems />
+      <WgtsSolutionsPageSectionSolutionIntegration />
+      <WgtsSolutionsPageSectionResources />
       <Footer />
     </div>
   );

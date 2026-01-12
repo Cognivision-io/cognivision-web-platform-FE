@@ -74,7 +74,7 @@ function ResourceCardItem({ item }: { item: ResourceCard }) {
   );
 }
 
-export default function SolutionsPageSectionResources() {
+export default function WgtsSolutionsPageSectionResources() {
   return (
     <GlowSection
       bgClassName="bg-white"

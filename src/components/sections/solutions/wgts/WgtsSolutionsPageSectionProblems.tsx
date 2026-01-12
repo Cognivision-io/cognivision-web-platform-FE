@@ -56,7 +56,7 @@ function ProblemCard({ item }: { item: ProblemItem }) {
   );
 }
 
-export default function SolutionsPageSectionProblem() {
+export default function WgtsSolutionsPageSectionProblems() {
   return (
     <GlowSection
       bgClassName="bg-white"

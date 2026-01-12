@@ -7,7 +7,7 @@ import { ArrowUpRight } from "lucide-react";
 
 const PURPLE = "#5b2fe8";
 
-export default function SolutionsPageSectionWGTS() {
+export default function WgtsSolutionsPageSection() {
   return (
     <GlowSection
       bgClassName="bg-white"
