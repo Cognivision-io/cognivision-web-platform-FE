@@ -92,7 +92,7 @@ export default function LandingPageSectionOne() {
           <div className="relative flex justify-center lg:justify-end">
             <div className="relative h-[320px] w-[320px] sm:h-[440px] sm:w-[440px] lg:h-[540px] lg:w-[540px]">
               <Image
-                src="/Hero.svg"
+                src="/hero.svg"
                 alt="Hero"
                 fill
                 priority
