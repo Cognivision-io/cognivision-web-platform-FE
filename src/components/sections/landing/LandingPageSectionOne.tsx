@@ -19,7 +19,7 @@ export default function LandingPageSectionOne() {
       <div className="mx-auto max-w-6xl min-h-[calc(100svh-78px)] px-5 py-16 sm:px-6 lg:px-0">
         <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
           <div>
-            <h1 className="font-heading text-[46px] font-semibold leading-[1.08] tracking-wide text-[#0b1020] sm:text-[56px]">
+            <h1 className="font-heading text-[36px] font-semibold leading-[1.08] tracking-wide text-[#0b1020] sm:text-[46px] lg:text-[56px]">
               Explore the future of <br />
               the{" "}
               <span
@@ -55,7 +55,7 @@ export default function LandingPageSectionOne() {
             </div>
 
             {/* Stats row */}
-            <div className="mt-12 grid max-w-[520px] grid-cols-3 gap-10">
+            <div className="mt-12 grid max-w-[520px] grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-10">
               <div>
                 <div className="text-[26px] font-heading font-semibold tracking-tight text-[#0b1020]">
                   3+
@@ -90,7 +90,7 @@ export default function LandingPageSectionOne() {
 
           {/* RIGHT */}
           <div className="relative flex justify-center lg:justify-end">
-            <div className="relative h-[440px] w-[440px] sm:h-[540px] sm:w-[540px]">
+            <div className="relative h-[320px] w-[320px] sm:h-[440px] sm:w-[440px] lg:h-[540px] lg:w-[540px]">
               <Image
                 src="/Hero.svg"
                 alt="Hero"

@@ -82,12 +82,12 @@ export default function WgtsSolutionsPageSectionResources() {
       allowGlowBleed
       randomizeGlows
       glowCount={4}
-      glowSeed="landing-hero"
+      glowSeed="wgts-resources"
     >
       <div className="mx-auto max-w-6xl min-h-[calc(100svh-78px)] px-5 py-16 sm:px-6 lg:px-0">
         {/* Title */}
         <div className="text-center">
-          <h2 className="font-heading text-[44px] font-semibold leading-[1.05] tracking-wide text-[#0b1020]">
+          <h2 className="font-heading text-[32px] font-semibold leading-[1.05] tracking-wide text-[#0b1020] sm:text-[40px] lg:text-[44px]">
             Resources
           </h2>
         </div>

@@ -71,7 +71,7 @@ export default function TableArSolutionsPageSectionSolutionIntegration() {
       allowGlowBleed
       randomizeGlows
       glowCount={4}
-      glowSeed="landing-hero"
+      glowSeed="tablear-integration"
     >
       <div className="mx-auto max-w-6xl min-h-[calc(100svh-78px)] px-5 py-16 sm:px-6 lg:px-0">
         {/* Title */}
@@ -90,7 +90,7 @@ export default function TableArSolutionsPageSectionSolutionIntegration() {
         <div className="mt-14 grid items-start gap-14 lg:grid-cols-[560px_1fr]">
           {/* LEFT image */}
           <div className="flex justify-center lg:justify-start">
-            <div className="relative h-[520px] w-[560px] max-w-full overflow-hidden rounded-[22px] bg-[#f3f4f6]">
+            <div className="relative h-[320px] w-full max-w-[560px] overflow-hidden rounded-[22px] bg-[#f3f4f6] sm:h-[420px] lg:h-[520px]">
               <Image
                 src="/SolutionHero8.svg"
                 alt="TableAR Solution"

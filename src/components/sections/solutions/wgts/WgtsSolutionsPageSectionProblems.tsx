@@ -7,7 +7,7 @@ const PURPLE = "#5b2fe8";
 
 type ProblemItem = {
   text: string;
-  Icon: React.ComponentType<{ className?: string }>;
+  Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 };
 
 const PROBLEMS: ProblemItem[] = [
@@ -41,7 +41,7 @@ function ProblemCard({ item }: { item: ProblemItem }) {
   const { Icon } = item;
 
   return (
-    <div className="flex items-center gap-4 rounded-[12px] border border-[#5b2fe8]/35 bg-[#F6F7FF] px-6 py-6">
+    <div className="flex items-start gap-3 rounded-[12px] border border-[#5b2fe8]/35 bg-[#F6F7FF] px-4 py-5 sm:items-center sm:gap-4 sm:px-6 sm:py-6">
       {/* Icon circle (thin outline + subtle red ring like screenshot) */}
       <div className="relative grid h-[44px] w-[44px] place-items-center rounded-full">
         <div className="absolute inset-0 rounded-full border border-[#ff5a5a]/35" />
@@ -63,12 +63,12 @@ export default function WgtsSolutionsPageSectionProblems() {
       allowGlowBleed
       randomizeGlows
       glowCount={4}
-      glowSeed="landing-hero"
+      glowSeed="wgts-problems"
     >
       <div className="mx-auto max-w-6xl min-h-[calc(90svh-78px)] px-5 py-16 sm:px-6 lg:px-0">
         {/* Title */}
         <div className="text-center">
-          <h2 className="font-heading text-[44px] font-semibold leading-[1.05] tracking-wide text-[#0b1020]">
+          <h2 className="font-heading text-[32px] font-semibold leading-[1.05] tracking-wide text-[#0b1020] sm:text-[40px] lg:text-[44px]">
             The{" "}
             <span className="font-heading" style={{ color: PURPLE }}>
               Problem

@@ -32,7 +32,7 @@ export default function AboutPageSectionVision() {
               Our Vision
             </div>
 
-            <h2 className="mt-5 font-heading text-[54px] font-semibold leading-[1.05] tracking-wide text-[#0b1020] sm:text-[60px]">
+            <h2 className="mt-5 font-heading text-[38px] font-semibold leading-[1.05] tracking-wide text-[#0b1020] sm:text-[48px] lg:text-[60px]">
               A{" "}
               <span className="font-heading" style={{ color: PURPLE }}>
                 vision

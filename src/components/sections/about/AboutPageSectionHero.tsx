@@ -19,7 +19,7 @@ export default function AboutPageSectionHero() {
         <div className="grid items-center gap-16 lg:grid-cols-[520px_1fr]">
           {/* LEFT IMAGE */}
           <div className="flex justify-center lg:justify-start">
-            <div className="relative h-[650px] w-[650px] overflow-hidden rounded-[18px] bg-white shadow-[0_20px_60px_rgba(17,24,39,0.08)]">
+            <div className="relative h-[320px] w-[320px] overflow-hidden rounded-[18px] bg-white shadow-[0_20px_60px_rgba(17,24,39,0.08)] sm:h-[480px] sm:w-[480px] lg:h-[650px] lg:w-[650px]">
               <Image
                 src="/AboutHero1.svg"
                 alt="About CogniVision"
@@ -37,7 +37,7 @@ export default function AboutPageSectionHero() {
               About CogniVision
             </div>
 
-            <h2 className="mt-6 font-heading text-[54px] font-semibold leading-[1.05] tracking-wide text-[#0b1020] sm:text-[62px]">
+            <h2 className="mt-6 font-heading text-[38px] font-semibold leading-[1.05] tracking-wide text-[#0b1020] sm:text-[48px] lg:text-[62px]">
               Unlocking the future of
               <br />
               <span className="text-[#0b1020]">Spatial </span>
