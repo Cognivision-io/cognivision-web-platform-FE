@@ -11,7 +11,6 @@ export interface Image {
   labels?: string[];
   split?: string;
   owner?: string;
-  // Add other fields as necessary from the response
 }
 
 export interface GetImagesResponse {
