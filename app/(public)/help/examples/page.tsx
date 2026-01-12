@@ -6,16 +6,77 @@ import { useDocsStore } from "@/stores/docs-store"
 export default function ExamplesPage() {
                     const { platform } = useDocsStore();
 
+                    if (platform === 'swift') {
+                                        return (
+                                                            <div className="space-y-6 pb-12 px-6">
+                                                                                <DocPageHeader
+                                                                                                    heading="Code Examples"
+                                                                                                    text="Building a full measurement AR experience."
+                                                                                />
+
+                                                                                <div className="space-y-8">
+                                                                                                    <section id="full-measurement" className="space-y-4">
+                                                                                                                        <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+                                                                                                                                            Full Measurement Example
+                                                                                                                        </h3>
+                                                                                                                        <p className="leading-7">
+                                                                                                                                            This example demonstrates how to combine the services to measure the distance between two tapped points.
+                                                                                                                        </p>
+                                                                                                                        <div className="relative rounded-lg bg-zinc-950 px-4 py-4 dark:bg-zinc-900">
+                                                                                                                                            <pre className="overflow-x-auto">
+                                                                                                                                                                <code className="relative rounded font-mono text-sm text-zinc-50">
+                                                                                                                                                                                    {`// Initialize services
+let raycastService = RaycastService(arView: arView)
+let lineRenderer = LineRenderer(arView: arView)
+let textRenderer = TextRenderer(arView: arView)
+
+// Assuming x1, y1 and x2, y2 are screen tap coordinates
+if let p1 = raycastService.worldPoint(fromX: x1, y: y1),
+   let p2 = raycastService.worldPoint(fromX: x2, y: y2) {
+
+    // 1. Calculate distance
+    let distance = DistanceCalculator.distance(from: p1, to: p2)
+    let text = String(format: "%.2f cm", distance * 100)
+
+    // 2. Draw line
+    lineRenderer.drawLine(from: p1, to: p2, identifier: "line-1")
+
+    // 3. Show label
+    textRenderer.createText(text: text, position: p2, identifier: "label-1")
+}`}
+                                                                                                                                                                </code>
+                                                                                                                                            </pre>
+                                                                                                                        </div>
+                                                                                                    </section>
+
+                                                                                                    <section id="management" className="space-y-4">
+                                                                                                                        <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+                                                                                                                                            Entity Management
+                                                                                                                        </h3>
+                                                                                                                        <p className="leading-7">
+                                                                                                                                            Cleaning up AR entities when they are no longer needed.
+                                                                                                                        </p>
+                                                                                                                        <div className="relative rounded-lg bg-zinc-950 px-4 py-4 dark:bg-zinc-900">
+                                                                                                                                            <pre className="overflow-x-auto">
+                                                                                                                                                                <code className="relative rounded font-mono text-sm text-zinc-50">
+                                                                                                                                                                                    {`// Remove specific objects
+lineRenderer.removeLine(identifier: "line-1")
+textRenderer.removeText(identifier: "label-1")
+
+// Or clear everything
+lineRenderer.clearAll()
+textRenderer.clearAll()`}
+                                                                                                                                                                </code>
+                                                                                                                                            </pre>
+                                                                                                                        </div>
+                                                                                                    </section>
+                                                                                </div>
+                                                            </div>
+                                        );
+                    }
+
+                    // Default for Kotlin / React Native
                     const basicExample = {
-                                        'swift': `let image = UIImage(named: "example")!
-CogniVision.shared.analyze(image: image, mode: .fast) { result in
-    switch result {
-    case .success(let data):
-        print(data)
-    case .failure(let error):
-        print(error)
-    }
-}`,
                                         'kotlin': `val image = BitmapFactory.decodeResource(resources, R.drawable.example)
 CogniVision.analyze(image, AnalysisMode.FAST) { result ->
     result.onSuccess { data ->
@@ -30,15 +91,9 @@ CogniVision.analyze(image, AnalysisMode.FAST) { result ->
 });
 
 console.log(result.data);`
-                    }[platform];
+                    }[platform] || "";
 
                     const advancedExample = {
-                                        'swift': `// Upload with progress
-CogniVision.shared.analyze(image: image, onProgress: { progress in
-    print("Upload progress: \\(progress)")
-}) { result in
-    // Handle result
-}`,
                                         'kotlin': `// Upload with progress
 CogniVision.analyze(image, 
     onProgress = { progress -> 
@@ -49,7 +104,7 @@ CogniVision.analyze(image,
 }`,
                                         'react-native': `// React Native specific hook usage would go here
 // ... (same as basic for now or custom logic)`
-                    }[platform];
+                    }[platform] || "";
 
                     return (
                                         <div className="space-y-6 pb-12 px-6">
@@ -64,7 +119,7 @@ CogniVision.analyze(image,
                                                                                                                         Basic Analysis
                                                                                                     </h3>
                                                                                                     <p className="leading-7">
-                                                                                                                        Analysis syntax for <strong>{platform === 'react-native' ? 'React Native' : platform === 'swift' ? 'Swift' : 'Kotlin'}</strong>.
+                                                                                                                        Analysis syntax for <strong>{platform === 'react-native' ? 'React Native' : 'Kotlin'}</strong>.
                                                                                                     </p>
                                                                                                     <div className="relative rounded-lg bg-zinc-950 px-4 py-4 dark:bg-zinc-900">
                                                                                                                         <pre className="overflow-x-auto">
