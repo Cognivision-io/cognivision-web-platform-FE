@@ -18,7 +18,6 @@ export type Project = {
   createdAt: string;
   updatedAt: string;
   roboflowProjectId?: string;
-  // Add other fields as needed based on the response
   images?: number;
   models?: number;
 };
