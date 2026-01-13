@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import "react-day-picker/dist/style.css";
 import AppProviders from "@/components/providers/AppProviders";
 
 const poppins = localFont({

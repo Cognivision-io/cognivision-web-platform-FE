@@ -1,23 +1,56 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SummaryCards from "@/components/dashboard/monitoring/SummaryCards";
 import AnnotationCard from "@/components/dashboard/monitoring/AnnotationCard";
 import VersionTable from "@/components/dashboard/monitoring/VersionTable";
+import DetailedLogsTable from "@/components/dashboard/monitoring/DetailedLogsTable";
 import { useProjectsQuery } from "@/features/dataset/queries/project.query";
 import { useMonitoringStats } from "@/features/monitoring/queries/monitoring.query";
+import { useWorkspacesQuery } from "@/features/workspace/queries/workspace.query";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronDown } from "lucide-react";
 import type { TimeRange } from "@/interfaces/monitoring.interface";
 
 export default function MonitoringPage() {
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(
+    null
+  );
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [timeRange, setTimeRange] = useState<TimeRange>("7");
+
+  const { data: workspacesData, isLoading: workspacesLoading } =
+    useWorkspacesQuery({
+      page: 1,
+      limit: 50,
+    });
 
   const { data: projectsData, isLoading: projectsLoading } = useProjectsQuery({
     page: 1,
     limit: 100,
   });
+
+  const workspaces = workspacesData?.data?.data || [];
+
+  useEffect(() => {
+    if (workspaces.length === 0) {
+      setSelectedWorkspaceId(null);
+      return;
+    }
+
+    const hasSelectedWorkspace = workspaces.some(
+      (workspace) => workspace.id === selectedWorkspaceId
+    );
+
+    if (!selectedWorkspaceId || !hasSelectedWorkspace) {
+      setSelectedWorkspaceId(workspaces[0].id);
+    }
+  }, [workspaces, selectedWorkspaceId]);
+
+  const selectedWorkspace = useMemo(
+    () => workspaces.find((workspace) => workspace.id === selectedWorkspaceId),
+    [workspaces, selectedWorkspaceId]
+  );
 
   const dateRanges = useMemo(() => {
     const now = new Date();
@@ -34,6 +67,38 @@ export default function MonitoringPage() {
     };
   }, []);
 
+  const projects = projectsData?.data?.data || [];
+
+  const filteredProjects = useMemo(() => {
+    if (!selectedWorkspaceId) return [];
+
+    const projectIds = new Set(
+      (selectedWorkspace?.projects ?? [])
+        .map((projectId) => Number(projectId))
+        .filter((projectId) => !Number.isNaN(projectId))
+    );
+
+    return projects.filter((project) => {
+      if (project.workspaceId === selectedWorkspaceId) return true;
+      const projectId = Number(project.id);
+      if (Number.isNaN(projectId)) return false;
+      return projectIds.has(projectId);
+    });
+  }, [projects, selectedWorkspace, selectedWorkspaceId]);
+
+  useEffect(() => {
+    if (!selectedWorkspaceId) {
+      setSelectedProjectId("");
+      return;
+    }
+
+    if (!selectedProjectId) return;
+    const stillValid = filteredProjects.some(
+      (project) => project.id === selectedProjectId
+    );
+    if (!stillValid) setSelectedProjectId("");
+  }, [filteredProjects, selectedProjectId, selectedWorkspaceId]);
+
   const { data: monitoringData, isLoading: monitoringLoading } =
     useMonitoringStats(
       selectedProjectId
@@ -42,13 +107,11 @@ export default function MonitoringPage() {
             endTime: new Date().toISOString().split("T")[0],
           }
         : undefined,
-      { enabled: !!selectedProjectId }
+      { enabled: !!selectedWorkspaceId && !!selectedProjectId }
     );
 
-  const projects = projectsData?.data?.data || [];
-
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8 lg:px-10">
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-6 py-8 lg:px-10">
       <section>
         <div className="mb-4">
           <h1 className="text-2xl font-semibold">Monitoring</h1>
@@ -57,19 +120,27 @@ export default function MonitoringPage() {
           </p>
         </div>
 
-        {/* Project Selector */}
-        <div className="mb-6">
-          <div className="relative w-full max-w-md">
+        <div className="mb-6 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
+          {/* Workspace Selector */}
+          <div className="relative w-full min-w-0 max-w-md">
             <select
-              value={selectedProjectId}
-              onChange={(e) => setSelectedProjectId(e.target.value)}
+              value={selectedWorkspaceId ? String(selectedWorkspaceId) : ""}
+              onChange={(e) => {
+                const nextId = Number(e.target.value);
+                if (Number.isNaN(nextId)) return;
+                setSelectedWorkspaceId(nextId);
+              }}
               className="w-full appearance-none rounded-lg border border-slate-200 bg-white px-4 py-3 pr-10 text-sm font-medium text-slate-900 shadow-sm hover:border-slate-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              disabled={projectsLoading}
+              disabled={workspacesLoading}
             >
-              <option value="">Select a project to monitor</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
+              <option value="">
+                {workspacesLoading
+                  ? "Loading workspaces..."
+                  : "Select a workspace"}
+              </option>
+              {workspaces.map((workspace) => (
+                <option key={workspace.id} value={String(workspace.id)}>
+                  {workspace.name}
                 </option>
               ))}
             </select>
@@ -77,42 +148,10 @@ export default function MonitoringPage() {
           </div>
         </div>
 
-        {!selectedProjectId && (
-          <Card>
-            <CardContent className="flex items-center justify-center py-12">
-              <p className="text-sm text-muted-foreground">
-                Please select a project to view monitoring statistics
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {selectedProjectId && (
-          <>
-            <SummaryCards
-              data={monitoringData}
-              isLoading={monitoringLoading}
-              timeRange={timeRange}
-              onTimeRangeChange={setTimeRange}
-            />
-
-            <section className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-3">
-                <AnnotationCard
-                  data={monitoringData}
-                  isLoading={monitoringLoading}
-                />
-              </div>
-
-              <div className="lg:col-span-3">
-                <VersionTable
-                  data={monitoringData}
-                  isLoading={monitoringLoading}
-                />
-              </div>
-            </section>
-          </>
-        )}
+        <DetailedLogsTable
+          workspaceId={selectedWorkspace?.id}
+          workspaceName={selectedWorkspace?.name}
+        />
       </section>
     </div>
   );
