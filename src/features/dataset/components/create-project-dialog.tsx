@@ -141,11 +141,14 @@ export const CreateProjectDialog = ({
   const labelMode = watch("labelMode") as LabelMode;
 
   const { mutate: createProject, isPending } = useCreateProjectMutation({
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       setOpen(false);
       toast.success("Project created successfully");
-      router.push(`/dashboard/dataset/${data.data.id}/upload-dataset`);
+      const workspaceQuery = variables.workspace
+        ? `?workspaceId=${variables.workspace}`
+        : "";
+      router.push(`/dashboard/dataset/${data.data.id}/upload-dataset${workspaceQuery}`);
       reset();
     },
     onError: (error) => {

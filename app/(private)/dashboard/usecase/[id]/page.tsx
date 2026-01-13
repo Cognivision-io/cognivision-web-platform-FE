@@ -87,10 +87,13 @@ const UseCaseDetailPage = () => {
               <Button
                 size="lg"
                 type="button"
+                asChild
                 className="h-12 rounded-lg bg-primary px-6 text-base font-semibold text-white shadow-[0_18px_45px_rgba(91,33,255,0.45)] hover:bg-[#4b1fd8]"
               >
-                <Plus className="h-5 w-5" />
-                Create new dataset
+                <Link href="/dashboard/dataset">
+                  <Plus className="h-5 w-5" />
+                  Create new dataset
+                </Link>
               </Button>
               <Button
                 size="lg"

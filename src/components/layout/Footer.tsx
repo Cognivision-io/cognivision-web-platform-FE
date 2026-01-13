@@ -54,12 +54,12 @@ const Footer = () => {
               </p>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/#about" className="hover:text-white">
+                  <Link href="/about" className="hover:text-white">
                     About Us
                   </Link>
                 </li>
                 <li>
-                  <Link href="/#use-cases" className="hover:text-white">
+                  <Link href="/solutions/wgts" className="hover:text-white">
                     Use Cases
                   </Link>
                 </li>

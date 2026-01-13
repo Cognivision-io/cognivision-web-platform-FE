@@ -143,7 +143,10 @@ const DatasetPage = () => {
   }, [projects, selectedWorkspace, selectedWorkspaceId]);
 
   const handleProjectClick = (projectId: string) => {
-    router.push(`/dashboard/dataset/${projectId}`);
+    const workspaceQuery = selectedWorkspaceId
+      ? `?workspaceId=${selectedWorkspaceId}`
+      : "";
+    router.push(`/dashboard/dataset/${projectId}${workspaceQuery}`);
   };
 
   const handleWorkspaceCreated = (workspaceId: number) => {

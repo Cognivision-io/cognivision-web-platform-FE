@@ -67,37 +67,37 @@ export const useCaseTemplates: UseCaseTemplate[] = [
       tags: ["Player tags", "Speed heatmap", "Offside alerts"],
     },
   },
-  {
-    id: "retail",
-    title: "Retail",
-    description:
-      "Audit shelves, measure footfall, and detect pricing issues with real-time computer vision.",
-    icon: Store,
-    tagline: "Explore our retail SDK",
-    heroTitle: "Bring visual AI to every store.",
-    heroDescription:
-      "Quantify shelf health, locate empty facings, and guide associates with AR instructions generated from any in-store camera or smartphone stream.",
-    highlights: ["Planogram checks", "Price tag reading", "Footfall heatmaps"],
-    videoTitle: "Planogram walkthrough",
-    videoDuration: "01:52",
-    videoSubtitle: "Shelf audit from mobile capture",
-    serverStatus: {
-      label: "Server started",
-      value: "Store hub synced",
-      description: "Edge ingest every 5s",
-    },
-    modelStatus: {
-      label: "Model loaded",
-      value: "ShelfIntel v1.5",
-      description: "Facing fill • product mix",
-    },
-    preview: {
-      label: "Planogram overlay",
-      meta: "Retail QA flow",
-      image: "/Resources2UseCase.png",
-      tags: ["SKU tags", "Restock cues", "Compliance"],
-    },
-  },
+  // {
+  //   id: "retail",
+  //   title: "Retail",
+  //   description:
+  //     "Audit shelves, measure footfall, and detect pricing issues with real-time computer vision.",
+  //   icon: Store,
+  //   tagline: "Explore our retail SDK",
+  //   heroTitle: "Bring visual AI to every store.",
+  //   heroDescription:
+  //     "Quantify shelf health, locate empty facings, and guide associates with AR instructions generated from any in-store camera or smartphone stream.",
+  //   highlights: ["Planogram checks", "Price tag reading", "Footfall heatmaps"],
+  //   videoTitle: "Planogram walkthrough",
+  //   videoDuration: "01:52",
+  //   videoSubtitle: "Shelf audit from mobile capture",
+  //   serverStatus: {
+  //     label: "Server started",
+  //     value: "Store hub synced",
+  //     description: "Edge ingest every 5s",
+  //   },
+  //   modelStatus: {
+  //     label: "Model loaded",
+  //     value: "ShelfIntel v1.5",
+  //     description: "Facing fill • product mix",
+  //   },
+  //   preview: {
+  //     label: "Planogram overlay",
+  //     meta: "Retail QA flow",
+  //     image: "/Resources2UseCase.png",
+  //     tags: ["SKU tags", "Restock cues", "Compliance"],
+  //   },
+  // },
   {
     id: "gaming",
     title: "Gaming",
@@ -129,41 +129,41 @@ export const useCaseTemplates: UseCaseTemplate[] = [
       tags: ["Gesture tags", "Spatial mesh", "Scene notes"],
     },
   },
-  {
-    id: "healthcare",
-    title: "Healthcare",
-    description:
-      "Detect wounds, lesions, or anatomy landmarks with privacy-first workflows.",
-    icon: Stethoscope,
-    tagline: "Explore our healthcare SDK",
-    heroTitle: "Scale diagnostic workflows with VisionKit.",
-    heroDescription:
-      "Standardize documentation, triage scans, and build longitudinal tracking with templates tuned for telehealth, wound care, and radiology assist.",
-    highlights: [
-      "HIPAA-ready storage",
-      "Measurement overlays",
-      "Longitudinal tracking",
-    ],
-    videoTitle: "Clinical AI walkthrough",
-    videoDuration: "02:05",
-    videoSubtitle: "Dermatology triage capture",
-    serverStatus: {
-      label: "Server started",
-      value: "Clinic edge online",
-      description: "Encrypted hand-off verified",
-    },
-    modelStatus: {
-      label: "Model loaded",
-      value: "CareScan v1.8",
-      description: "Lesion grading • edema detection",
-    },
-    preview: {
-      label: "Clinical measurement overlay",
-      meta: "Healthcare workflow",
-      image: "/Resources4UseCase.png",
-      tags: ["De-identification", "Progress charts", "Treatment guides"],
-    },
-  },
+  // {
+  //   id: "healthcare",
+  //   title: "Healthcare",
+  //   description:
+  //     "Detect wounds, lesions, or anatomy landmarks with privacy-first workflows.",
+  //   icon: Stethoscope,
+  //   tagline: "Explore our healthcare SDK",
+  //   heroTitle: "Scale diagnostic workflows with VisionKit.",
+  //   heroDescription:
+  //     "Standardize documentation, triage scans, and build longitudinal tracking with templates tuned for telehealth, wound care, and radiology assist.",
+  //   highlights: [
+  //     "HIPAA-ready storage",
+  //     "Measurement overlays",
+  //     "Longitudinal tracking",
+  //   ],
+  //   videoTitle: "Clinical AI walkthrough",
+  //   videoDuration: "02:05",
+  //   videoSubtitle: "Dermatology triage capture",
+  //   serverStatus: {
+  //     label: "Server started",
+  //     value: "Clinic edge online",
+  //     description: "Encrypted hand-off verified",
+  //   },
+  //   modelStatus: {
+  //     label: "Model loaded",
+  //     value: "CareScan v1.8",
+  //     description: "Lesion grading • edema detection",
+  //   },
+  //   preview: {
+  //     label: "Clinical measurement overlay",
+  //     meta: "Healthcare workflow",
+  //     image: "/Resources4UseCase.png",
+  //     tags: ["De-identification", "Progress charts", "Treatment guides"],
+  //   },
+  // },
 ];
 
 export const getUseCaseTemplate = (id: string) => {

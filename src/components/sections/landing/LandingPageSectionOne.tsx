@@ -26,7 +26,7 @@ export default function LandingPageSectionOne() {
                 className="font-heading font-semibold"
                 style={{ color: PURPLE }}
               >
-                Spatial AR
+                Spatial Intelligence
               </span>
             </h1>
 
