@@ -1,15 +1,10 @@
 import Image from "next/image";
 
 type SteppedImageCollageProps = {
-  /** Left/top image (e.g. "/Hero2.svg") */
-  leftSrc: string;
-  /** Right/bottom image (e.g. "/Hero3.svg") */
-  rightSrc: string;
-
+  leftSrc: string; // back/left image
+  rightSrc: string; // front/right image
   leftAlt?: string;
   rightAlt?: string;
-
-  /** Optional wrapper classes (e.g. "max-w-[600px]") */
   className?: string;
   priorityLeft?: boolean;
   priorityRight?: boolean;
@@ -24,36 +19,62 @@ export function SteppedImageCollage({
   priorityLeft = false,
   priorityRight = false,
 }: SteppedImageCollageProps) {
-  // Built for viewBox 560x460, scales responsively.
-  // Top-left is sharp (no rounding).
+  // Base height stays the same
+  const H = 460;
+
+  const OUT = 18; // outline inset
+  const PAD = 12; // spacing between image and outline
+  const R = 34; // radius
+
+  // ✅ Your updated image boxes
+  const LEFT = { x: 30, y: 25, w: 280, h: 300 };
+  const RIGHT = { x: 270, y: 170, w: 300, h: 260 };
+
+  // --- Build anchors from geometry ---
+  const xL = LEFT.x + LEFT.w + PAD;
+  const yStep = RIGHT.y - PAD;
+  const xR = RIGHT.x + RIGHT.w + PAD;
+  const xInner = RIGHT.x - PAD;
+  const yInner = LEFT.y + LEFT.h + PAD;
+
+  // ✅ Auto-fit canvas width so nothing gets clipped.
+  // Ensure rightmost outline fits: needs xR + OUT
+  const W = Math.max(560, Math.ceil(xR + OUT));
+
+  const yB = H - OUT;
+
   const PATH =
-    "M18 18 " + // ✅ sharp top-left
-    "H308 " +
-    "A34 34 0 0 1 342 52 " + // rounded top-right of left block
-    "V118 " +
-    "H542 " +
-    "V408 " +
-    "A34 34 0 0 1 508 442 " + // rounded bottom-right
-    "H158 " +
-    "V342 " +
-    "H52 " +
-    "A34 34 0 0 1 18 308 " + // rounded bottom-left (keep like reference)
-    "V18 Z";
+    `M${OUT} ${OUT} ` +
+    `H${xL - R} ` +
+    `A${R} ${R} 0 0 1 ${xL} ${OUT + R} ` +
+    `V${yStep} ` +
+    `H${xR} ` +
+    `V${yB - R} ` +
+    `A${R} ${R} 0 0 1 ${xR - R} ${yB} ` +
+    `H${xInner} ` +
+    `V${yInner} ` +
+    `H${OUT + R} ` +
+    `A${R} ${R} 0 0 1 ${OUT} ${yInner - R} ` +
+    `V${OUT} Z`;
+
+  const pctX = (px: number) => `${(px / W) * 100}%`;
+  const pctY = (px: number) => `${(px / H) * 100}%`;
 
   return (
     <div
-      className={["relative w-full max-w-[560px] aspect-[560/460]", className]
+      className={["relative w-full max-w-[560px]", className]
         .filter(Boolean)
         .join(" ")}
+      // ✅ Keep it responsive + correct aspect even if W changes (e.g. becomes 600)
+      style={{ aspectRatio: `${W} / ${H}` }}
     >
       {/* Double outline */}
       <svg
         className="absolute inset-0 h-full w-full"
-        viewBox="0 0 560 460"
+        viewBox={`0 0 ${W} ${H}`}
         fill="none"
         aria-hidden
       >
-        {/* soft outer line */}
         <path
           d={PATH}
           stroke="rgba(91,47,232,0.25)"
@@ -61,7 +82,6 @@ export function SteppedImageCollage({
           strokeLinejoin="miter"
           strokeLinecap="square"
         />
-        {/* main inner line */}
         <path
           d={PATH}
           stroke="rgba(91,47,232,0.85)"
@@ -71,14 +91,14 @@ export function SteppedImageCollage({
         />
       </svg>
 
-      {/* Left image (inset) */}
+      {/* Back image */}
       <div
         className="absolute z-10 overflow-hidden rounded-[34px]"
         style={{
-          left: "5.36%", // 30 / 560
-          top: "6.52%", // 30 / 460
-          width: "53.57%", // 300 / 560
-          height: "65.22%", // 300 / 460
+          left: pctX(LEFT.x),
+          top: pctY(LEFT.y),
+          width: pctX(LEFT.w),
+          height: pctY(LEFT.h),
         }}
       >
         <Image
@@ -92,14 +112,14 @@ export function SteppedImageCollage({
         />
       </div>
 
-      {/* Right image (on top) */}
+      {/* Front image */}
       <div
         className="absolute z-20 overflow-hidden rounded-[34px]"
         style={{
-          left: "30.36%", // 170 / 560
-          top: "28.26%", // 130 / 460
-          width: "64.29%", // 360 / 560
-          height: "65.22%", // 300 / 460
+          left: pctX(RIGHT.x),
+          top: pctY(RIGHT.y),
+          width: pctX(RIGHT.w),
+          height: pctY(RIGHT.h),
         }}
       >
         <Image
