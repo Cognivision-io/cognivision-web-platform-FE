@@ -21,7 +21,6 @@ export default function LandingPageSectionOne() {
           <div>
             <h1 className="font-heading text-[36px] font-semibold leading-[1.08] tracking-wide text-[#0b1020] sm:text-[46px] lg:text-[56px]">
               Explore the future of <br />
-              the{" "}
               <span
                 className="font-heading font-semibold"
                 style={{ color: PURPLE }}
