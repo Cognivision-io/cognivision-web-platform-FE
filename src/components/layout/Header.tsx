@@ -9,7 +9,7 @@ const PURPLE = "#5b2fe8";
 
 const navItems = [
   { label: "About", href: "/about" },
-  { label: "Solutions", href: "/solutions/wgts", hasDropdown: true },
+  { label: "Solutions", href: "/solutions", hasDropdown: true },
   { label: "Pricing", href: "/pricing" },
   { label: "Docs", href: "/help" },
   { label: "Contact", href: "/contact-us" },

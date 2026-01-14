@@ -45,7 +45,7 @@ export default function LandingPageSectionOne() {
               </Link>
 
               <Link
-                href="/use-case"
+                href="/solutions"
                 className="inline-flex h-[46px] items-center justify-center rounded-md border px-7 text-[14px] font-semibold text-[#111827] transition-colors hover:bg-black/[0.03]"
                 style={{ borderColor: "rgba(91,47,232,0.35)" }}
               >

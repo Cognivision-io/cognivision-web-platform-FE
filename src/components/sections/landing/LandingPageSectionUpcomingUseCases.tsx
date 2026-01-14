@@ -21,7 +21,7 @@ const CARDS: UseCaseCard[] = [
       "Working online is the same experience as working in an office. This will be achieved with..",
     image: "/Hero8.svg",
     hrefTry: "/register",
-    hrefExplore: "/use-case",
+    hrefExplore: "/solutions",
   },
   {
     title: "Virtual Reality Concert",
@@ -29,7 +29,7 @@ const CARDS: UseCaseCard[] = [
       "Watching concerts virtually is one of the things that can be done in cyberspace..",
     image: "/Hero9.svg",
     hrefTry: "/register",
-    hrefExplore: "/use-case",
+    hrefExplore: "/solutions",
   },
   {
     title: "Playing Games",
@@ -37,7 +37,7 @@ const CARDS: UseCaseCard[] = [
       "For gamers, the metaverse could be an interesting platform of choice for the..",
     image: "/Hero10.svg",
     hrefTry: "/register",
-    hrefExplore: "/use-case",
+    hrefExplore: "/solutions",
   },
   {
     title: "Online Travel",
@@ -45,7 +45,7 @@ const CARDS: UseCaseCard[] = [
       "With cyberspace, online travel is certainly not impossible. We can do this with the help of..",
     image: "/Hero11.svg",
     hrefTry: "/register",
-    hrefExplore: "/use-case",
+    hrefExplore: "/solutions",
   },
   {
     title: "Artworks",
@@ -53,7 +53,7 @@ const CARDS: UseCaseCard[] = [
       "In the past, works of art such as paintings could only be seen in the real world..",
     image: "/Hero12.svg",
     hrefTry: "/register",
-    hrefExplore: "/use-case",
+    hrefExplore: "/solutions",
   },
   {
     title: "Digital Clothing",
@@ -61,7 +61,7 @@ const CARDS: UseCaseCard[] = [
       "The community has also been active with the emergence of paintings or drawings..",
     image: "/Hero13.svg",
     hrefTry: "/register",
-    hrefExplore: "/use-case",
+    hrefExplore: "/solutions",
   },
 ];
 
@@ -103,7 +103,7 @@ function UseCaseCard({ card }: { card: UseCaseCard }) {
         </Link>
 
         <Link
-          href={card.hrefExplore || "/use-case"}
+          href={card.hrefExplore || "/solutions"}
           className="inline-flex h-[34px] items-center justify-center rounded-sm border px-4 text-[13px] font-semibold text-[#0b1020] hover:bg-black/[0.03]"
           style={{ borderColor: "rgba(91,47,232,0.35)" }}
         >
