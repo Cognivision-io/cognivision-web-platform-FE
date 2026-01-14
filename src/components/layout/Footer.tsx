@@ -75,12 +75,12 @@ const Footer = () => {
               </p>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/#pricing" className="hover:text-white">
+                  <Link href="/pricing" className="hover:text-white">
                     Pricing
                   </Link>
                 </li>
                 <li>
-                  <Link href="/#docs" className="hover:text-white">
+                  <Link href="/help" className="hover:text-white">
                     Documentation
                   </Link>
                 </li>

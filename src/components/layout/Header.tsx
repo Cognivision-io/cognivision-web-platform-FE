@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { Menu as MuiMenu, MenuItem } from "@mui/material";
+import { ChevronDown, Menu as MenuIcon, X } from "lucide-react";
 
 const PURPLE = "#5b2fe8";
 
@@ -29,6 +30,9 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSolutionsOpen, setIsMobileSolutionsOpen] = useState(false);
+  const [solutionsAnchorEl, setSolutionsAnchorEl] =
+    useState<HTMLElement | null>(null);
+  const solutionsMenuOpen = Boolean(solutionsAnchorEl);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 8);
@@ -40,11 +44,20 @@ export default function Header() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsMobileSolutionsOpen(false);
+    setSolutionsAnchorEl(null);
   }, [pathname]);
 
   const isActive = (href: string) => {
     const base = href.split("#")[0] || "/";
     return pathname === base;
+  };
+
+  const handleSolutionsClick = (event: MouseEvent<HTMLElement>) => {
+    setSolutionsAnchorEl((current) => (current ? null : event.currentTarget));
+  };
+
+  const handleSolutionsClose = () => {
+    setSolutionsAnchorEl(null);
   };
 
   return (
@@ -74,14 +87,17 @@ export default function Header() {
             const active = isActive(item.href);
 
             if (item.hasDropdown) {
-              const solutionsActive =
-                pathname === "/solutions/wgts" ||
-                pathname === "/solutions/tablear";
+              const solutionsActive = pathname.startsWith("/solutions");
 
               return (
-                <div key={item.href} className="relative group">
-                  <Link
-                    href={item.href}
+                <div key={item.href} className="relative">
+                  <button
+                    type="button"
+                    id="solutions-button"
+                    aria-controls={solutionsMenuOpen ? "solutions-menu" : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={solutionsMenuOpen ? "true" : undefined}
+                    onClick={handleSolutionsClick}
                     className={cn(
                       "inline-flex items-center gap-1.5",
                       "text-[15px] font-medium tracking-wide",
@@ -95,33 +111,52 @@ export default function Header() {
                     <ChevronDown
                       className={cn(
                         "h-4 w-4 transition-transform duration-150",
-                        "opacity-80 group-hover:opacity-100 group-focus-within:opacity-100",
-                        "group-hover:rotate-180 group-focus-within:rotate-180"
+                        solutionsMenuOpen ? "rotate-180 opacity-100" : "opacity-80"
                       )}
                     />
-                  </Link>
+                  </button>
 
-                  <div
-                    className={cn(
-                      "pointer-events-none absolute left-1/2 top-full z-50 mt-3 w-[220px] -translate-x-1/2 rounded-xl border border-black/10 bg-white p-2 shadow-[0_20px_60px_rgba(17,24,39,0.14)]",
-                      "opacity-0 translate-y-1 transition-[opacity,transform] duration-150",
-                      "group-hover:pointer-events-auto group-hover:opacity-100 group-hover:translate-y-0",
-                      "group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-focus-within:translate-y-0"
-                    )}
+                  <MuiMenu
+                    id="solutions-menu"
+                    anchorEl={solutionsAnchorEl}
+                    open={solutionsMenuOpen}
+                    onClose={handleSolutionsClose}
+                    anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+                    transformOrigin={{ vertical: "top", horizontal: "center" }}
+                    PaperProps={{
+                      sx: {
+                        mt: 1.5,
+                        width: 220,
+                        borderRadius: "12px",
+                        border: "1px solid rgba(17,24,39,0.10)",
+                        boxShadow: "0 20px 60px rgba(17,24,39,0.14)",
+                      },
+                    }}
+                    MenuListProps={{
+                      onMouseLeave: handleSolutionsClose,
+                      sx: { py: "6px" },
+                    }}
                   >
                     {solutionsItems.map((s) => (
-                      <Link
+                      <MenuItem
                         key={s.href}
+                        onClick={handleSolutionsClose}
+                        component={Link as any}
                         href={s.href}
-                        className={cn(
-                          "flex items-center justify-between rounded-lg px-3 py-2.5 text-[14px] font-medium text-[#111827]",
-                          "hover:bg-black/[0.04]"
-                        )}
+                        sx={{
+                          mx: "6px",
+                          my: "2px",
+                          borderRadius: "10px",
+                          fontSize: "14px",
+                          fontWeight: 500,
+                          color: pathname === s.href ? PURPLE : "#111827",
+                          "&:hover": { bgcolor: "rgba(17,24,39,0.04)" },
+                        }}
                       >
-                        <span>{s.label}</span>
-                      </Link>
+                        {s.label}
+                      </MenuItem>
                     ))}
-                  </div>
+                  </MuiMenu>
                 </div>
               );
             }
@@ -183,7 +218,7 @@ export default function Header() {
             {isMobileMenuOpen ? (
               <X className="h-5 w-5 text-[#111827]" />
             ) : (
-              <Menu className="h-5 w-5 text-[#111827]" />
+              <MenuIcon className="h-5 w-5 text-[#111827]" />
             )}
           </button>
         </div>

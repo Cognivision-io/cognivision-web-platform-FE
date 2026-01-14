@@ -74,8 +74,8 @@ function TogglePill({
         )}
       >
         Annual
-        <span className="ml-1 select-none rounded-md bg-transparent px-2 py-1 text-[11px] font-semibold tracking-wide text-[#111827]">
-          SAVE 20%
+        <span className="ml-2 inline-flex select-none items-center rounded-full bg-[#5b2fe8]/10 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-[#5b2fe8] ring-1 ring-[#5b2fe8]/20">
+          Save 20%
         </span>
       </button>
     </div>
