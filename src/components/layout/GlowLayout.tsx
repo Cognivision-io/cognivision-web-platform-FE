@@ -134,7 +134,9 @@ export function GlowSection({
       // Favor edges, but still allow mid-field glows.
       const edgeBias = random();
       if (edgeBias < 0.5) {
-        return random() < 0.5 ? lerp(-12, 18, random()) : lerp(82, 112, random());
+        return random() < 0.5
+          ? lerp(-12, 18, random())
+          : lerp(82, 112, random());
       }
       return lerp(18, 82, random());
     };
@@ -154,15 +156,7 @@ export function GlowSection({
         focalYPct: Math.round(lerp(35, 65, random())),
       };
     });
-  }, [
-    blurPx,
-    glowCount,
-    glows,
-    intensity,
-    randomizeGlows,
-    seed,
-    sizePx,
-  ]);
+  }, [blurPx, glowCount, glows, intensity, randomizeGlows, seed, sizePx]);
 
   return (
     <section
@@ -173,6 +167,7 @@ export function GlowSection({
       ]
         .filter(Boolean)
         .join(" ")}
+      style={{ overflow: "hidden" }}
     >
       {allowGlowBleed ? (
         <div
@@ -195,17 +190,22 @@ export function GlowSection({
         const isLegacyCornerGlow = !randomizeGlows && !glows && index < 2;
         const legacyStyle =
           isLegacyCornerGlow && index === 0
-            ? { left: `-${offsetPx}px`, bottom: `-${Math.round(offsetPx * 0.6)}px` }
+            ? {
+                left: `-${offsetPx}px`,
+                bottom: `-${Math.round(offsetPx * 0.6)}px`,
+              }
             : isLegacyCornerGlow && index === 1
-              ? { right: `-${offsetPx}px`, top: `-${Math.round(offsetPx * 0.6)}px` }
-              : null;
+            ? {
+                right: `-${offsetPx}px`,
+                top: `-${Math.round(offsetPx * 0.6)}px`,
+              }
+            : null;
 
-        const positioningStyle =
-          legacyStyle ?? {
-            left: `${glow.xPct}%`,
-            top: `${glow.yPct}%`,
-            transform: "translate(-50%, -50%)",
-          };
+        const positioningStyle = legacyStyle ?? {
+          left: `${glow.xPct}%`,
+          top: `${glow.yPct}%`,
+          transform: "translate(-50%, -50%)",
+        };
 
         return (
           <div

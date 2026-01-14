@@ -51,7 +51,7 @@ export default function Header() {
     <header
       className={cn(
         "sticky top-0 z-50 w-full transition-[background-color,box-shadow,border-color] duration-200",
-        isScrolled
+        isScrolled && !isMobileMenuOpen
           ? "bg-white/90 backdrop-blur border-b border-black/5 shadow-[0_6px_20px_rgba(17,24,39,0.06)]"
           : "bg-transparent"
       )}
