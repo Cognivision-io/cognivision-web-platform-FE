@@ -36,12 +36,12 @@ export const useCaseTemplates: UseCaseTemplate[] = [
     id: "sports",
     title: "Sports",
     description:
-      "Detect balls, track players, and create high-impact coaching overlays powered by VisionKit.",
+      "Detect balls, track players, and create high-impact coaching overlays powered by Cognivision.",
     icon: Dumbbell,
     tagline: "Explore our sports use case SDK",
     heroTitle: "Build smarter sports apps with our Vision SDK.",
     heroDescription:
-      "Upload your pre-built dataset or start from scratch — VisionKit lets you ingest raw match footage, label it with smart tools, and train custom models for live broadcasts in minutes.",
+      "Upload your pre-built dataset or start from scratch — Cognivision lets you ingest raw match footage, label it with smart tools, and train custom models for live broadcasts in minutes.",
     highlights: [
       "Player tracking templates",
       "Instant AR measurement",
@@ -49,7 +49,7 @@ export const useCaseTemplates: UseCaseTemplate[] = [
     ],
     videoTitle: "Demo video",
     videoDuration: "02:18",
-    videoSubtitle: "Live capture powered by VisionKit Edge",
+    videoSubtitle: "Live capture powered by Cognivision Edge",
     serverStatus: {
       label: "Server started",
       value: "Stadium node online",
@@ -105,7 +105,7 @@ export const useCaseTemplates: UseCaseTemplate[] = [
       "Stream XR-ready scene data, classify player gestures, and deliver immersive HUDs.",
     icon: Gamepad2,
     tagline: "Explore our gaming SDK",
-    heroTitle: "Deliver immersive gaming HUDs with VisionKit.",
+    heroTitle: "Deliver immersive gaming HUDs with Cognivision.",
     heroDescription:
       "Blend camera feeds with real-time segmentation to power AR mini-maps, spectator overlays, or training simulators that react to every move.",
     highlights: ["Gesture capture", "XR overlays", "Latency-aware streaming"],
@@ -136,7 +136,7 @@ export const useCaseTemplates: UseCaseTemplate[] = [
   //     "Detect wounds, lesions, or anatomy landmarks with privacy-first workflows.",
   //   icon: Stethoscope,
   //   tagline: "Explore our healthcare SDK",
-  //   heroTitle: "Scale diagnostic workflows with VisionKit.",
+  //   heroTitle: "Scale diagnostic workflows with Cognivision.",
   //   heroDescription:
   //     "Standardize documentation, triage scans, and build longitudinal tracking with templates tuned for telehealth, wound care, and radiology assist.",
   //   highlights: [

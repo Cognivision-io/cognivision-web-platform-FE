@@ -41,10 +41,7 @@ const mainItems = [
   { title: "Setting", url: "/dashboard/settings", icon: Settings },
 ];
 
-const bottomItems = [
-  { title: "Help & Docs", url: "/help", icon: HelpCircle },
-  { title: "Notifications", url: "/notifications", icon: Bell },
-];
+const bottomItems = [{ title: "Help & Docs", url: "/help", icon: HelpCircle }];
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -79,21 +76,14 @@ export function AppSidebar() {
       <SidebarContent className="pt-6">
         {/* Logo and Header */}
         <div className={cn("mb-8", collapsed ? "px-2" : "px-6")}>
-          <div className="mb-6 flex items-center gap-2">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary/80">
-              <span className="text-lg font-bold text-white">V</span>
-            </div>
-            {!collapsed && (
-              <span className="text-xl font-semibold">Visionkit.ai</span>
-            )}
-          </div>
-
-          {!collapsed && (
-            <div className="space-y-1">
-              <p className="font-medium">{user?.firstName || "User"}</p>
-              <p className="text-xs text-muted-foreground">• 1 Member</p>
-            </div>
-          )}
+          <Link href="/" className="flex items-center gap-3">
+            <img
+              src="/logo-text-black.svg"
+              alt="CogniVision.io"
+              className="h-9 w-auto select-none"
+              draggable={false}
+            />
+          </Link>
         </div>
 
         {/* Main Navigation */}

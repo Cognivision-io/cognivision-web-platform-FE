@@ -88,17 +88,18 @@ const LoginPage = () => {
   return (
     <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2 lg:px-12">
       <div className="w-full max-w-md space-y-8">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-lg text-primary-foreground">
-              V
-            </div>
-            <span className="text-lg font-semibold">Visionkit.ai</span>
-          </div>
-        </div>
+        <Link href="/" className="flex items-center gap-3">
+          {/* use your exact logo asset */}
+          <img
+            src="/logo-text-black.svg"
+            alt="CogniVision.io"
+            className="h-9 w-auto select-none"
+            draggable={false}
+          />
+        </Link>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Welcome to Visionkit.ai 👋</h1>
+          <h1 className="text-3xl font-bold">Welcome to Cognivision.io 👋</h1>
           <p className="text-muted-foreground">Sign in to your account</p>
         </div>
 

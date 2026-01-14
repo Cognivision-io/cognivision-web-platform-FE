@@ -63,7 +63,7 @@ const DashboardPage = () => {
           </h1>
           <p className="text-sm text-muted-foreground">
             Choose the industry workflow you want to launch—each option opens a
-            tailored VisionKit experience.
+            tailored Cognivision experience.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

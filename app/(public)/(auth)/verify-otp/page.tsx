@@ -17,6 +17,7 @@ import {
 import { useCreateWorkspaceMutation } from "@/features/workspace/mutations/workspace.mutation";
 import CustomToast from "@/components/ui/sonner";
 import { useAuthStore } from "@/stores/auth-store";
+import Link from "next/link";
 
 const VerifyOtpContent = () => {
   const router = useRouter();
@@ -108,12 +109,15 @@ const VerifyOtpContent = () => {
     <div className="flex w-full items-center justify-center bg-background px-6 py-12 lg:w-1/2 lg:px-12">
       <div className="w-full max-w-md space-y-8">
         <div className="space-y-2">
-          <div className="mb-8 flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary/80">
-              <span className="text-lg font-bold text-white">V</span>
-            </div>
-            <span className="text-xl font-semibold">Visionkit.ai</span>
-          </div>
+          <Link href="/" className="flex items-center gap-3">
+            {/* use your exact logo asset */}
+            <img
+              src="/logo-text-black.svg"
+              alt="CogniVision.io"
+              className="h-9 w-auto select-none"
+              draggable={false}
+            />
+          </Link>
 
           <h1 className="text-3xl font-bold tracking-tight">Enter OTP</h1>
           <p className="text-muted-foreground">

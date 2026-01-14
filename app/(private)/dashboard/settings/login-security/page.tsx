@@ -23,7 +23,7 @@ const LoginSecurityPage = () => {
     if (composed.length > 0) {
       return composed;
     }
-    return user.username ?? user.email ?? "VisionKit User";
+    return user.username ?? user.email ?? "Cognivision User";
   }, [user]);
 
   const initials = useMemo(() => {
