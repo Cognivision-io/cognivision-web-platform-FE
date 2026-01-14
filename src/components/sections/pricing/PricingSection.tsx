@@ -350,7 +350,13 @@ export function PricingSection() {
   }, [billing]);
 
   return (
-    <GlowSection bgClassName="bg-white">
+    <GlowSection
+      bgClassName="bg-white"
+      allowGlowBleed
+      randomizeGlows
+      glowCount={2}
+      glowSeed="pricing-hero"
+    >
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 lg:px-0">
         {/* Title */}
         <div className="text-center">

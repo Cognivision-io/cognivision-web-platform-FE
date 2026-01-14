@@ -19,6 +19,9 @@ const Footer = () => {
                 alt="CogniVision.io"
                 className="h-10 w-auto drop-shadow-sm"
               />
+              <span className="font-heading text-[28px] font-semibold text-white">
+                CogniVision.io
+              </span>
             </div>
 
             <div className="w-full space-y-4">

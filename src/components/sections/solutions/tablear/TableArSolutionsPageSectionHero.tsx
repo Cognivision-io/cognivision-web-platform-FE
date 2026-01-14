@@ -38,7 +38,7 @@ export default function TableArSolutionsPageSectionHero() {
 
             <div className="mt-10">
               <Link
-                href="#"
+                href="https://apps.apple.com/us/app/table-ar/id6756374363"
                 className="inline-flex h-[50px] items-center gap-3 rounded-md px-6 text-[15px] font-semibold text-white shadow-[0_16px_34px_rgba(91,47,232,0.25)] transition-transform hover:-translate-y-0.5 active:translate-y-0"
                 style={{ backgroundColor: PURPLE }}
               >
