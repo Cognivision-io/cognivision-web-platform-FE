@@ -75,7 +75,8 @@ export default function Header() {
 
             if (item.hasDropdown) {
               const solutionsActive =
-                pathname === "/solutions/wgts" || pathname === "/solutions/tablear";
+                pathname === "/solutions/wgts" ||
+                pathname === "/solutions/tablear";
 
               return (
                 <div key={item.href} className="relative group">
@@ -118,9 +119,6 @@ export default function Header() {
                         )}
                       >
                         <span>{s.label}</span>
-                        <span className="text-[12px] text-[#111827]/50">
-                          /solutions
-                        </span>
                       </Link>
                     ))}
                   </div>
