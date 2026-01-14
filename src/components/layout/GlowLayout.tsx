@@ -87,7 +87,6 @@ export function GlowSection({
   intensity = 0.35,
   blurPx = 90,
   sizePx = 560,
-  offsetPx = 176, // ~44 * 4, close to your -right-44 style
   allowGlowBleed = false,
   randomizeGlows = false,
   glowSeed,
@@ -161,13 +160,13 @@ export function GlowSection({
   return (
     <section
       className={[
-        "relative w-full overflow-visible",
+        "relative w-full",
+        allowGlowBleed ? "overflow-visible" : "overflow-hidden",
         allowGlowBleed ? undefined : bgClassName,
         className,
       ]
         .filter(Boolean)
         .join(" ")}
-      style={{ overflow: "hidden" }}
     >
       {allowGlowBleed ? (
         <div
@@ -179,57 +178,64 @@ export function GlowSection({
         />
       ) : null}
 
-      {computedGlows.map((glow, index) => {
-        const glowSizePx = glow.sizePx ?? sizePx;
-        const glowBlurPx = glow.blurPx ?? blurPx;
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          ...(allowGlowBleed ? { zIndex: -10 } : null),
+          ...(allowGlowBleed
+            ? { clipPath: "inset(-2000px 0 -2000px 0)" }
+            : null),
+        }}
+      >
+        {computedGlows.map((glow, index) => {
+          const glowSizePx = glow.sizePx ?? sizePx;
+          const glowBlurPx = glow.blurPx ?? blurPx;
+          const glowIntensity = glow.intensity ?? intensity;
 
-        const focalX = glow.focalXPct ?? 50;
-        const focalY = glow.focalYPct ?? 50;
+          // Backward-compatible positioning for the legacy corner glows.
+          const isLegacyCornerGlow = !randomizeGlows && !glows && index < 2;
+          const clampPct = (value: number) =>
+            Math.min(99.5, Math.max(0.5, value));
+          const positioningStyle = isLegacyCornerGlow
+            ? index === 0
+              ? { left: 0, bottom: 0 }
+              : { right: 0, top: 0 }
+            : {
+                left: `${clampPct(glow.xPct)}%`,
+                top: `${clampPct(glow.yPct)}%`,
+                transform: "translate(-50%, -50%)",
+              };
 
-        // Backward-compatible positioning for the legacy corner glows.
-        const isLegacyCornerGlow = !randomizeGlows && !glows && index < 2;
-        const legacyStyle =
-          isLegacyCornerGlow && index === 0
-            ? {
-                left: `-${offsetPx}px`,
-                bottom: `-${Math.round(offsetPx * 0.6)}px`,
-              }
-            : isLegacyCornerGlow && index === 1
-            ? {
-                right: `-${offsetPx}px`,
-                top: `-${Math.round(offsetPx * 0.6)}px`,
-              }
-            : null;
-
-        const positioningStyle = legacyStyle ?? {
-          left: `${glow.xPct}%`,
-          top: `${glow.yPct}%`,
-          transform: "translate(-50%, -50%)",
-        };
-
-        return (
-          <div
-            // eslint-disable-next-line react/no-array-index-key
-            key={index}
-            className="pointer-events-none absolute rounded-full"
-            style={{
-              ...positioningStyle,
-              ...(allowGlowBleed ? { zIndex: -10 } : null),
-            }}
-          >
+          return (
             <div
-              className="h-full w-full rounded-full"
-              style={{
-                width: `${glowSizePx}px`,
-                height: `${glowSizePx}px`,
-                opacity: glow.intensity ?? intensity,
-                filter: `blur(${glowBlurPx}px)`,
-                background: `radial-gradient(circle at ${focalX}% ${focalY}%, rgba(${glowRgb}, 0.95), rgba(${glowRgb}, 0) 70%)`,
-              }}
-            />
-          </div>
-        );
-      })}
+              // eslint-disable-next-line react/no-array-index-key
+              key={index}
+              aria-hidden
+              className="absolute"
+              style={positioningStyle}
+            >
+              <div
+                className="rounded-full"
+                style={{
+                  width: 1,
+                  height: 1,
+                  backgroundColor: `rgba(${glowRgb}, ${Math.min(
+                    0.95,
+                    glowIntensity * 0.95
+                  )})`,
+                  boxShadow: `0 0 ${glowBlurPx}px ${Math.round(
+                    glowSizePx / 2
+                  )}px rgba(${glowRgb}, ${Math.min(
+                    0.75,
+                    glowIntensity * 0.75
+                  )})`,
+                }}
+              />
+            </div>
+          );
+        })}
+      </div>
 
       <div className="relative">{children}</div>
     </section>

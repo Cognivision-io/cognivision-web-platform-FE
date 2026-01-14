@@ -10,10 +10,10 @@ export default function LandingPageSectionSolutions() {
   return (
     <GlowSection
       bgClassName="bg-white"
-      className="min-h-[100svh] py-20 sm:py-24"
+      className="min-h-[70svh] py-20 sm:py-24"
       allowGlowBleed
       randomizeGlows
-      glowCount={3}
+      glowCount={2}
       glowSeed="landing-solutions"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-6 lg:px-0">

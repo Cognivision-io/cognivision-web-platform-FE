@@ -13,7 +13,7 @@ export default function LandingPageSectionOne() {
       className="min-h-[70svh]"
       allowGlowBleed
       randomizeGlows
-      glowCount={4}
+      glowCount={2}
       glowSeed="landing-hero"
     >
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 lg:px-0">
