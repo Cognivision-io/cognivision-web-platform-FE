@@ -16,11 +16,11 @@ const FEATURES: Feature[] = [
   {
     title: "Hybrid-Ready AR",
     description:
-      "One SDK for Flutter & React Native — no need for native ARKit/ARCore coding.",
+      "One SDK for React Native & Flutter — no need for native ARKit/ARCore coding.",
     Icon: Layers3,
   },
   {
-    title: "AI Vision + ML Inference",
+    title: "Computer Vision + ML Inference",
     description:
       "Real-time object detection, pose tracking, spatial analysis, and more.",
     Icon: Cpu,
