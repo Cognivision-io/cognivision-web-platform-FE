@@ -9,7 +9,7 @@ export default function AboutPageSectionMission() {
   return (
     <GlowSection
       bgClassName="bg-white"
-      className="min-h-[100svh] py-20 sm:py-24"
+      className="min-h-[90svh] pt-20 pb-16 sm:py-24"
       allowGlowBleed
       randomizeGlows
       glowCount={3}

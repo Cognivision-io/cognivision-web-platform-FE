@@ -63,7 +63,7 @@ export default function WgtsSolutionsPageSectionSolutionIntegration() {
       className="min-h-[100svh]"
       allowGlowBleed
       randomizeGlows
-      glowCount={4}
+      glowCount={2}
       glowSeed="wgts-integration"
     >
       <div className="mx-auto max-w-6xl min-h-[calc(100svh-78px)] px-5 py-16 sm:px-6 lg:px-0">

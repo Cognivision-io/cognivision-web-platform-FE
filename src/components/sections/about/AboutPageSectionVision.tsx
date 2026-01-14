@@ -8,8 +8,12 @@ const PURPLE = "#5b2fe8";
 export default function AboutPageSectionVision() {
   return (
     <GlowSection
-      bgClassName="bg-[#f6f7ff]"
-      className="min-h-[100svh] py-20 sm:py-24"
+      bgClassName="bg-white"
+      allowGlowBleed
+      randomizeGlows
+      className="min-h-[80svh] pb-20 sm:pb-24"
+      glowCount={2}
+      glowSeed="about-section-vision"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-6 lg:px-0">
         <div className="grid items-center gap-14 lg:grid-cols-[0.95fr_1.05fr]">
