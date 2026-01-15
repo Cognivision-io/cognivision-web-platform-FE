@@ -30,7 +30,7 @@ export function DocsNavbar() {
   ];
 
   return (
-    <div className="border-b border-[#ececf5] bg-white">
+    <div className="border-b border-[#ececf5] bg-transparent">
       <div className="mx-auto flex h-14 max-w-6xl items-center">
         <nav className="flex items-center gap-8 text-[13px] font-medium">
           {items.map((item) => {
