@@ -361,12 +361,14 @@ export function PricingSection() {
         {/* Title */}
         <div className="text-center">
           <h1
-            className="mx-auto max-w-4xl font-heading
-           text-[44px] font-semibold leading-[1.15] text-[#111827]"
+            className="mx-auto max-w-6xl font-heading
+           text-[38px] font-semibold leading-[1.15] text-[#111827]"
           >
-            One platform to deploy computer vision.
-            <br />
-            Start today.
+            <span className="text-[#0b1020] sm:text-[40px]">Deploy </span>
+            <span style={{ color: PURPLE }}>Computer Vision</span>{" "}
+            <span className="text-[#0b1020] sm:text-[40px]">
+              Without Infrastructure Overhead
+            </span>
           </h1>
 
           <div className="mt-10">

@@ -26,9 +26,9 @@ export default function WgtsSolutionsPageSection() {
 
             <h1 className="mt-5 font-heading text-[42px] font-semibold leading-[1.05] tracking-wide text-[#0b1020] sm:text-[56px] lg:text-[66px]">
               <span style={{ color: PURPLE }}>WGTS</span>{" "}
-              <span className="text-[#0b1020]">(Who’s Got</span>
-              <br />
-              <span className="text-[#0b1020]">the shot)</span>
+              <span className="text-[#0b1020] text-[38px] sm:text-[50px]">
+                (Who’s Got the shot)
+              </span>
             </h1>
 
             <p className="mt-8 max-w-[560px] text-[16px] leading-8 text-[#111827]/75">
