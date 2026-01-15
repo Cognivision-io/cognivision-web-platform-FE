@@ -19,13 +19,13 @@ export default function LandingPageSectionOne() {
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 lg:px-0">
         <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
           <div>
-            <h1 className="font-heading text-[36px] font-semibold leading-[1.08] tracking-wide text-[#0b1020] sm:text-[46px] lg:text-[56px]">
-              Explore the future of <br />
+            <h1 className="font-heading text-[32px] font-semibold leading-[1.08] tracking-wide text-[#0b1020] sm:text-[42px] lg:text-[50px]">
+              Advance Spatial Intelligence for <br />
               <span
                 className="font-heading font-semibold"
                 style={{ color: PURPLE }}
               >
-                Spatial Intelligence
+                Mobile Applications
               </span>
             </h1>
 

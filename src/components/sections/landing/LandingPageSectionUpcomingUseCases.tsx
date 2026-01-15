@@ -16,17 +16,17 @@ type UseCaseCard = {
 
 const CARDS: UseCaseCard[] = [
   {
-    title: "Discuss with Colleagues",
+    title: "Collaborative Spatial Workflows",
     description:
-      "Working online is the same experience as working in an office. This will be achieved with..",
+      "Enable real-time, shared AR experiences that allow distributed teams to visualize, annotate, and interact with spatial data as if co-located. ",
     image: "/Hero8.svg",
     hrefTry: "/register",
     hrefExplore: "/solutions",
   },
   {
-    title: "Virtual Reality Concert",
+    title: "Immersive Live Events & Concerts",
     description:
-      "Watching concerts virtually is one of the things that can be done in cyberspace..",
+      "Deliver immersive virtual and AR concerts with real-time environment understanding and spatial anchoring.",
     image: "/Hero9.svg",
     hrefTry: "/register",
     hrefExplore: "/solutions",
@@ -34,31 +34,31 @@ const CARDS: UseCaseCard[] = [
   {
     title: "Playing Games",
     description:
-      "For gamers, the metaverse could be an interesting platform of choice for the..",
+      "Build next-gen games that react to real-world environments using object detection, tracking, and spatial AR.",
     image: "/Hero10.svg",
     hrefTry: "/register",
     hrefExplore: "/solutions",
   },
   {
-    title: "Online Travel",
+    title: "Spatial Travel & Location Experiences",
     description:
-      "With cyberspace, online travel is certainly not impossible. We can do this with the help of..",
+      "Deliver location-aware experiences that combine real-world environments with digital storytelling.",
     image: "/Hero11.svg",
     hrefTry: "/register",
     hrefExplore: "/solutions",
   },
   {
-    title: "Artworks",
+    title: "Art, Museums & Digital Exhibitions",
     description:
-      "In the past, works of art such as paintings could only be seen in the real world..",
+      "Augment physical and digital art with spatial storytelling, object recognition, and immersive overlays. ",
     image: "/Hero12.svg",
     hrefTry: "/register",
     hrefExplore: "/solutions",
   },
   {
-    title: "Digital Clothing",
+    title: "Digital Fashion & Virtual Assets",
     description:
-      "The community has also been active with the emergence of paintings or drawings..",
+      "Support virtual apparel and digital assets with real-time body tracking and spatial alignment for seamless try-ons.",
     image: "/Hero13.svg",
     hrefTry: "/register",
     hrefExplore: "/solutions",
