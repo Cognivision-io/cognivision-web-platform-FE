@@ -92,14 +92,14 @@ const LoginPage = () => {
           {/* use your exact logo asset */}
           <img
             src="/logo-text-black.svg"
-            alt="CogniVision.io"
+            alt="CogniVision"
             className="h-9 w-auto select-none"
             draggable={false}
           />
         </Link>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Welcome to Cognivision.io 👋</h1>
+          <h1 className="text-3xl font-bold">Welcome to Cognivision 👋</h1>
           <p className="text-muted-foreground">Sign in to your account</p>
         </div>
 
@@ -112,7 +112,7 @@ const LoginPage = () => {
               required
               id="email"
               type="email"
-              placeholder="hania@cognivision.io"
+              placeholder="hania@cognivision"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               className="h-12"

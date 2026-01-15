@@ -86,7 +86,7 @@ export default function LandingPageSectionContact() {
                     <Mail className="h-5 w-5 text-white" />
                   </div>
                   <div className="text-[15px] text-white/90">
-                    info@cognivision.io
+                    info@cognivision
                   </div>
                 </div>
 
@@ -95,7 +95,7 @@ export default function LandingPageSectionContact() {
                     <Globe className="h-5 w-5 text-white" />
                   </div>
                   <div className="text-[15px] text-white/90">
-                    www.cognivision.io
+                    www.cognivision
                   </div>
                 </div>
               </div>

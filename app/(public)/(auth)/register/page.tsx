@@ -88,7 +88,7 @@ const RegisterPage = () => {
           {/* use your exact logo asset */}
           <img
             src="/logo-text-black.svg"
-            alt="CogniVision.io"
+            alt="CogniVision"
             className="h-9 w-auto select-none"
             draggable={false}
           />

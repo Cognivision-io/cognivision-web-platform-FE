@@ -177,3 +177,28 @@
     @apply cursor-not-allowed;
   }
 }
+
+@layer utilities {
+  @keyframes cv-glow-drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(var(--cv-glow-dx, 0px), var(--cv-glow-dy, 0px), 0)
+        scale(1.05);
+    }
+  }
+
+  .cv-glow-drift {
+    animation: cv-glow-drift var(--cv-glow-duration, 18s) ease-in-out
+      var(--cv-glow-delay, 0s) infinite;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cv-glow-drift {
+      animation: none !important;
+    }
+  }
+}

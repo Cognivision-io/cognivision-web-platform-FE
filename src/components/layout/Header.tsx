@@ -75,7 +75,7 @@ export default function Header() {
           {/* use your exact logo asset */}
           <img
             src="/logo-text-black.svg"
-            alt="CogniVision.io"
+            alt="CogniVision"
             className="h-9 w-auto select-none"
             draggable={false}
           />
@@ -94,7 +94,9 @@ export default function Header() {
                   <button
                     type="button"
                     id="solutions-button"
-                    aria-controls={solutionsMenuOpen ? "solutions-menu" : undefined}
+                    aria-controls={
+                      solutionsMenuOpen ? "solutions-menu" : undefined
+                    }
                     aria-haspopup="true"
                     aria-expanded={solutionsMenuOpen ? "true" : undefined}
                     onClick={handleSolutionsClick}
@@ -111,7 +113,9 @@ export default function Header() {
                     <ChevronDown
                       className={cn(
                         "h-4 w-4 transition-transform duration-150",
-                        solutionsMenuOpen ? "rotate-180 opacity-100" : "opacity-80"
+                        solutionsMenuOpen
+                          ? "rotate-180 opacity-100"
+                          : "opacity-80"
                       )}
                     />
                   </button>
@@ -243,7 +247,7 @@ export default function Header() {
               >
                 <img
                   src="/logo-text-black.svg"
-                  alt="CogniVision.io"
+                  alt="CogniVision"
                   className="h-8 w-auto select-none"
                   draggable={false}
                 />

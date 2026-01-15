@@ -16,11 +16,11 @@ const Footer = () => {
             <div className="flex items-center gap-3">
               <img
                 src="/logo.svg"
-                alt="CogniVision.io"
+                alt="CogniVision"
                 className="h-10 w-auto drop-shadow-sm"
               />
               <span className="font-heading text-[28px] font-semibold text-white">
-                CogniVision.io
+                CogniVision
               </span>
             </div>
 

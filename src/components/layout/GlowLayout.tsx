@@ -53,6 +53,9 @@ type GlowSectionProps = {
 
   /** Provide explicit glow blobs (overrides `randomizeGlows`). */
   glows?: GlowBlob[];
+
+  /** When true, glows slowly drift to create motion. */
+  animateGlows?: boolean;
 };
 
 function hashStringToUint32(input: string) {
@@ -92,12 +95,18 @@ export function GlowSection({
   glowSeed,
   glowCount = 3,
   glows,
+  animateGlows = true,
 }: GlowSectionProps) {
   const reactId = React.useId();
   const seed =
     glowSeed ??
     // useId is stable across SSR/CSR, so this remains deterministic
     reactId;
+
+  const numericSeed = React.useMemo(() => {
+    if (typeof seed === "number") return seed >>> 0;
+    return hashStringToUint32(String(seed));
+  }, [seed]);
 
   const computedGlows = React.useMemo<GlowBlob[]>(() => {
     if (glows && glows.length > 0) return glows;
@@ -125,8 +134,6 @@ export function GlowSection({
       ];
     }
 
-    const numericSeed =
-      typeof seed === "number" ? seed >>> 0 : hashStringToUint32(String(seed));
     const random = mulberry32(numericSeed);
 
     const pickBiased = () => {
@@ -155,7 +162,28 @@ export function GlowSection({
         focalYPct: Math.round(lerp(35, 65, random())),
       };
     });
-  }, [blurPx, glowCount, glows, intensity, randomizeGlows, seed, sizePx]);
+  }, [
+    blurPx,
+    glowCount,
+    glows,
+    intensity,
+    randomizeGlows,
+    numericSeed,
+    sizePx,
+  ]);
+
+  const motionByIndex = React.useMemo(() => {
+    if (!animateGlows) return [];
+
+    const random = mulberry32((numericSeed + 0x9e3779b9) >>> 0);
+    return computedGlows.map(() => {
+      const dx = Math.round(lerp(-64, 64, random()));
+      const dy = Math.round(lerp(-52, 52, random()));
+      const durationSec = lerp(2, 5, random());
+      const delaySec = -lerp(0, 4, random());
+      return { dx, dy, durationSec, delaySec };
+    });
+  }, [animateGlows, computedGlows, numericSeed]);
 
   return (
     <section
@@ -192,6 +220,7 @@ export function GlowSection({
           const glowSizePx = glow.sizePx ?? sizePx;
           const glowBlurPx = glow.blurPx ?? blurPx;
           const glowIntensity = glow.intensity ?? intensity;
+          const motion = motionByIndex[index];
 
           // Backward-compatible positioning for the legacy corner glows.
           const isLegacyCornerGlow = !randomizeGlows && !glows && index < 2;
@@ -216,22 +245,36 @@ export function GlowSection({
               style={positioningStyle}
             >
               <div
-                className="rounded-full"
-                style={{
-                  width: 1,
-                  height: 1,
-                  backgroundColor: `rgba(${glowRgb}, ${Math.min(
-                    0.95,
-                    glowIntensity * 0.95
-                  )})`,
-                  boxShadow: `0 0 ${glowBlurPx}px ${Math.round(
-                    glowSizePx / 2
-                  )}px rgba(${glowRgb}, ${Math.min(
-                    0.75,
-                    glowIntensity * 0.75
-                  )})`,
-                }}
-              />
+                className={animateGlows ? "cv-glow-drift" : undefined}
+                style={
+                  motion
+                    ? ({
+                        ["--cv-glow-dx"]: `${motion.dx}px`,
+                        ["--cv-glow-dy"]: `${motion.dy}px`,
+                        ["--cv-glow-duration"]: `${motion.durationSec}s`,
+                        ["--cv-glow-delay"]: `${motion.delaySec}s`,
+                      } as React.CSSProperties)
+                    : undefined
+                }
+              >
+                <div
+                  className="rounded-full"
+                  style={{
+                    width: 1,
+                    height: 1,
+                    backgroundColor: `rgba(${glowRgb}, ${Math.min(
+                      0.95,
+                      glowIntensity * 0.95
+                    )})`,
+                    boxShadow: `0 0 ${glowBlurPx}px ${Math.round(
+                      glowSizePx / 2
+                    )}px rgba(${glowRgb}, ${Math.min(
+                      0.75,
+                      glowIntensity * 0.75
+                    )})`,
+                  }}
+                />
+              </div>
             </div>
           );
         })}

@@ -42,7 +42,7 @@ const ForgetPasswordPage = () => {
           {/* use your exact logo asset */}
           <img
             src="/logo-text-black.svg"
-            alt="CogniVision.io"
+            alt="CogniVision"
             className="h-9 w-auto select-none"
             draggable={false}
           />
@@ -65,7 +65,7 @@ const ForgetPasswordPage = () => {
               required
               id="email"
               type="email"
-              placeholder="hania@cognivision.io"
+              placeholder="hania@cognivision"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               className="h-12"

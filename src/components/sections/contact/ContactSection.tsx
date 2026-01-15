@@ -81,7 +81,7 @@ const ContactSection = () => {
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
                       <Globe2 size={16} />
                     </div>
-                    <span className="tracking-wide">www.cognivision.io</span>
+                    <span className="tracking-wide">www.cognivision</span>
                   </div>
                 </div>
               </div>
