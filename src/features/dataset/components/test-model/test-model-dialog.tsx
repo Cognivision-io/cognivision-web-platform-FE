@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { type RoboflowInferenceResponse } from "@/interfaces/project.interface";
 import { useWorkspaceApiKeyQuery } from "@/features/workspace/queries/workspace.query";
 import { useSearchParams } from "next/navigation";
+import CustomToast from "@/components/ui/sonner";
 
 interface TestModelDialogProps {
   version: any;
@@ -76,7 +77,7 @@ export const TestModelDialog = ({
   const runInference = async (imageUrl: string) => {
     if (!version.model?.id || !isEngineReady || !apiKey) {
       console.error("Model not ready or missing API key");
-      toast.error("Model is not ready. Please try again.");
+      CustomToast.error("Model is not ready. Please try again.");
       return;
     }
 
@@ -104,13 +105,13 @@ export const TestModelDialog = ({
 
       const count = result.predictions.length;
       if (count === 0) {
-        toast.info("No objects detected");
+        CustomToast.error("No objects detected");
       } else {
-        toast.success(`Detected ${count} object${count > 1 ? "s" : ""}!`);
+        CustomToast.success(`Detected ${count} object${count > 1 ? "s" : ""}!`);
       }
     } catch (e) {
       console.error("❌ Inference failed:", e);
-      toast.error(e instanceof Error ? e.message : "Inference failed");
+      CustomToast.error(e instanceof Error ? e.message : "Inference failed");
     } finally {
       setIsInferencing(false);
     }

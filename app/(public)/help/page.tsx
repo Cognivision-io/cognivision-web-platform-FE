@@ -71,12 +71,14 @@ arView.session.run(config)`,
     {
       kotlin: "Bitmap | ByteArray",
       "react-native": "File | string (base64)",
+      swift: "N/A",
     }[platform] || "File";
 
   const modeType =
     {
       kotlin: "AnalysisMode enum (FAST, ACCURATE)",
       "react-native": "string ('fast' | 'accurate')",
+      swift: "N/A",
     }[platform] || "string";
 
   const basicExample = {

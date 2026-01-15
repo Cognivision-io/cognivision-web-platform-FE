@@ -29,6 +29,7 @@ import {
 import { useDropzone } from "react-dropzone";
 import { ArrowRight, CloudUpload } from "lucide-react";
 import { downloadImage } from "@/features/dataset/utils/dataset.utils";
+import CustomToast from "@/components/ui/sonner";
 
 interface TrainStepProps {
   onNext: () => void;
@@ -69,7 +70,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   const { mutate: uploadImages, isPending: isUploading } =
     useUploadImagesMutation({
       onSuccess: (data) => {
-        toast.success("Images uploaded successfully");
+        CustomToast.success("Images uploaded successfully");
         queryClient.invalidateQueries({
           queryKey: UNANNOTATED_IMAGES_QUERY_KEY,
         });
@@ -84,19 +85,19 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
       },
       onError: (error) => {
         console.error("Upload error:", error);
-        toast.error("Failed to upload images");
+        CustomToast.error("Failed to upload images");
       },
     });
 
   const { mutate: uploadAnnotation, isPending: isUploadingAnnotation } =
     useUploadAnnotationMutation({
       onSuccess: () => {
-        toast.success("Annotation uploaded successfully!");
+        CustomToast.success("Annotation uploaded successfully!");
         setHasUploadedAnnotations(true);
       },
       onError: (error) => {
         console.error("Upload annotation error:", error);
-        toast.error("Failed to upload annotation");
+        CustomToast.error("Failed to upload annotation");
       },
     });
 
@@ -154,7 +155,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
   const onDrop = (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       if (!roboflowProjectId) {
-        toast.error("Project ID not found. Please try refreshing.");
+        CustomToast.error("Project ID not found. Please try refreshing.");
         return;
       }
       uploadImages({
@@ -238,7 +239,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
     setEditingPointIndex(null);
     setTempLabel("");
     setHasUploadedAnnotations(false);
-    toast.success("Annotations cleared");
+    CustomToast.success("Annotations cleared");
   };
 
   const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
@@ -273,7 +274,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
       'img[alt="Preview"]'
     ) as HTMLImageElement;
     if (!imgElement) {
-      toast.error("Unable to measure image size");
+      CustomToast.error("Unable to measure image size");
       return;
     }
 
@@ -368,11 +369,11 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
             setAnnotations((prev) => [...prev, ...newAnnotations]);
             setCollectedPoints([]);
             setPointLabels({}); // Clear point labels after creating annotations
-            toast.success(`${newAnnotations.length} object(s) detected`);
+            CustomToast.success(`${newAnnotations.length} object(s) detected`);
           }
         },
         onError: () => {
-          toast.error("Failed to annotate objects");
+          CustomToast.error("Failed to annotate objects");
         },
       }
     );
@@ -399,7 +400,9 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
             onChange={(e) => {
               if (e.target.files && e.target.files.length > 0) {
                 if (!roboflowProjectId) {
-                  toast.error("Project ID not found. Please try refreshing.");
+                  CustomToast.error(
+                    "Project ID not found. Please try refreshing."
+                  );
                   return;
                 }
                 uploadImages({
@@ -676,7 +679,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
                 });
 
                 // Log class mapping for reference
-                toast.success(
+                CustomToast.success(
                   `Uploaded with ${
                     classList.length
                   } class(es): ${classList.join(", ")}`
@@ -699,12 +702,12 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
                     displayImage.name ||
                     `image_${displayImage.id || "download"}.jpg`;
                   await downloadImage(imageUrl, filename);
-                  toast.success("Image downloaded successfully");
+                  CustomToast.success("Image downloaded successfully");
                 } catch (error) {
-                  toast.error("Failed to download image");
+                  CustomToast.error("Failed to download image");
                 }
               } else {
-                toast.error("No image selected");
+                CustomToast.error("No image selected");
               }
             }}
             disabled={!displayImage}

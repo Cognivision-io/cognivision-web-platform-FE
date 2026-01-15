@@ -3,6 +3,10 @@
 import { GlowSection } from "@/components/layout/GlowLayout";
 import Image from "next/image";
 import React, { FormEvent, useMemo, useState } from "react";
+import { toast } from "sonner";
+import type { ContactUsPayload } from "@/interfaces/contact.interface";
+import { useContactUsMutation } from "@/features/contact/mutations/contact.mutation";
+import CustomToast from "@/components/ui/sonner";
 
 const PURPLE = "#5328D4";
 const INPUT_BG = "#F6F8FD";
@@ -85,6 +89,7 @@ const ConnectWithTeamSection = () => {
   // We mimic that: default visuals -> UK; select itself starts empty (placeholder).
   const [countryValue, setCountryValue] = useState<CountryCode | "">("");
   const visualCountry: CountryCode = (countryValue || "UK") as CountryCode;
+  const contactMutation = useContactUsMutation();
 
   const dialCode = useMemo(() => {
     const found = COUNTRIES.find((c) => c.code === visualCountry);
@@ -94,7 +99,42 @@ const ConnectWithTeamSection = () => {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    console.log("Form data:", Object.fromEntries(formData.entries()));
+
+    const getText = (key: string) => {
+      const value = formData.get(key);
+      return typeof value === "string" ? value.trim() : "";
+    };
+
+    const rawPhone = getText("phoneNumber");
+    const phone =
+      rawPhone.length > 0 && !rawPhone.startsWith("+")
+        ? `${dialCode}${rawPhone}`
+        : rawPhone;
+
+    const payload: ContactUsPayload = {
+      firstName: getText("firstName"),
+      lastName: getText("lastName"),
+      email: getText("email"),
+      phone,
+      subject: getText("subject"),
+      message: getText("message"),
+    };
+
+    if (contactMutation.isPending) return;
+
+    contactMutation.mutate(payload, {
+      onSuccess: () => {
+        CustomToast.success("Message sent successfully");
+        setCountryValue("");
+      },
+      onError: (error) => {
+        console.log(error, "ERROR");
+        const message = error?.response?.data?.message;
+        CustomToast.error(
+          typeof message === "string" ? message : "Failed to send message"
+        );
+      },
+    });
   };
 
   return (
@@ -264,6 +304,21 @@ const ConnectWithTeamSection = () => {
                 />
               </div>
 
+              {/* Subject */}
+              <div>
+                <Label htmlFor="subject" required>
+                  Subject
+                </Label>
+                <input
+                  id="subject"
+                  name="subject"
+                  type="text"
+                  required
+                  className="h-11 w-full rounded-md px-4 text-[13px] text-[#111827] outline-none placeholder:text-[#9CA3AF]"
+                  style={{ background: INPUT_BG }}
+                />
+              </div>
+
               {/* Message */}
               <div className="pt-2">
                 <Label htmlFor="message">Message</Label>
@@ -306,10 +361,11 @@ const ConnectWithTeamSection = () => {
               <div className="pt-4">
                 <button
                   type="submit"
+                  disabled={contactMutation.isPending}
                   className="h-11 rounded-md px-8 text-[13px] font-semibold text-white"
                   style={{ background: PURPLE }}
                 >
-                  Submit
+                  {contactMutation.isPending ? "Submitting..." : "Submit"}
                 </button>
               </div>
             </form>

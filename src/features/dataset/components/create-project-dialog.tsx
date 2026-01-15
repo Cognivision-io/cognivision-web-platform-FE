@@ -28,6 +28,7 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { toast } from "sonner";
+import CustomToast from "@/components/ui/sonner";
 
 const useCaseOptions = [
   { label: "Retail analytics", value: "retail" },
@@ -144,22 +145,24 @@ export const CreateProjectDialog = ({
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       setOpen(false);
-      toast.success("Project created successfully");
+      CustomToast.success("Project created successfully");
       const workspaceQuery = variables.workspace
         ? `?workspaceId=${variables.workspace}`
         : "";
-      router.push(`/dashboard/dataset/${data.data.id}/upload-dataset${workspaceQuery}`);
+      router.push(
+        `/dashboard/dataset/${data.data.id}/upload-dataset${workspaceQuery}`
+      );
       reset();
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to create project");
+      CustomToast.error(error.message || "Failed to create project");
     },
   });
 
   const onSubmit = (data: FormData) => {
     const workspaceId = Number(data.workspaceId);
     if (!workspaceId) {
-      toast.error("Please select a workspace");
+      CustomToast.error("Please select a workspace");
       return;
     }
 
@@ -240,7 +243,10 @@ export const CreateProjectDialog = ({
 
               {/* Body */}
               <div className="px-5 pb-9 pt-2 md:px-10">
-                <form id="create-project-form" onSubmit={handleSubmit(onSubmit)}>
+                <form
+                  id="create-project-form"
+                  onSubmit={handleSubmit(onSubmit)}
+                >
                   {/* Top fields */}
                   <div className="grid gap-x-5 gap-y-5 md:grid-cols-3">
                     <div className="space-y-2">

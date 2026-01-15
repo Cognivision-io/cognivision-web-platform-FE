@@ -8,6 +8,7 @@ import type { AxiosError } from "axios";
 import { projectApi } from "@/features/dataset/api/project.api";
 import type { GetProjectsResponse } from "@/interfaces/project.interface";
 import { toast } from "sonner";
+import CustomToast from "@/components/ui/sonner";
 
 type ProjectError = AxiosError<{ message?: string | string[] }>;
 
@@ -32,7 +33,10 @@ export const PROJECT_QUERY_KEY = ["project"] as const;
 
 export const useProjectQuery = (
   id: number,
-  options?: UseQueryOptions<import("@/interfaces/project.interface").GetProjectResponse, ProjectError>
+  options?: UseQueryOptions<
+    import("@/interfaces/project.interface").GetProjectResponse,
+    ProjectError
+  >
 ) => {
   return useQuery({
     queryKey: [...PROJECT_QUERY_KEY, id],
@@ -42,7 +46,6 @@ export const useProjectQuery = (
   });
 };
 
-
 export const useDeleteProjectMutation = () => {
   const queryClient = useQueryClient();
 
@@ -50,13 +53,13 @@ export const useDeleteProjectMutation = () => {
     mutationFn: (id: string) => projectApi.deleteProject(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
-      toast.success("Project deleted successfully");
+      CustomToast.success("Project deleted successfully");
     },
     onError: (error: ProjectError) => {
       const errorMessage = error?.response?.data?.message;
-      toast.error(
-        typeof errorMessage === "string" 
-          ? errorMessage 
+      CustomToast.error(
+        typeof errorMessage === "string"
+          ? errorMessage
           : "Failed to delete project"
       );
     },
@@ -67,7 +70,7 @@ export const useCreateVersionMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: any }) => 
+    mutationFn: ({ id, payload }: { id: number; payload: any }) =>
       projectApi.createVersion(id, payload),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: [...PROJECT_QUERY_KEY, id] });

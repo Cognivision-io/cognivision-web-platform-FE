@@ -20,6 +20,7 @@ import { useProjectQuery } from "@/features/dataset/queries/project.query";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import Image from "next/image";
+import CustomToast from "@/components/ui/sonner";
 
 interface UploadStepProps {
   onNext: (data: { roboflowProjectId: string; imageIds: string[] }) => void;
@@ -45,7 +46,7 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
     const imageIds =
       data.results?.successful?.map((item: any) => item.result.id) || [];
 
-    toast.success("Uploaded successfully");
+    CustomToast.success("Uploaded successfully");
     onNext({ roboflowProjectId, imageIds });
   };
 
@@ -55,7 +56,7 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
     },
     onError: (error) => {
       setUploadProgress(false);
-      toast.error(error.message || "Failed to upload images");
+      CustomToast.error(error.message || "Failed to upload images");
     },
   });
 
@@ -65,7 +66,7 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
     },
     onError: (error) => {
       setUploadProgress(false);
-      toast.error(error.message || "Failed to upload folder");
+      CustomToast.error(error.message || "Failed to upload folder");
     },
   });
 
@@ -116,7 +117,7 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
     if (files.length === 0) return;
 
     if (!batchName.trim()) {
-      toast.error("Batch Name is required");
+      CustomToast.error("Batch Name is required");
       return;
     }
 

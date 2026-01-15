@@ -3,28 +3,35 @@
 import Link from "next/link";
 import { GlowSection } from "@/components/layout/GlowLayout";
 import { Phone, Mail, Globe, Linkedin, Instagram } from "lucide-react";
+import { FormEvent } from "react";
+import type { ContactUsPayload } from "@/interfaces/contact.interface";
+import { useContactUsMutation } from "@/features/contact/mutations/contact.mutation";
+import CustomToast from "@/components/ui/sonner";
 
 const PURPLE = "#5b2fe8";
 
 function UnderlineField({
+  name,
   label,
   placeholder,
   className,
-  defaultValue,
   type = "text",
+  required,
 }: {
+  name: string;
   label: string;
   placeholder?: string;
   className?: string;
-  defaultValue?: string;
   type?: string;
+  required?: boolean;
 }) {
   return (
     <label className={["block", className].filter(Boolean).join(" ")}>
       <div className="text-[12px] font-medium text-[#6b7280]">{label}</div>
       <input
+        name={name}
         type={type}
-        defaultValue={defaultValue}
+        required={required}
         placeholder={placeholder}
         className="mt-2 w-full border-0 border-b border-black/25 bg-transparent px-0 pb-2 text-[14px] text-[#111827] placeholder:text-[#9ca3af] focus:outline-none focus:border-[#5b2fe8]"
       />
@@ -33,6 +40,43 @@ function UnderlineField({
 }
 
 export default function LandingPageSectionContact() {
+  const contactMutation = useContactUsMutation();
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (contactMutation.isPending) return;
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    const getText = (key: string) => {
+      const value = formData.get(key);
+      return typeof value === "string" ? value.trim() : "";
+    };
+
+    const payload: ContactUsPayload = {
+      firstName: getText("firstName"),
+      lastName: getText("lastName"),
+      email: getText("email"),
+      phone: getText("phone"),
+      subject: getText("subject"),
+      message: getText("message"),
+    };
+
+    contactMutation.mutate(payload, {
+      onSuccess: () => {
+        CustomToast.success("Message sent successfully");
+        form.reset();
+      },
+      onError: (error) => {
+        const message = error?.response?.data?.message;
+        CustomToast.error(
+          typeof message === "string" ? message : "Failed to send message"
+        );
+      },
+    });
+  };
+
   return (
     <GlowSection
       bgClassName="bg-white"
@@ -125,19 +169,26 @@ export default function LandingPageSectionContact() {
 
             {/* RIGHT form */}
             <div className="p-10 sm:p-12">
-              <form className="space-y-10">
+              <form className="space-y-10" onSubmit={handleSubmit}>
                 {/* Two-column inputs */}
                 <div className="grid gap-10 md:grid-cols-2">
-                  <UnderlineField label="First Name" placeholder="|" />
-                  <UnderlineField label="Last Name" defaultValue="Doe" />
+                  <UnderlineField
+                    name="firstName"
+                    label="First Name"
+                    placeholder="|"
+                    required
+                  />
+                  <UnderlineField name="lastName" label="Last Name" required />
                 </div>
 
                 <div className="grid gap-10 md:grid-cols-2">
-                  <UnderlineField label="Email" type="email" />
                   <UnderlineField
-                    label="Phone Number"
-                    defaultValue="+1 012 3456 789"
+                    name="email"
+                    label="Email"
+                    type="email"
+                    required
                   />
+                  <UnderlineField name="phone" label="Phone Number" required />
                 </div>
 
                 {/* Subject */}
@@ -151,6 +202,7 @@ export default function LandingPageSectionContact() {
                       <input
                         type="radio"
                         name="subject"
+                        value="Project demo"
                         defaultChecked
                         className="h-4 w-4 accent-black"
                       />
@@ -161,6 +213,7 @@ export default function LandingPageSectionContact() {
                       <input
                         type="radio"
                         name="subject"
+                        value="General Inquiry"
                         className="h-4 w-4 accent-black"
                       />
                       General Inquiry
@@ -174,8 +227,10 @@ export default function LandingPageSectionContact() {
                     Message
                   </div>
                   <textarea
+                    name="message"
                     rows={3}
                     placeholder="Write your message.."
+                    required
                     className="mt-2 w-full resize-none border-0 border-b border-black/25 bg-transparent px-0 pb-2 text-[14px] text-[#111827] placeholder:text-[#9ca3af] focus:outline-none focus:border-[#5b2fe8]"
                   />
                 </label>
@@ -184,10 +239,11 @@ export default function LandingPageSectionContact() {
                 <div className="flex justify-end pt-4">
                   <button
                     type="submit"
+                    disabled={contactMutation.isPending}
                     className="inline-flex h-[44px] items-center justify-center rounded-md px-10 text-[15px] font-semibold text-white shadow-[0_14px_26px_rgba(91,47,232,0.22)] transition-transform hover:-translate-y-0.5 active:translate-y-0"
                     style={{ backgroundColor: PURPLE }}
                   >
-                    Send Message
+                    {contactMutation.isPending ? "Sending..." : "Send Message"}
                   </button>
                 </div>
               </form>

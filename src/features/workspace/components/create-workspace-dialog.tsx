@@ -20,6 +20,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCreateWorkspaceMutation } from "@/features/workspace/mutations/workspace.mutation";
 import { WORKSPACES_QUERY_KEY } from "@/features/workspace/queries/workspace.query";
 import type { Workspace } from "@/interfaces/workspace.interface";
+import CustomToast from "@/components/ui/sonner";
 
 const schema = yup.object({
   name: yup.string().required("Workspace name is required"),
@@ -41,13 +42,13 @@ export const CreateWorkspaceDialog = ({
   const { mutate: createWorkspace, isPending } = useCreateWorkspaceMutation({
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: WORKSPACES_QUERY_KEY });
-      toast.success("Workspace created successfully");
+      CustomToast.success("Workspace created successfully");
       setOpen(false);
       onCreated?.(response.data);
       reset();
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to create workspace");
+      CustomToast.error(error.message || "Failed to create workspace");
     },
   });
 
@@ -103,10 +104,7 @@ export const CreateWorkspaceDialog = ({
             </p>
           </div>
 
-          <form
-            className="mt-6 space-y-4"
-            onSubmit={handleSubmit(onSubmit)}
-          >
+          <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-2">
               <Label className="text-[13px] font-semibold text-slate-900">
                 Workspace name

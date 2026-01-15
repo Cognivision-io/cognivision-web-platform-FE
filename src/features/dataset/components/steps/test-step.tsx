@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CreateVersionScreen } from "../version/create-version-screen";
+import CustomToast from "@/components/ui/sonner";
 
 export const TestStep = () => {
   const router = useRouter();
@@ -53,11 +54,11 @@ export const TestStep = () => {
   const { mutate: trainModel, isPending: isTrainingModel } =
     useTrainModelMutation({
       onSuccess: () => {
-        toast.success("Model training started successfully!");
+        CustomToast.success("Model training started successfully!");
       },
       onError: (error: any) => {
         console.error("Train model error:", error);
-        toast.error(
+        CustomToast.error(
           error?.response?.data?.message || "Failed to start model training"
         );
       },
@@ -65,11 +66,11 @@ export const TestStep = () => {
 
   const handleDeployModel = () => {
     if (!hasCreatedNewVersion) {
-      toast.error("Create a new version before deploying a model");
+      CustomToast.error("Create a new version before deploying a model");
       return;
     }
     if (!selectedVersion) {
-      toast.error("Please select a version to deploy");
+      CustomToast.error("Please select a version to deploy");
       return;
     }
 
@@ -86,7 +87,8 @@ export const TestStep = () => {
     versions.find((v) => v.id === selectedVersionId) || versions[0];
 
   const selectedImages = imagesResponse?.results?.slice(0, 3) || [];
-  const canDeploy = hasCreatedNewVersion && !!selectedVersion && !isTrainingModel;
+  const canDeploy =
+    hasCreatedNewVersion && !!selectedVersion && !isTrainingModel;
 
   return (
     <div className="flex bg-[#f8f9fc] min-h-[600px]">
