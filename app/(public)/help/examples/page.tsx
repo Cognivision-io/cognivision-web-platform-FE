@@ -8,14 +8,14 @@ export default function ExamplesPage() {
 
                     if (platform === 'swift') {
                                         return (
-                                                            <div className="space-y-6 pb-12 px-6">
+                                                            <div className="space-y-6 pb-12">
                                                                                 <DocPageHeader
                                                                                                     heading="Code Examples"
                                                                                                     text="Building a full measurement AR experience."
                                                                                 />
 
                                                                                 <div className="space-y-8">
-                                                                                                    <section id="full-measurement" className="space-y-4">
+                                                                                                    <section id="full-measurement" className="scroll-mt-32 space-y-4">
                                                                                                                         <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
                                                                                                                                             Full Measurement Example
                                                                                                                         </h3>
@@ -49,7 +49,7 @@ if let p1 = raycastService.worldPoint(fromX: x1, y: y1),
                                                                                                                         </div>
                                                                                                     </section>
 
-                                                                                                    <section id="management" className="space-y-4">
+                                                                                                    <section id="management" className="scroll-mt-32 space-y-4">
                                                                                                                         <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
                                                                                                                                             Entity Management
                                                                                                                         </h3>
@@ -107,14 +107,14 @@ CogniVision.analyze(image,
                     }[platform] || "";
 
                     return (
-                                        <div className="space-y-6 pb-12 px-6">
+                                        <div className="space-y-6 pb-12">
                                                             <DocPageHeader
                                                                                 heading="Code Examples"
                                                                                 text="Real-world examples to help you build faster."
                                                             />
 
                                                             <div className="space-y-8">
-                                                                                <section id="basic" className="space-y-4">
+                                                                                <section id="basic" className="scroll-mt-32 space-y-4">
                                                                                                     <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
                                                                                                                         Basic Analysis
                                                                                                     </h3>
@@ -130,7 +130,7 @@ CogniVision.analyze(image,
                                                                                                     </div>
                                                                                 </section>
 
-                                                                                <section id="advanced" className="space-y-4">
+                                                                                <section id="advanced" className="scroll-mt-32 space-y-4">
                                                                                                     <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
                                                                                                                         Advanced Usage
                                                                                                     </h3>

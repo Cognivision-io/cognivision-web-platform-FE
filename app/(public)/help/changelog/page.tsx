@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator"
 
 export default function ChangelogPage() {
                     return (
-                                        <div className="space-y-6 pb-12 px-6">
+                                        <div className="space-y-6 pb-12">
                                                             <DocPageHeader
                                                                                 heading="Changelog"
                                                                                 text="Latest updates and improvements to the SDK."
@@ -14,7 +14,7 @@ export default function ChangelogPage() {
                                                             <div className="space-y-12">
 
                                                                                 {/* Version 1.2.0 */}
-                                                                                <section id="v.1.2.0" className="relative pl-8 border-l-2 border-muted">
+                                                                                <section id="v.1.2.0" className="scroll-mt-32 relative pl-8 border-l-2 border-muted">
                                                                                                     <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-primary" />
                                                                                                     <div className="space-y-2 mb-6">
                                                                                                                         <div className="flex items-center gap-3">
@@ -50,7 +50,7 @@ export default function ChangelogPage() {
                                                                                 </section>
 
                                                                                 {/* Version 1.1.0 */}
-                                                                                <section id="v.1.1.0" className="relative pl-8 border-l-2 border-muted">
+                                                                                <section id="v.1.1.0" className="scroll-mt-32 relative pl-8 border-l-2 border-muted">
                                                                                                     <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-muted-foreground/30" />
                                                                                                     <div className="space-y-2 mb-6">
                                                                                                                         <div className="flex items-center gap-3">
@@ -72,7 +72,7 @@ export default function ChangelogPage() {
                                                                                 </section>
 
                                                                                 {/* Version 1.0.0 */}
-                                                                                <section id="v1.0.0" className="relative pl-8 border-l-2 border-muted">
+                                                                                <section id="v1.0.0" className="scroll-mt-32 relative pl-8 border-l-2 border-muted">
                                                                                                     <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-muted-foreground/30" />
                                                                                                     <div className="space-y-2 mb-6">
                                                                                                                         <div className="flex items-center gap-3">

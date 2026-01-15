@@ -7,16 +7,18 @@ interface DocPageHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function DocPageHeader({
-                    heading,
-                    text,
-                    className,
-                    ...props
+  heading,
+  text,
+  className,
+  ...props
 }: DocPageHeaderProps) {
-                    return (
-                                        <div className={cn("space-y-4", className)} {...props}>
-                                                            <h1 className="scroll-m-20 text-4xl font-bold tracking-tight">{heading}</h1>
-                                                            {text && <p className="text-lg text-muted-foreground">{text}</p>}
-                                                            <Separator />
-                                        </div>
-                    )
+  return (
+    <div className={cn("space-y-3", className)} {...props}>
+      <h1 className="scroll-m-20 text-[28px] font-bold tracking-tight text-[#111827]">
+        {heading}
+      </h1>
+      {text && <p className="text-sm text-[#6b7280]">{text}</p>}
+      <Separator className="bg-[#ececf5]" />
+    </div>
+  );
 }
