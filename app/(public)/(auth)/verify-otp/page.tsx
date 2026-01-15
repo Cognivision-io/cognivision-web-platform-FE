@@ -110,13 +110,14 @@ const VerifyOtpContent = () => {
       <div className="w-full max-w-md space-y-8">
         <div className="space-y-2">
           <Link href="/" className="flex items-center gap-3">
-            {/* use your exact logo asset */}
             <img
-              src="/logo-text-black.svg"
+              src="/logo.svg"
               alt="CogniVision"
-              className="h-9 w-auto select-none"
-              draggable={false}
+              className="h-10 w-auto drop-shadow-sm"
             />
+            <span className="font-heading text-[24px] font-semibold text-black">
+              CogniVision
+            </span>
           </Link>
 
           <h1 className="text-3xl font-bold tracking-tight">Enter OTP</h1>

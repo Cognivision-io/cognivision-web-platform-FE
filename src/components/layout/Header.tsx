@@ -72,13 +72,14 @@ export default function Header() {
       <div className="mx-auto grid h-[78px] max-w-6xl grid-cols-[auto_1fr_auto] items-center px-5 sm:px-6 lg:px-0">
         {/* Left: Logo */}
         <Link href="/" className="flex items-center gap-3">
-          {/* use your exact logo asset */}
           <img
-            src="/logo-text-black.svg"
+            src="/logo.svg"
             alt="CogniVision"
-            className="h-9 w-auto select-none"
-            draggable={false}
+            className="h-10 w-auto drop-shadow-sm"
           />
+          <span className="font-heading text-[24px] font-semibold text-black">
+            CogniVision
+          </span>
         </Link>
 
         {/* Center: Nav */}
@@ -246,11 +247,13 @@ export default function Header() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <img
-                  src="/logo-text-black.svg"
+                  src="/logo.svg"
                   alt="CogniVision"
-                  className="h-8 w-auto select-none"
-                  draggable={false}
+                  className="h-10 w-auto drop-shadow-sm"
                 />
+                <span className="font-heading text-[24px] font-semibold text-black">
+                  CogniVision
+                </span>
               </Link>
 
               <button

@@ -41,7 +41,7 @@ const ForgetPasswordPage = () => {
         <Link href="/" className="flex items-center gap-3">
           {/* use your exact logo asset */}
           <img
-            src="/logo-text-black.svg"
+            src="/logo.svg"
             alt="CogniVision"
             className="h-9 w-auto select-none"
             draggable={false}

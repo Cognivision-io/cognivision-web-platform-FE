@@ -109,7 +109,7 @@ const ConnectWithTeamSection = () => {
         <div className="grid items-start gap-12 lg:grid-cols-[1fr_560px]">
           {/* Left content */}
           <div className="relative">
-            <h2 className="font-heading text-[58px] font-extrabold leading-[0.95] tracking-tight text-black sm:text-[70px]">
+            <h2 className="font-heading text-[40px] font-extrabold leading-[0.95] tracking-tight text-black sm:text-[56px]">
               Connect with
               <br />
               <span style={{ color: PURPLE }}>Our team</span>
