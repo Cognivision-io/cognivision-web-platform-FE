@@ -1,238 +1,313 @@
 "use client";
 
-import type { FormEvent } from "react";
-import { ArrowUpRight } from "lucide-react";
 import { GlowSection } from "@/components/layout/GlowLayout";
+import Image from "next/image";
+import React, { FormEvent, useMemo, useState } from "react";
+
+const PURPLE = "#5328D4";
+const INPUT_BG = "#F6F8FD";
+
+type CountryCode = "UK" | "US" | "PK" | "CA" | "OTHER";
+
+const COUNTRIES: { code: CountryCode; name: string; dial: string }[] = [
+  { code: "UK", name: "United Kingdom", dial: "+44" },
+  { code: "US", name: "United States", dial: "+1" },
+  { code: "PK", name: "Pakistan", dial: "+92" },
+  { code: "CA", name: "Canada", dial: "+1" },
+  { code: "OTHER", name: "Other", dial: "+" },
+];
+
+function UKFlag({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 60 40"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect width="60" height="40" fill="#012169" />
+      {/* white diagonals */}
+      <path d="M0 0 L60 40 M60 0 L0 40" stroke="#FFF" strokeWidth="10" />
+      {/* red diagonals */}
+      <path d="M0 0 L60 40 M60 0 L0 40" stroke="#C8102E" strokeWidth="6" />
+      {/* white cross */}
+      <rect x="0" y="15" width="60" height="10" fill="#FFF" />
+      <rect x="25" y="0" width="10" height="40" fill="#FFF" />
+      {/* red cross */}
+      <rect x="0" y="17" width="60" height="6" fill="#C8102E" />
+      <rect x="27" y="0" width="6" height="40" fill="#C8102E" />
+    </svg>
+  );
+}
+
+function ChevronDown({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d="M5 7.5L10 12.5L15 7.5"
+        stroke="#111827"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function Label({
+  children,
+  required,
+  htmlFor,
+}: {
+  children: React.ReactNode;
+  required?: boolean;
+  htmlFor: string;
+}) {
+  return (
+    <label
+      htmlFor={htmlFor}
+      className="mb-2 block text-[13px] font-semibold text-[#111827]"
+    >
+      {children}
+      {required ? <span className="text-red-500">*</span> : null}
+    </label>
+  );
+}
 
 const ConnectWithTeamSection = () => {
+  // Screenshot shows UK flag + +44 by default, while still showing "Select" placeholder.
+  // We mimic that: default visuals -> UK; select itself starts empty (placeholder).
+  const [countryValue, setCountryValue] = useState<CountryCode | "">("");
+  const visualCountry: CountryCode = (countryValue || "UK") as CountryCode;
+
+  const dialCode = useMemo(() => {
+    const found = COUNTRIES.find((c) => c.code === visualCountry);
+    return found?.dial ?? "+44";
+  }, [visualCountry]);
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    // Replace with your API call / action
     console.log("Form data:", Object.fromEntries(formData.entries()));
   };
 
   return (
-    <GlowSection bgClassName="bg-white" className="overflow-visible">
+    <GlowSection
+      bgClassName="bg-white"
+      allowGlowBleed
+      randomizeGlows
+      glowCount={2}
+      glowSeed="contact-us-hero"
+    >
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 lg:px-0">
-        <div className="mx-auto flex max-w-6xl flex-col gap-12 lg:flex-row lg:items-start">
-          {/* Left column */}
-          <div className="w-full space-y-10 lg:w-[40%]">
-            <div>
-              <h2 className="text-4xl font-extrabold font-heading tracking-tight text-black sm:text-5xl">
-                Connect with
-                <br />
-                <span className="text-primary">Our team</span>
-              </h2>
+        <div className="grid items-start gap-12 lg:grid-cols-[1fr_560px]">
+          {/* Left content */}
+          <div className="relative">
+            <h2 className="font-heading text-[58px] font-extrabold leading-[0.95] tracking-tight text-black sm:text-[70px]">
+              Connect with
+              <br />
+              <span style={{ color: PURPLE }}>Our team</span>
+            </h2>
+
+            <p className="mt-6 max-w-[520px] text-[13px] leading-[1.7] text-[#374151]">
+              Have questions or want to explore how our AR solutions can work
+              for you? Get in touch with us to discuss your ideas, product
+              needs, or technical requirements. Our team is here to help you
+              understand our SDK, explore use cases, and see how spatial
+              intelligence can fit into your workflow. You can also book a demo
+              to experience our technology in action and discover how it can
+              power your next AR product.
+            </p>
+
+            <div className="mt-6">
+              <div className="text-[20px] font-extrabold text-black">
+                Learn more about product
+              </div>
+              <div className="mt-2 text-[13px] text-[#6B7280]">
+                Have questions about our developer friendly product admin panel
+              </div>
             </div>
-
-            <div className="grid gap-6 sm:grid-cols-2">
-              {/* Learn about product card */}
-              <article className="flex h-full flex-col justify-between rounded-3xl border border-[#84888B] bg-white px-6 py-6 shadow-sm">
-                <div>
-                  <h3 className="text-[18px] font-heading text-primary font-semibold">
-                    Learn more about
-                    <br />
-                    product
-                  </h3>
-                  <p className="mt-3 text-[13px] leading-relaxed text-[#6b7280]">
-                    Have questions about our developer friendly product admin
-                    panel?
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="mt-6 inline-flex items-center gap-1 text-[13px] font-medium text-black"
-                >
-                  <ArrowUpRight size={16} />
-                  <span>Book a Demo</span>
-                </button>
-              </article>
-
-              <article className="flex h-full flex-col justify-between rounded-3xl border border-[#84888B] bg-white px-6 py-6 shadow-sm">
-                <div>
-                  <h3 className="text-[18px] font-semibold font-heading text-primary">
-                    Submit a
-                    <br />
-                    support ticket
-                  </h3>
-                  <p className="mt-3 text-[13px] leading-relaxed text-[#6b7280]">
-                    If you have an Cognivision account, submit a ticket directly
-                    from our portal.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="mt-6 inline-flex items-center gap-1 text-[13px] font-medium text-black"
-                >
-                  <ArrowUpRight size={16} />
-                  <span>Visit Support tickets</span>
-                </button>
-              </article>
+            <div className="mt-10 flex w-full justify-end">
+              <Image
+                src="/ContactUsHero1.svg"
+                alt=""
+                width={360}
+                height={260}
+                priority
+                className="h-auto w-[320px] select-none"
+              />
             </div>
           </div>
 
-          {/* Right column – form */}
-          <div className="w-full lg:w-[60%]">
-            <form
-              onSubmit={handleSubmit}
-              className="grid gap-4 text-[12px] text-[#111827]"
-            >
-              {/* First / Last name */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="bg-[#f5f7ff]">
-                  <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
-                    <span className="mr-1 text-red-500">*</span>First Name:
-                  </label>
+          {/* Right form card */}
+          <div className="rounded-[2px] bg-white px-10 py-10 shadow-[0_20px_80px_rgba(17,24,39,0.06)]">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* First / Last */}
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <Label htmlFor="firstName" required>
+                    First Name
+                  </Label>
                   <input
+                    id="firstName"
                     name="firstName"
                     type="text"
-                    className="w-full rounded-md bg-[#f5f7ff] px-4 py-3 text-sm text-[#111827] outline-none"
+                    required
+                    className="h-11 w-full rounded-md px-4 text-[13px] text-[#111827] outline-none placeholder:text-[#9CA3AF]"
+                    style={{ background: INPUT_BG }}
                   />
                 </div>
-                <div className="bg-[#f5f7ff]">
-                  <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
-                    <span className="mr-1 text-red-500">*</span>Last Name:
-                  </label>
+
+                <div>
+                  <Label htmlFor="lastName">Last Name</Label>
                   <input
+                    id="lastName"
                     name="lastName"
                     type="text"
-                    className="w-full rounded-md bg-[#f5f7ff] px-4 py-3 text-sm text-[#111827] outline-none"
+                    className="h-11 w-full rounded-md px-4 text-[13px] text-[#111827] outline-none placeholder:text-[#9CA3AF]"
+                    style={{ background: INPUT_BG }}
                   />
                 </div>
               </div>
 
               {/* Email / Company */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="bg-[#f5f7ff]">
-                  <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
-                    <span className="mr-1 text-red-500">*</span>Email Address:
-                  </label>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <Label htmlFor="email" required>
+                    Email
+                  </Label>
                   <input
+                    id="email"
                     name="email"
                     type="email"
-                    className="w-full rounded-md bg-[#f5f7ff] px-4 py-3 text-sm text-[#111827] outline-none"
+                    required
+                    placeholder="@gmail.com"
+                    className="h-11 w-full rounded-md px-4 text-[13px] text-[#111827] outline-none placeholder:text-[#9CA3AF]"
+                    style={{ background: INPUT_BG }}
                   />
                 </div>
-                <div className="bg-[#f5f7ff]">
-                  <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
-                    <span className="mr-1 text-red-500">*</span>Company:
-                  </label>
+
+                <div>
+                  <Label htmlFor="company" required>
+                    Company
+                  </Label>
                   <input
+                    id="company"
                     name="company"
                     type="text"
-                    className="w-full rounded-md bg-[#f5f7ff] px-4 py-3 text-sm text-[#111827] outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Title / Phone */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="bg-[#f5f7ff]">
-                  <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
-                    <span className="mr-1 text-red-500">*</span>Title:
-                  </label>
-                  <input
-                    name="title"
-                    type="text"
-                    className="w-full rounded-md bg-[#f5f7ff] px-4 py-3 text-sm text-[#111827] outline-none"
-                  />
-                </div>
-                <div className="bg-[#f5f7ff]">
-                  <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
-                    <span className="mr-1 text-red-500">*</span>Phone Number:
-                  </label>
-                  <input
-                    name="phoneNumber"
-                    type="tel"
-                    className="w-full rounded-md bg-[#f5f7ff] px-4 py-3 text-sm text-[#111827] outline-none"
+                    required
+                    className="h-11 w-full rounded-md px-4 text-[13px] text-[#111827] outline-none placeholder:text-[#9CA3AF]"
+                    style={{ background: INPUT_BG }}
                   />
                 </div>
               </div>
 
               {/* Country */}
-              <div className="bg-[#f5f7ff]">
-                <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
-                  <span className="mr-1 text-red-500">*</span>Country:
-                </label>
-                <select
-                  name="country"
-                  defaultValue=""
-                  className="w-full rounded-md bg-[#f5f7ff] px-4 py-3 text-sm text-[#111827] outline-none"
-                >
-                  <option value="" disabled>
-                    Select...
-                  </option>
-                  <option value="US">United States</option>
-                  <option value="UK">United Kingdom</option>
-                  <option value="PK">Pakistan</option>
-                  <option value="CA">Canada</option>
-                  <option value="OTHER">Other</option>
-                </select>
+              <div>
+                <Label htmlFor="country" required>
+                  Country
+                </Label>
+
+                <div className="relative">
+                  <select
+                    id="country"
+                    name="country"
+                    required
+                    value={countryValue}
+                    onChange={(e) =>
+                      setCountryValue(e.target.value as CountryCode | "")
+                    }
+                    className="h-11 w-full appearance-none rounded-md px-4 pr-20 text-[13px] text-[#111827] outline-none"
+                    style={{ background: INPUT_BG }}
+                  >
+                    <option value="" disabled>
+                      Select
+                    </option>
+                    {COUNTRIES.map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* right-side flag + caret (like screenshot) */}
+                  <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center gap-2">
+                    {visualCountry === "UK" ? (
+                      <UKFlag className="h-[14px] w-[20px] rounded-[2px]" />
+                    ) : (
+                      <div className="h-[14px] w-[20px] rounded-[2px] bg-black/10" />
+                    )}
+                    <ChevronDown className="h-4 w-4" />
+                  </div>
+                </div>
               </div>
 
-              {/* How may we help you */}
-              <div className="bg-[#f5f7ff]">
-                <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
-                  <span className="mr-1 text-red-500">*</span>How may we help
-                  you?:
-                </label>
-                <textarea
-                  name="helpMessage"
-                  rows={3}
-                  className="w-full rounded-md bg-[#f5f7ff] px-4 py-3 text-sm text-[#111827] outline-none"
+              {/* Phone */}
+              <div>
+                <Label htmlFor="phone" required>
+                  Phone Number
+                </Label>
+                <input
+                  id="phone"
+                  name="phoneNumber"
+                  type="tel"
+                  required
+                  placeholder={dialCode}
+                  className="h-11 w-full rounded-md px-4 text-[13px] text-[#111827] outline-none placeholder:text-[#9CA3AF]"
+                  style={{ background: INPUT_BG }}
                 />
               </div>
 
-              {/* How did you learn */}
-              <div className="bg-[#f5f7ff]">
-                <label className="block text-[11px] px-3 py-2 font-semibold uppercase tracking-wide text-[#111827]">
-                  <span className="mr-1 text-red-500">*</span>
-                  How did you learn about Cognivision?:
-                </label>
+              {/* Message */}
+              <div className="pt-2">
+                <Label htmlFor="message">Message</Label>
                 <textarea
-                  name="referral"
-                  rows={3}
-                  className="w-full rounded-md bg-[#f5f7ff] px-4 py-3 text-sm text-[#111827] outline-none"
+                  id="message"
+                  name="message"
+                  rows={6}
+                  className="w-full resize-none rounded-md px-4 py-3 text-[13px] text-[#111827] outline-none placeholder:text-[#9CA3AF]"
+                  style={{ background: INPUT_BG }}
                 />
               </div>
 
               {/* Checkboxes */}
-              <div className="mt-4 space-y-3 text-[12px] text-[#4b5563]">
-                <label className="flex items-start gap-2">
+              <div className="space-y-4 pt-1 text-[12px] text-[#374151]">
+                <label className="flex items-center gap-3">
                   <input
                     name="agreePrivacy"
                     type="checkbox"
-                    className="mt-[2px] h-[14px] w-[14px] rounded border border-[#9ca3af]"
                     required
+                    className="h-[16px] w-[16px] rounded-[4px] border-2"
+                    style={{ accentColor: PURPLE, borderColor: "#6E4BDA" }}
                   />
                   <span>
-                    By checking this box you agree to our{" "}
-                    <button
-                      type="button"
-                      className="text-[#4f46e5] underline underline-offset-2"
-                    >
-                      Privacy Policy
-                    </button>
-                    <span className="ml-0.5 text-red-500">*</span>
+                    By checking this box you agree to our privacy policy
                   </span>
                 </label>
 
-                <label className="flex items-start gap-2">
+                <label className="flex items-center gap-3">
                   <input
                     name="getUpdates"
                     type="checkbox"
-                    className="mt-[2px] h-[14px] w-[14px] rounded border border-[#9ca3af]"
+                    className="h-[16px] w-[16px] rounded-[4px] border-2"
+                    style={{ accentColor: PURPLE, borderColor: "#6E4BDA" }}
                   />
-                  <span>Check this box to get updates about Cognivision.</span>
+                  <span>Check this box to get updates about CogniVision.</span>
                 </label>
               </div>
 
-              {/* Submit button */}
-              <div className="mt-6">
+              {/* Submit */}
+              <div className="pt-4">
                 <button
                   type="submit"
-                  className="inline-flex min-w-[140px] items-center justify-center rounded-full bg-[#5b2fe8] px-10 py-3 text-[14px] font-semibold text-white shadow-[0_14px_30px_rgba(91,47,232,0.5)] transition-transform duration-150 hover:-translate-y-0.5"
+                  className="h-11 rounded-md px-8 text-[13px] font-semibold text-white"
+                  style={{ background: PURPLE }}
                 >
                   Submit
                 </button>
