@@ -3,19 +3,26 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, Mail, UserX } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import CustomToast from "@/components/ui/sonner";
-import { useLogoutMutation } from "@/features/auth/mutations/auth.mutation";
+import {
+  useDeleteUserMutation,
+  useLogoutMutation,
+} from "@/features/auth/mutations/auth.mutation";
 import { useAuthStore } from "@/stores/auth-store";
 
 const LoginSecurityPage = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const { mutateAsync: triggerLogout, isPending: isLoggingOut } =
     useLogoutMutation();
+  const { mutateAsync: triggerDeleteUser, isPending: isDeletingUser } =
+    useDeleteUserMutation();
 
   const displayName = useMemo(() => {
     if (!user) return "Hania Hasan";
@@ -51,6 +58,38 @@ const LoginSecurityPage = () => {
     } catch (error) {
       console.error("Failed to sign out", error);
       CustomToast.error("Failed to sign out. Please try again.");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (isDeletingUser) return;
+    if (!user?.id) {
+      CustomToast.error("Unable to delete account. Please try again.");
+      return;
+    }
+
+    try {
+      await triggerDeleteUser(user.id);
+      try {
+        await triggerLogout();
+      } catch (logoutError) {
+        console.warn("Failed to sign out after deletion", logoutError);
+      }
+      logout();
+      queryClient.clear();
+      CustomToast.success("Account deleted successfully");
+      router.replace("/login");
+    } catch (error) {
+      const message =
+        (
+          error as {
+            response?: { data?: { message?: string | string[] } };
+          }
+        )?.response?.data?.message ?? "Failed to delete account";
+
+      CustomToast.error(
+        typeof message === "string" ? message : "Failed to delete account"
+      );
     }
   };
 
@@ -105,10 +144,12 @@ const LoginSecurityPage = () => {
           <Button
             type="button"
             variant="outline"
+            disabled={isDeletingUser}
+            onClick={handleDeleteAccount}
             className="h-11 rounded-xl border-[#d7dbef] bg-white px-4 text-sm font-semibold text-[#4b516f] shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-[#c3c8e4] hover:text-[#8d1e1e]"
           >
             <UserX className="h-4 w-4 text-[#8c94b6]" />
-            Delete Account
+            {isDeletingUser ? "Deleting..." : "Delete Account"}
           </Button>
         </div>
       </div>
