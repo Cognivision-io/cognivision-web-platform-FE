@@ -48,6 +48,8 @@ export type AuthenticatedUser = {
   providerId: string | null;
   provider: string | null;
   profilePicture: string | null;
+  hasReceivedSignupCredits: boolean;
+  role: string | null;
   workspaces: number[];
   projects: unknown[];
 };
@@ -65,6 +67,11 @@ export type AuthUserResponse = {
   data: AuthenticatedUser;
   message: string;
 };
+export type UpdateUserPayload = {
+  email: string;
+};
+
+export type UpdateUserResponse = AuthUserResponse;
 export type VerifyOtpPayload = {
   code: number;
 };

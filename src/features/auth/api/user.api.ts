@@ -1,5 +1,9 @@
 import api from "@/lib/axios";
-import type { AuthUserResponse } from "@/interfaces/auth.interface";
+import type {
+  AuthUserResponse,
+  UpdateUserPayload,
+  UpdateUserResponse,
+} from "@/interfaces/auth.interface";
 
 export const userAPI = {
   getCurrentUser: async () => {
@@ -9,6 +13,13 @@ export const userAPI = {
   deleteUser: async (id: number) => {
     const response = await api.delete<{ statusCode: number; message: string }>(
       `/user/${id}`
+    );
+    return response.data;
+  },
+  updateUser: async (id: number, payload: UpdateUserPayload) => {
+    const response = await api.patch<UpdateUserResponse>(
+      `/user/${id}`,
+      payload
     );
     return response.data;
   },

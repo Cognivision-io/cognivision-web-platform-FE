@@ -1,16 +1,27 @@
 "use client";
 
-import { useMemo } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, Mail, UserX } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import CustomToast from "@/components/ui/sonner";
 import {
   useDeleteUserMutation,
   useLogoutMutation,
+  useUpdateUserMutation,
 } from "@/features/auth/mutations/auth.mutation";
 import { useAuthStore } from "@/stores/auth-store";
 
@@ -19,10 +30,15 @@ const LoginSecurityPage = () => {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const setUser = useAuthStore((state) => state.setUser);
   const { mutateAsync: triggerLogout, isPending: isLoggingOut } =
     useLogoutMutation();
   const { mutateAsync: triggerDeleteUser, isPending: isDeletingUser } =
     useDeleteUserMutation();
+  const { mutateAsync: triggerUpdateUser, isPending: isUpdatingUser } =
+    useUpdateUserMutation();
+  const [isChangeEmailOpen, setIsChangeEmailOpen] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
 
   const displayName = useMemo(() => {
     if (!user) return "Hania Hasan";
@@ -93,6 +109,46 @@ const LoginSecurityPage = () => {
     }
   };
 
+  const handleChangeEmail = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isUpdatingUser) return;
+    if (!user?.id) {
+      CustomToast.error("Unable to update email. Please try again.");
+      return;
+    }
+
+    const trimmedEmail = newEmail.trim();
+    if (!trimmedEmail) {
+      CustomToast.error("Please enter a valid email address.");
+      return;
+    }
+
+    try {
+      const response = await triggerUpdateUser({
+        id: user.id,
+        payload: { email: trimmedEmail },
+      });
+      if (response?.data) {
+        setUser(response.data);
+      }
+      CustomToast.success("Email updated successfully");
+      setIsChangeEmailOpen(false);
+      setNewEmail("");
+    } catch (error) {
+      const message = (
+        error as { response?: { data?: { message?: string | string[] } } }
+      )?.response?.data?.message;
+
+      if (Array.isArray(message)) {
+        message.forEach((msg) => CustomToast.error(msg));
+      } else if (typeof message === "string") {
+        CustomToast.error(message);
+      } else {
+        CustomToast.error("Failed to update email. Please try again.");
+      }
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -133,14 +189,51 @@ const LoginSecurityPage = () => {
       <div>
         <h2 className="text-lg font-semibold text-[#1b2559]">Modify Account</h2>
         <div className="mt-4 flex flex-wrap gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            className="h-11 rounded-xl border-[#d7dbef] bg-white px-4 text-sm font-semibold text-[#4b516f] shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-[#c3c8e4] hover:text-[#1e2748]"
-          >
-            <Mail className="h-4 w-4 text-[#8c94b6]" />
-            Change Email
-          </Button>
+          <Dialog open={isChangeEmailOpen} onOpenChange={setIsChangeEmailOpen}>
+            <DialogTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 rounded-xl border-[#d7dbef] bg-white px-4 text-sm font-semibold text-[#4b516f] shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-[#c3c8e4] hover:text-[#1e2748]"
+              >
+                <Mail className="h-4 w-4 text-[#8c94b6]" />
+                Change Email
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[420px]">
+              <DialogHeader>
+                <DialogTitle>Change Email</DialogTitle>
+                <DialogDescription>
+                  Update your account email address.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleChangeEmail} className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="newEmail" className="text-sm font-medium">
+                    New Email Address
+                  </label>
+                  <Input
+                    id="newEmail"
+                    type="email"
+                    placeholder="name@example.com"
+                    value={newEmail}
+                    onChange={(event) => setNewEmail(event.target.value)}
+                    required
+                    className="h-11"
+                  />
+                </div>
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    className="h-10"
+                    disabled={isUpdatingUser}
+                  >
+                    {isUpdatingUser ? "Updating..." : "Update Email"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
           <Button
             type="button"
             variant="outline"
