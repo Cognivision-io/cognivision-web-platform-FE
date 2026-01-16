@@ -15,7 +15,6 @@ import {
 
 const settingsSections = [
   { href: "/dashboard/settings/login-security", label: "Login & Security" },
-  { href: "/dashboard/settings/api-keys", label: "API Keys" },
   { href: "/dashboard/settings/support", label: "Support" },
 ] as const;
 

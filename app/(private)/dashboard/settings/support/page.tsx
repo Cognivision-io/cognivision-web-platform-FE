@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Gavel } from "lucide-react";
 
 const SupportPage = () => {
@@ -18,7 +19,10 @@ const SupportPage = () => {
       {/* Cards */}
       <div className="space-y-6">
         {/* Read the documentation */}
-        <div className="flex items-center gap-6 rounded-lg border border-[#e6e9f2] bg-white px-6 py-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+        <Link
+          href="/help"
+          className="flex items-center gap-6 rounded-lg border border-[#e6e9f2] bg-white px-6 py-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition hover:border-[#d2d7e6] hover:shadow-[0_12px_34px_rgba(15,23,42,0.08)]"
+        >
           <div className="grid h-14 w-14 place-items-center rounded-lg bg-[#f0f0fe]">
             <div className="grid h-8 w-8 place-items-center rounded-md bg-[#4845f5]">
               <span className="text-[14px] font-bold leading-none text-white">
@@ -35,7 +39,7 @@ const SupportPage = () => {
               Discover the concepts, reference, guides and tutorials.
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Submit a support ticket */}
         <div className="flex items-center gap-6 rounded-lg border border-[#e6e9f2] bg-white px-6 py-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">

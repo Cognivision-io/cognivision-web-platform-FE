@@ -1,15 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Network,
-  Database,
-  Rocket,
-  BarChart3,
-  Settings,
-  HelpCircle,
-  Bell,
-} from "lucide-react";
+import { Network, Database, Rocket, BarChart3, HelpCircle } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -38,7 +30,6 @@ const mainItems = [
   { title: "Projects", url: "/dashboard/dataset", icon: Database },
   { title: "Deployments", url: "/dashboard/deployments", icon: Rocket },
   { title: "Monitoring", url: "/dashboard/monitoring", icon: BarChart3 },
-  { title: "Setting", url: "/dashboard/settings", icon: Settings },
 ];
 
 const bottomItems = [{ title: "Help & Docs", url: "/help", icon: HelpCircle }];
@@ -181,8 +172,11 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/settings/login-security">
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={handleLogout}
                   disabled={isLoggingOut}

@@ -78,17 +78,15 @@ const ProjectDetailPage = () => {
         <div className="flex gap-3">
           <Button
             onClick={() =>
-              router.push(`/dashboard/dataset/${params.id}/upload-dataset${workspaceIdQuery}`)
+              router.push(
+                `/dashboard/dataset/${params.id}/upload-dataset${workspaceIdQuery}`
+              )
             }
             className="bg-[#6841ff] hover:bg-[#5835e6]"
           >
             <Upload className="mr-2 h-4 w-4" />
             Upload Data
           </Button>
-          {/* <Button variant="outline">
-            <Settings className="mr-2 h-4 w-4" />
-            Settings
-          </Button> */}
         </div>
 
         {/* Project Info Grid */}
@@ -120,7 +118,6 @@ const ProjectDetailPage = () => {
                 </div>
               </div>
             </div>
-
           </div>
 
           {/* Project Info Card */}
