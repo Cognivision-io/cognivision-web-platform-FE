@@ -8,7 +8,6 @@ import type {
 } from "@/interfaces/contact.interface";
 
 export type ContactError = AxiosError<{ message?: string | string[] }>;
-
 export const CONTACT_US_MUTATION_KEY = ["contact", "contact-us"] as const;
 
 export const useContactUsMutation = (
