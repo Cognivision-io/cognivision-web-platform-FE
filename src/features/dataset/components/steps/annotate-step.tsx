@@ -64,13 +64,13 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
         <div className="flex gap-3">
           <Button
             variant="outline"
-            className="h-10 rounded-lg border-slate-300 font-medium text-slate-700 hover:bg-slate-50"
+            className="h-10 rounded-lg border-slate-300 font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-700"
           >
             Upload More
           </Button>
           <Button
             variant="outline"
-            className="h-10 rounded-lg border-slate-300 font-medium text-slate-700 hover:bg-slate-50"
+            className="h-10 rounded-lg border-slate-300 font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-700"
           >
             Rename
           </Button>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Copy, RefreshCw } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Copy } from "lucide-react";
 import {
     Card,
     CardContent,
@@ -10,30 +10,57 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-export default function WebApiTab() {
-    const [authToken] = useState("sk_live_xxxxxxxxxxxxxxxx");
-    const [baseUrl] = useState(
-        "https://api.visioncore.ai/v1/models/{model_id}/predict"
-    );
+type WebApiTabProps = {
+    apiKey?: string;
+    apiKeyLoading?: boolean;
+    baseUrl: string;
+    workspaceName?: string;
+};
+
+export default function WebApiTab({
+    apiKey,
+    apiKeyLoading = false,
+    baseUrl,
+    workspaceName,
+}: WebApiTabProps) {
     const [copied, setCopied] = useState<string | null>(null);
 
-    const curlCode = `curl -X POST https://api.visioncore.ai/v1/models/v1/predict -H "Authorization: Bearer sk_live_xxxxxxxxx" -F "file=@test_image.jpg"`;
+    const apiKeyValue = apiKey || "";
+
+    const codeApiKey = apiKeyValue || "YOUR_API_KEY";
+    const codeBaseUrl = baseUrl;
+
+    const payloadSnippet = useMemo(
+        () =>
+            `{
+  "imageData": "data:image/jpeg;base64,BASE64_IMAGE",
+  "roboflowModelId": "workspace/model",
+  "apiKey": "${codeApiKey}",
+  "confidenceThreshold": 50,
+  "overlapThreshold": 50
+}`,
+        [codeApiKey]
+    );
+
+    const curlCode = `curl -X POST "${codeBaseUrl}" \\\n+  -H "Content-Type: application/json" \\\n+  -d '${payloadSnippet}'`;
 
     const pythonCode = `import requests
-url = "https://api.visioncore.ai/v1/models/v1/predict"
-headers = {"Authorization": "Bearer sk_live_xxxxxxxxx"}
-files = {"file": open("test_image.jpg","rb")}
-resp = requests.post(url, headers=headers, files=files)
-print(resp.json())`;
 
-    const jsCode = `const form = new FormData();
-form.append('file', fileInput.files[0]);
+url = "${codeBaseUrl}"
+payload = ${payloadSnippet}
 
-fetch('https://api.visioncore.ai/v1/models/v1/predict', {
-  method: 'POST',
-  headers: { 'Authorization': 'Bearer sk_live_xxxxxxxxx' },
-  body: form
-}).then(r=>r.json()).then(console.log);`;
+response = requests.post(url, json=payload)
+print(response.json())`;
+
+    const jsCode = `const payload = ${payloadSnippet};
+
+fetch("${codeBaseUrl}", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload),
+})
+  .then((r) => r.json())
+  .then(console.log);`;
 
     const handleCopy = async (key: string, text: string) => {
         try {
@@ -50,7 +77,11 @@ fetch('https://api.visioncore.ai/v1/models/v1/predict', {
         <div className="space-y-6">
             <div>
                 <h2 className="text-lg font-semibold">Web API Endpoint</h2>
-                <p className="text-sm text-muted-foreground">You are signed in with your google account</p>
+                <p className="text-sm text-muted-foreground">
+                    {workspaceName
+                        ? `Use the API key for ${workspaceName} to authenticate requests.`
+                        : "Select a workspace to view its API key."}
+                </p>
             </div>
 
             <Card>
@@ -61,7 +92,7 @@ fetch('https://api.visioncore.ai/v1/models/v1/predict', {
                 <CardContent className="space-y-4">
                     <div>
                         <p className="text-sm font-medium text-muted-foreground">
-                            Base API Url
+                            Base API URL
                         </p>
                         <div className="mt-2 flex items-center gap-2 rounded border border-[#ecebed] bg-white px-3 py-2">
                             <code className="flex-1 text-xs text-slate-800 break-words">
@@ -70,33 +101,44 @@ fetch('https://api.visioncore.ai/v1/models/v1/predict', {
                             <button
                                 aria-label="copy-base"
                                 className="p-1 text-muted-foreground hover:text-foreground"
+                                onClick={() => handleCopy("base", baseUrl)}
                             >
                                 <Copy className="h-4 w-4" />
                             </button>
+                            {copied === "base" && (
+                                <span className="text-[10px] text-slate-500">
+                                    Copied
+                                </span>
+                            )}
                         </div>
                     </div>
 
                     <div>
                         <p className="text-sm font-medium text-muted-foreground">
-                            Authorization token
+                            Workspace API key
                         </p>
                         <div className="mt-2 flex items-center gap-2 rounded border border-[#ecebed] bg-white px-3 py-2">
-                            <code className="flex-1 text-xs text-slate-800">{authToken}</code>
+                            <code className="flex-1 text-xs text-slate-800 break-words">
+                                {apiKeyLoading
+                                    ? "Loading..."
+                                    : apiKeyValue || "—"}
+                            </code>
                             <div className="flex items-center gap-2">
                                 <button
                                     aria-label="copy-token"
                                     className="p-1 text-muted-foreground hover:text-foreground"
+                                    onClick={() => handleCopy("api-key", apiKeyValue)}
+                                    disabled={!apiKeyValue}
                                 >
                                     <Copy className="h-4 w-4" />
                                 </button>
-                                <button
-                                    aria-label="rotate-token"
-                                    className="p-1 text-muted-foreground hover:text-foreground"
-                                >
-                                    <RefreshCw className="h-4 w-4" />
-                                </button>
                             </div>
                         </div>
+                        {copied === "api-key" && (
+                            <span className="mt-1 inline-flex text-[10px] text-slate-500">
+                                Copied
+                            </span>
+                        )}
                     </div>
                 </CardContent>
             </Card>
