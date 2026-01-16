@@ -99,7 +99,9 @@ const ConnectWithTeamSection = () => {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    const formEl = event.currentTarget; // ✅ keep a reference
+
+    const formData = new FormData(formEl);
 
     const getText = (key: string) => {
       const value = formData.get(key);
@@ -131,6 +133,11 @@ const ConnectWithTeamSection = () => {
     contactMutation.mutate(payload, {
       onSuccess: () => {
         CustomToast.success("Message sent successfully");
+
+        // ✅ Reset uncontrolled inputs/textarea/checkboxes
+        formEl.reset();
+
+        // ✅ Reset controlled select
         setCountryValue("");
       },
       onError: (error) => {
