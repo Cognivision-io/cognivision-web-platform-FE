@@ -25,12 +25,14 @@ import CustomToast from "@/components/ui/sonner";
 interface TestModelDialogProps {
   version: any;
   project: any;
+  workspaceName?: string;
   children: React.ReactNode;
 }
 
 export const TestModelDialog = ({
   version,
   project,
+  workspaceName,
   children,
 }: TestModelDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -97,7 +99,8 @@ export const TestModelDialog = ({
         apiKey,
         confidenceThreshold,
         overlapThreshold,
-        version.model.endpoint // unused (kept for compatibility)
+        version.model.endpoint, // unused (kept for compatibility)
+        workspaceName
       );
 
       console.log("✅ Inference complete:", result);

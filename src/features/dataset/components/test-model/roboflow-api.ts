@@ -7,25 +7,31 @@ export async function runRoboflowInference(
   apiKey: string,
   confidenceThreshold: number = 50,
   overlapThreshold: number = 50,
-  _customEndpoint?: string
+  _customEndpoint?: string,
+  workspaceName?: string
 ): Promise<RoboflowInferenceResponse> {
-  // If imageData is a blob URL, convert to base64
-  let base64Data: string;
+  // Ensure imageData is sent as a data URL (data:image...)
+  let imagePayload: string;
   if (imageData.startsWith("blob:")) {
-    base64Data = await blobUrlToBase64(imageData);
+    imagePayload = await blobUrlToBase64(imageData);
   } else if (imageData.startsWith("data:image")) {
-    // Already base64  
-    base64Data = imageData.split(",")[1];
-  } else {
+    imagePayload = imageData;
+  } else if (
+    imageData.startsWith("http://") ||
+    imageData.startsWith("https://")
+  ) {
     // Assume it's a URL
-    base64Data = await imageUrlToBase64(imageData);
+    imagePayload = await imageUrlToBase64(imageData);
+  } else {
+    // Assume it's already raw base64
+    imagePayload = `data:image/jpeg;base64,${imageData}`;
   }
 
   const response = await api.post(
     "/project/model/run-prediction",
     {
-      imageData: base64Data,
-      roboflowModelId: modelId,
+      imageData: imagePayload,
+      roboflowModelId: normalizeRoboflowModelId(modelId, workspaceName),
       apiKey,
       confidenceThreshold,
       overlapThreshold,
@@ -38,6 +44,16 @@ export async function runRoboflowInference(
   return data as RoboflowInferenceResponse;
 }
 
+function normalizeRoboflowModelId(modelId: string, workspaceName?: string) {
+  const trimmedWorkspace = workspaceName?.trim().replace(/^\/+|\/+$/g, "");
+  const trimmedModelId = modelId?.trim();
+  if (!trimmedWorkspace || !trimmedModelId) return modelId;
+  if (trimmedModelId.startsWith(`${trimmedWorkspace}/`)) {
+    return trimmedModelId;
+  }
+  return `${trimmedWorkspace}/${trimmedModelId}`;
+}
+
 /**
  * Convert blob URL to base64
  */
@@ -47,8 +63,7 @@ async function blobUrlToBase64(blobUrl: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64 = reader.result as string;
-      resolve(base64.split(",")[1]);
+      resolve(reader.result as string);
     };
     reader.onerror = reject;
     reader.readAsDataURL(blob);
@@ -64,8 +79,7 @@ async function imageUrlToBase64(url: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64 = reader.result as string;
-      resolve(base64.split(",")[1]);
+      resolve(reader.result as string);
     };
     reader.onerror = reject;
     reader.readAsDataURL(blob);

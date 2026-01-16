@@ -245,7 +245,7 @@ export const TestStep = () => {
                     ? "Create a new version to deploy a model"
                     : undefined
                 }
-                className="h-9 gap-2 border-[#6841ff] text-[#6841ff] hover:bg-[#f5f3ff] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-9 gap-2 border-[#6841ff] text-[#6841ff] hover:bg-[#f5f3ff] hover:text-[#6841ff] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Box className="h-4 w-4" />
                 {isTrainingModel ? "Deploying..." : "Deploy Model"}

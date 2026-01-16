@@ -358,7 +358,11 @@ const ProjectDetailPage = () => {
                       <p className="text-xs font-medium text-green-800">
                         Model trained: mAP {version.model.map}
                       </p>
-                      <TestModelDialog version={version} project={project}>
+                      <TestModelDialog
+                        version={version}
+                        project={project}
+                        workspaceName={workspace?.url}
+                      >
                         <Button
                           size="sm"
                           variant="outline"
