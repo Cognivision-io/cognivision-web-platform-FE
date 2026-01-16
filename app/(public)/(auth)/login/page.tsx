@@ -7,7 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { capitalize } from "@/lib/utils";
+import { capitalize, isValidEmail } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLoginMutation } from "@/features/auth/mutations/auth.mutation";
 import CustomToast from "@/components/ui/sonner";
@@ -32,6 +32,10 @@ const LoginPage = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
+      if (!isValidEmail(email)) {
+        CustomToast.error("Please enter a valid email address.");
+        return;
+      }
       const response = await loginMutation({ email, password });
 
       if (!response?.data?.tokens?.token || !response?.data?.user) {

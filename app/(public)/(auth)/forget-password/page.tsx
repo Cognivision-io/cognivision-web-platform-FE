@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { capitalize } from "@/lib/utils";
+import { capitalize, isValidEmail } from "@/lib/utils";
 import { useResendOtpMutation } from "@/features/auth/mutations/auth.mutation";
 import CustomToast from "@/components/ui/sonner";
 import Link from "next/link";
@@ -18,6 +18,10 @@ const ForgetPasswordPage = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
+      if (!isValidEmail(email)) {
+        CustomToast.error("Please enter a valid email address.");
+        return;
+      }
       await resendOtp({ email });
       CustomToast.success("An OTP has been sent to your email");
       router.push(`/verify-otp?email=${encodeURIComponent(email)}`);

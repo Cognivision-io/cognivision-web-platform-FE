@@ -7,6 +7,7 @@ import { FormEvent } from "react";
 import type { ContactUsPayload } from "@/interfaces/contact.interface";
 import { useContactUsMutation } from "@/features/contact/mutations/contact.mutation";
 import CustomToast from "@/components/ui/sonner";
+import { isValidEmail } from "@/lib/utils";
 
 const PURPLE = "#5b2fe8";
 
@@ -62,6 +63,11 @@ export default function LandingPageSectionContact() {
       subject: getText("subject"),
       message: getText("message"),
     };
+
+        if (!isValidEmail(payload.email)) {
+          CustomToast.error("Please enter a valid email address.");
+          return;
+        }
 
     contactMutation.mutate(payload, {
       onSuccess: () => {

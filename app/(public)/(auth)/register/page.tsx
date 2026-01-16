@@ -20,14 +20,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useRegisterMutation } from "@/features/auth/mutations/auth.mutation";
-import { capitalize } from "@/lib/utils";
+import { capitalize, emailRegex } from "@/lib/utils";
 import CustomToast from "@/components/ui/sonner";
 
 const registerSchema = yup.object({
   firstName: yup.string().trim().required("Full Name is required"),
   email: yup
     .string()
-    .email("Enter a valid email")
+    .trim()
+    .matches(emailRegex, "Enter a valid email")
     .required("Email is required"),
   password: yup
     .string()

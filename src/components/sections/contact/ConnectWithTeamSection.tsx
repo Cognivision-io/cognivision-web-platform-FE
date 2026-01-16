@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import type { ContactUsPayload } from "@/interfaces/contact.interface";
 import { useContactUsMutation } from "@/features/contact/mutations/contact.mutation";
 import CustomToast from "@/components/ui/sonner";
+import { isValidEmail } from "@/lib/utils";
 
 const PURPLE = "#5328D4";
 const INPUT_BG = "#F6F8FD";
@@ -119,6 +120,11 @@ const ConnectWithTeamSection = () => {
       subject: getText("subject"),
       message: getText("message"),
     };
+
+    if (!isValidEmail(payload.email)) {
+      CustomToast.error("Please enter a valid email address.");
+      return;
+    }
 
     if (contactMutation.isPending) return;
 

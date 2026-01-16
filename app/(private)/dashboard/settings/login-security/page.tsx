@@ -23,6 +23,7 @@ import {
   useLogoutMutation,
   useUpdateUserMutation,
 } from "@/features/auth/mutations/auth.mutation";
+import { isValidEmail } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 
 const LoginSecurityPage = () => {
@@ -118,7 +119,7 @@ const LoginSecurityPage = () => {
     }
 
     const trimmedEmail = newEmail.trim();
-    if (!trimmedEmail) {
+    if (!isValidEmail(trimmedEmail)) {
       CustomToast.error("Please enter a valid email address.");
       return;
     }
