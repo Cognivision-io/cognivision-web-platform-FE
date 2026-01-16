@@ -142,21 +142,42 @@ fetch("${codeBaseUrl}", {
             <TabsList className="flex items-start justify-start gap-2 w-full bg-transparent">
               <TabsTrigger
                 value="curl"
-                className="relative inline-flex items-center justify-start whitespace-nowrap px-3 py-2 text-sm font-medium border-b-2 border-transparent bg-[#5925DC] text-white transition-colors data-[state=active]:bg-transparent data-[state=active]:text-slate-800"
+                className="
+    relative inline-flex items-center justify-start whitespace-nowrap
+    px-3 py-2 text-sm font-medium rounded-md
+    bg-transparent text-black
+    transition-colors
+    data-[state=active]:bg-primary
+    data-[state=active]:text-primary-foreground
+  "
               >
                 Curl
               </TabsTrigger>
 
               <TabsTrigger
                 value="python"
-                className="relative inline-flex items-center justify-start whitespace-nowrap px-3 py-2 text-sm font-medium border-b-2 border-transparent bg-[#5925DC] text-white transition-colors data-[state=active]:bg-transparent data-[state=active]:text-slate-800"
+                className="
+    relative inline-flex items-center justify-start whitespace-nowrap
+    px-3 py-2 text-sm font-medium rounded-md
+    bg-transparent text-black
+    transition-colors
+    data-[state=active]:bg-primary
+    data-[state=active]:text-primary-foreground
+  "
               >
                 Python
               </TabsTrigger>
 
               <TabsTrigger
                 value="javascript"
-                className="relative inline-flex items-center justify-start whitespace-nowrap px-3 py-2 text-sm font-medium border-b-2 border-transparent bg-[#5925DC] text-white transition-colors data-[state=active]:bg-transparent data-[state=active]:text-slate-800"
+                className="
+    relative inline-flex items-center justify-start whitespace-nowrap
+    px-3 py-2 text-sm font-medium rounded-md
+    bg-transparent text-black
+    transition-colors
+    data-[state=active]:bg-primary
+    data-[state=active]:text-primary-foreground
+  "
               >
                 Javascript
               </TabsTrigger>
