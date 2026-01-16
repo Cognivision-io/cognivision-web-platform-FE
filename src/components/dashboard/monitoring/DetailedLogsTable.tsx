@@ -635,7 +635,7 @@ export default function DetailedLogsTable({
               </p>
             </div>
           ) : (
-            <div className="min-h-[520px]">
+            <div className="min-h-[520px] min-w-0">
               <DataGrid
                 autoHeight
                 rows={rows}
@@ -655,6 +655,7 @@ export default function DetailedLogsTable({
                 }}
                 sx={{
                   width: "100%",
+                  minWidth: 0,
                   border: "1px solid #e6e9f5",
                   borderRadius: 3,
                   backgroundColor: "#ffffff",

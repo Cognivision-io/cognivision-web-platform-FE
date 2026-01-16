@@ -35,13 +35,15 @@ export default function PrivateLayout({
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
-        <div className="flex flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-10 border-b bg-background">
             <div className="flex h-14 items-center px-6">
               <SidebarTrigger />
             </div>
           </header>
-          <main className="flex-1 overflow-auto bg-[#f5f7ff]">{children}</main>
+          <main className="min-w-0 flex-1 overflow-auto bg-[#f5f7ff]">
+            {children}
+          </main>
         </div>
       </div>
     </SidebarProvider>
