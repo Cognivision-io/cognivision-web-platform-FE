@@ -64,27 +64,6 @@ export default function DeploymentsPage() {
         <div className="mb-2 flex items-center gap-3">
           <h1 className="text-2xl font-semibold">Deployment</h1>
         </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="text-[#111827]">
-            <div className="text-xs font-medium">Model:</div>
-            <div className="mt-1 text-[#000000] rounded-lg bg-white px-3 py-2 text-xs border border-[#9CA3AF]">
-              Fruit_Detector_v1, trained on 2025-10-05
-            </div>
-          </div>
-          <div className="text-[#111827]">
-            <div className="text-xs font-medium ">Deployment Details:</div>
-            <div className="mt-1 text-[#000000] rounded-lg bg-white px-3 py-2 text-xs border border-[#9CA3AF]">
-              Date: 2025-10-06, By: hania@visioncore.ai
-            </div>
-          </div>
-          <div className="text-[#111827]">
-            <div className="text-xs font-medium">Accuracy:</div>
-            <div className="mt-1 text-[#000000] rounded-lg bg-white px-3 py-2 text-xs border border-[#9CA3AF]">
-              92%
-            </div>
-          </div>
-        </div>
       </header>
 
       <section className="space-y-6">
