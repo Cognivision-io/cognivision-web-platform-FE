@@ -144,25 +144,14 @@ export default function LandingPageSectionContact() {
                 </div>
               </div>
 
-              {/* Social icons bottom */}
               <div className="absolute bottom-10 left-10 flex items-center gap-4">
                 <Link
-                  href="#"
+                  href="https://www.linkedin.com/company/meetcognivision"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="grid h-10 w-10 place-items-center rounded-full bg-black/60 text-white"
                 >
                   <Linkedin className="h-5 w-5" />
-                </Link>
-                <Link
-                  href="#"
-                  className="grid h-10 w-10 place-items-center rounded-full bg-white text-black"
-                >
-                  <Instagram className="h-5 w-5" />
-                </Link>
-                <Link
-                  href="#"
-                  className="grid h-10 w-10 place-items-center rounded-full bg-black/60 text-white"
-                >
-                  <Globe className="h-5 w-5" />
                 </Link>
               </div>
             </div>
