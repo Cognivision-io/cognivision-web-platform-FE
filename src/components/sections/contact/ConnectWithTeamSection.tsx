@@ -12,14 +12,87 @@ import { isValidEmail } from "@/lib/utils";
 const PURPLE = "#5328D4";
 const INPUT_BG = "#F6F8FD";
 
-type CountryCode = "UK" | "US" | "PK" | "CA" | "OTHER";
+type CountryCode =
+  | "US"
+  | "CA"
+  | "UK"
+  | "PK"
+  | "IN"
+  | "AE"
+  | "SA"
+  | "AU"
+  | "NZ"
+  | "DE"
+  | "FR"
+  | "IT"
+  | "ES"
+  | "NL"
+  | "SE"
+  | "NO"
+  | "DK"
+  | "FI"
+  | "CH"
+  | "AT"
+  | "BE"
+  | "IE"
+  | "SG"
+  | "MY"
+  | "ID"
+  | "TH"
+  | "PH"
+  | "JP"
+  | "KR"
+  | "CN"
+  | "HK"
+  | "ZA"
+  | "EG"
+  | "NG"
+  | "KE";
 
 const COUNTRIES: { code: CountryCode; name: string; dial: string }[] = [
-  { code: "UK", name: "United Kingdom", dial: "+44" },
   { code: "US", name: "United States", dial: "+1" },
-  { code: "PK", name: "Pakistan", dial: "+92" },
   { code: "CA", name: "Canada", dial: "+1" },
-  { code: "OTHER", name: "Other", dial: "+" },
+  { code: "UK", name: "United Kingdom", dial: "+44" },
+  { code: "PK", name: "Pakistan", dial: "+92" },
+  { code: "IN", name: "India", dial: "+91" },
+
+  // Middle East
+  { code: "AE", name: "United Arab Emirates", dial: "+971" },
+  { code: "SA", name: "Saudi Arabia", dial: "+966" },
+
+  // Asia-Pacific
+  { code: "SG", name: "Singapore", dial: "+65" },
+  { code: "MY", name: "Malaysia", dial: "+60" },
+  { code: "ID", name: "Indonesia", dial: "+62" },
+  { code: "TH", name: "Thailand", dial: "+66" },
+  { code: "PH", name: "Philippines", dial: "+63" },
+  { code: "JP", name: "Japan", dial: "+81" },
+  { code: "KR", name: "South Korea", dial: "+82" },
+  { code: "CN", name: "China", dial: "+86" },
+  { code: "HK", name: "Hong Kong", dial: "+852" },
+  { code: "AU", name: "Australia", dial: "+61" },
+  { code: "NZ", name: "New Zealand", dial: "+64" },
+
+  // Europe
+  { code: "DE", name: "Germany", dial: "+49" },
+  { code: "FR", name: "France", dial: "+33" },
+  { code: "IT", name: "Italy", dial: "+39" },
+  { code: "ES", name: "Spain", dial: "+34" },
+  { code: "NL", name: "Netherlands", dial: "+31" },
+  { code: "SE", name: "Sweden", dial: "+46" },
+  { code: "NO", name: "Norway", dial: "+47" },
+  { code: "DK", name: "Denmark", dial: "+45" },
+  { code: "FI", name: "Finland", dial: "+358" },
+  { code: "CH", name: "Switzerland", dial: "+41" },
+  { code: "AT", name: "Austria", dial: "+43" },
+  { code: "BE", name: "Belgium", dial: "+32" },
+  { code: "IE", name: "Ireland", dial: "+353" },
+
+  // Africa
+  { code: "ZA", name: "South Africa", dial: "+27" },
+  { code: "EG", name: "Egypt", dial: "+20" },
+  { code: "NG", name: "Nigeria", dial: "+234" },
+  { code: "KE", name: "Kenya", dial: "+254" },
 ];
 
 function ChevronDown({ className = "" }: { className?: string }) {
@@ -121,7 +194,7 @@ const ConnectWithTeamSection = () => {
         console.log(error, "ERROR");
         const message = error?.response?.data?.message;
         CustomToast.error(
-          typeof message === "string" ? message : "Failed to send message"
+          typeof message === "string" ? message : "Failed to send message",
         );
       },
     });
