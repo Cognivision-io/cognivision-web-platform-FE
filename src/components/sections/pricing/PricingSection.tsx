@@ -57,7 +57,7 @@ function TogglePill({
           "h-9 rounded-md px-5 text-[13px] font-medium transition",
           value === "monthly"
             ? "bg-[#f3f4f6] text-[#111827]"
-            : "text-[#111827] hover:bg-[#f9fafb]"
+            : "text-[#111827] hover:bg-[#f9fafb]",
         )}
       >
         Monthly
@@ -70,7 +70,7 @@ function TogglePill({
           "h-9 rounded-md px-5 text-[13px] font-medium transition",
           value === "annual"
             ? "bg-[#f3f4f6] text-[#111827]"
-            : "text-[#111827] hover:bg-[#f9fafb]"
+            : "text-[#111827] hover:bg-[#f9fafb]",
         )}
       >
         Annual
@@ -135,7 +135,7 @@ function PricingCard({ plan, dimmed }: { plan: Plan; dimmed?: boolean }) {
     <div
       className={cn(
         "rounded-xl shadow-sm transition-colors duration-200",
-        dimmed ? "bg-white/60" : "bg-white"
+        dimmed ? "bg-white/60" : "bg-white",
       )}
     >
       {/* Head */}
@@ -166,8 +166,8 @@ function PricingCard({ plan, dimmed }: { plan: Plan; dimmed?: boolean }) {
             {plan.priceMeta
               ? plan.priceMeta
               : plan.key === "public"
-              ? "No credit card required."
-              : "\u00A0"}
+                ? "No credit card required."
+                : "\u00A0"}
           </div>
         </div>
 
@@ -256,6 +256,7 @@ export function PricingSection() {
         ],
         includedTitle: "What’s included:",
         included: [
+          "Swift & Kotlin SDKs",
           "Data labeling suite w/ AI features",
           "Model training",
           "Workflow builder",
@@ -296,6 +297,7 @@ export function PricingSection() {
         ],
         includedTitle: "Features in Public, plus:",
         included: [
+          "React Native & Flutter SDKs",
           "Private data & models",
           "Training analytics",
           "Model evaluation",

@@ -22,29 +22,6 @@ const COUNTRIES: { code: CountryCode; name: string; dial: string }[] = [
   { code: "OTHER", name: "Other", dial: "+" },
 ];
 
-function UKFlag({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 60 40"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <rect width="60" height="40" fill="#012169" />
-      {/* white diagonals */}
-      <path d="M0 0 L60 40 M60 0 L0 40" stroke="#FFF" strokeWidth="10" />
-      {/* red diagonals */}
-      <path d="M0 0 L60 40 M60 0 L0 40" stroke="#C8102E" strokeWidth="6" />
-      {/* white cross */}
-      <rect x="0" y="15" width="60" height="10" fill="#FFF" />
-      <rect x="25" y="0" width="10" height="40" fill="#FFF" />
-      {/* red cross */}
-      <rect x="0" y="17" width="60" height="6" fill="#C8102E" />
-      <rect x="27" y="0" width="6" height="40" fill="#C8102E" />
-    </svg>
-  );
-}
-
 function ChevronDown({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -288,14 +265,7 @@ const ConnectWithTeamSection = () => {
                       </option>
                     ))}
                   </select>
-
-                  {/* right-side flag + caret (like screenshot) */}
                   <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center gap-2">
-                    {visualCountry === "UK" ? (
-                      <UKFlag className="h-[14px] w-[20px] rounded-[2px]" />
-                    ) : (
-                      <div className="h-[14px] w-[20px] rounded-[2px] bg-black/10" />
-                    )}
                     <ChevronDown className="h-4 w-4" />
                   </div>
                 </div>
