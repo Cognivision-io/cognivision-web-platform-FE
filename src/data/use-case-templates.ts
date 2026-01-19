@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 import { Dumbbell, Gamepad2, Sprout, Store, Stethoscope } from "lucide-react";
-
 export type UseCaseTemplate = {
   id: string;
   title: string;
