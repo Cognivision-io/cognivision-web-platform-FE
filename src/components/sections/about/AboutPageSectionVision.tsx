@@ -45,11 +45,13 @@ export default function AboutPageSectionVision() {
             </h2>
 
             <p className="mt-8 text-[16px] leading-8 text-[#111827]/75">
-              Cognivision empowers developers to build intelligent, real-world
-              computer vision solutions across industries such as healthcare,
-              retail, fintech, and construction. Our hybrid-compatible SDK
-              supports multiple technology stacks, enabling scalable, on-device
-              vision experiences across mobile, web, and enterprise systems.
+              Cognivision empowers developers to create intelligent, real-world
+              computer vision experiences that perform reliably at scale. Our
+              platform is designed for production-grade use cases where
+              accuracy, performance, and trust are essential. Our hybrid-ready
+              SDK supports multiple technology stacks and deployment models,
+              enabling on-device, privacy-aware vision experiences across
+              mobile, web, and enterprise systems.
             </p>
 
             <div

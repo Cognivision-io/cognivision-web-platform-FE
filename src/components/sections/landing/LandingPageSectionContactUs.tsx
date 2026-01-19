@@ -64,10 +64,10 @@ export default function LandingPageSectionContact() {
       message: getText("message"),
     };
 
-        if (!isValidEmail(payload.email)) {
-          CustomToast.error("Please enter a valid email address.");
-          return;
-        }
+    if (!isValidEmail(payload.email)) {
+      CustomToast.error("Please enter a valid email address.");
+      return;
+    }
 
     contactMutation.mutate(payload, {
       onSuccess: () => {
@@ -77,7 +77,7 @@ export default function LandingPageSectionContact() {
       onError: (error) => {
         const message = error?.response?.data?.message;
         CustomToast.error(
-          typeof message === "string" ? message : "Failed to send message"
+          typeof message === "string" ? message : "Failed to send message",
         );
       },
     });
@@ -137,15 +137,6 @@ export default function LandingPageSectionContact() {
                   </div>
                   <div className="text-[15px] text-white/90">
                     info@cognivision
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-5">
-                  <div className="grid h-10 w-10 place-items-center rounded-full bg-white/10">
-                    <Globe className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="text-[15px] text-white/90">
-                    www.cognivision
                   </div>
                 </div>
               </div>

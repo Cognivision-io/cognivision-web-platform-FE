@@ -39,9 +39,9 @@ export default function LandingPageSectionAbout() {
             </h2>
 
             <p className="mt-8 text-[16px] leading-8 text-[#111827]/75">
-              Cognivision is a unified AR and computer vision SDK, enabling
-              developers to build native-grade, hybrid AR experiences quickly,
-              reliably, and at scale across industries.
+              Cognivision is a unified AR + computer vision SDK for building
+              native-grade hybrid AR—fast to integrate, reliable in production,
+              and scalable across industries.
             </p>
 
             <div className="mt-10">

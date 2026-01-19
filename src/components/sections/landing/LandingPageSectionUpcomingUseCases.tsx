@@ -16,10 +16,26 @@ type UseCaseCard = {
 
 const CARDS: UseCaseCard[] = [
   {
+    title: "Playing Games",
+    description:
+      "Build next-gen games that react to real-world environments using object detection, tracking, and spatial AR.",
+    image: "/Hero10.svg",
+    hrefTry: "/register",
+    hrefExplore: "/solutions",
+  },
+  {
     title: "Collaborative Spatial Workflows",
     description:
-      "Enable real-time, shared AR experiences that allow distributed teams to visualize, annotate, and interact with spatial data as if co-located. ",
+    "Enable real-time, shared AR experiences that allow distributed teams to visualize, annotate, and interact with spatial data as if co-located. ",
     image: "/Hero8.svg",
+    hrefTry: "/register",
+    hrefExplore: "/solutions",
+  },
+  {
+    title: "Digital Fashion & Virtual Assets",
+    description:
+      "Support virtual apparel and digital assets with real-time body tracking and spatial alignment for seamless try-ons.",
+    image: "/Hero13.svg",
     hrefTry: "/register",
     hrefExplore: "/solutions",
   },
@@ -28,14 +44,6 @@ const CARDS: UseCaseCard[] = [
     description:
       "Deliver immersive virtual and AR concerts with real-time environment understanding and spatial anchoring.",
     image: "/Hero9.svg",
-    hrefTry: "/register",
-    hrefExplore: "/solutions",
-  },
-  {
-    title: "Playing Games",
-    description:
-      "Build next-gen games that react to real-world environments using object detection, tracking, and spatial AR.",
-    image: "/Hero10.svg",
     hrefTry: "/register",
     hrefExplore: "/solutions",
   },
@@ -52,14 +60,6 @@ const CARDS: UseCaseCard[] = [
     description:
       "Augment physical and digital art with spatial storytelling, object recognition, and immersive overlays. ",
     image: "/Hero12.svg",
-    hrefTry: "/register",
-    hrefExplore: "/solutions",
-  },
-  {
-    title: "Digital Fashion & Virtual Assets",
-    description:
-      "Support virtual apparel and digital assets with real-time body tracking and spatial alignment for seamless try-ons.",
-    image: "/Hero13.svg",
     hrefTry: "/register",
     hrefExplore: "/solutions",
   },
@@ -90,25 +90,6 @@ function UseCaseCard({ card }: { card: UseCaseCard }) {
         <p className="mt-2 text-[13.5px] leading-6 text-[#111827]/70">
           {card.description}
         </p>
-      </div>
-
-      {/* Buttons */}
-      <div className="mt-5 flex items-center gap-3">
-        <Link
-          href={card.hrefTry || "/register"}
-          className="inline-flex h-[34px] items-center justify-center rounded-sm px-4 text-[13px] font-semibold text-white shadow-[0_10px_18px_rgba(91,47,232,0.20)]"
-          style={{ backgroundColor: PURPLE }}
-        >
-          Try now
-        </Link>
-
-        <Link
-          href={card.hrefExplore || "/solutions"}
-          className="inline-flex h-[34px] items-center justify-center rounded-sm border px-4 text-[13px] font-semibold text-[#0b1020] hover:bg-black/[0.03]"
-          style={{ borderColor: "rgba(91,47,232,0.35)" }}
-        >
-          Explore now
-        </Link>
       </div>
     </div>
   );
