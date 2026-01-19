@@ -148,18 +148,21 @@ textRenderer.createText(
                   <TableRow>
                     <TableCell className="font-mono">initialize</TableCell>
                     <TableCell className="font-mono text-xs">
-                      (apiKey: string) =&gt; Promise&lt;void&gt;
+                      (apiKey: string, workspaceURL: string, modelId: string,
+                      version: number) =&gt; Promise&lt;void&gt;
                     </TableCell>
-                    <TableCell>Configure the SDK with your API key.</TableCell>
+                    <TableCell>
+                      Configure the SDK and select a model to load.
+                    </TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell className="font-mono">loadModel</TableCell>
                     <TableCell className="font-mono text-xs">
-                      (projectSlug: string, version: number) =&gt;
-                      Promise&lt;void&gt;
+                      () =&gt; Promise&lt;void&gt;
                     </TableCell>
                     <TableCell>
-                      Load a published Roboflow model by slug and version.
+                      Load the model configured in{" "}
+                      <span className="font-mono">initialize()</span>.
                     </TableCell>
                   </TableRow>
                   <TableRow>

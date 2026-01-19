@@ -124,8 +124,13 @@ export default function App() {
   useEffect(() => {
     (async () => {
       try {
-        await Roboflow.initialize("YOUR_ROBOFLOW_API_KEY");
-        await Roboflow.loadModel("YOUR_PROJECT_SLUG", 1);
+        await Roboflow.initialize(
+          "YOUR_ROBOFLOW_API_KEY",
+          "YOUR_WORKSPACE_URL",
+          "YOUR_MODEL_ID",
+          "YOUR_MODEL_VERSION"
+        );
+        await Roboflow.loadModel();
         setReady(true);
         console.log("✅ Roboflow ready!");
       } catch (error) {
@@ -361,10 +366,7 @@ const styles = StyleSheet.create({
               Full AR Example
             </h3>
             <p className="leading-7 text-muted-foreground">
-              Installs{" "}
-              <span className="font-mono">
-                react-native-ar-viewer
-              </span>{" "}
+              Installs <span className="font-mono">react-native-ar-viewer</span>{" "}
               and{" "}
               <span className="font-mono">
                 react-native-cogni-vision-rnroboflow
@@ -387,12 +389,12 @@ const styles = StyleSheet.create({
             <ul className="list-disc pl-6 leading-7 text-muted-foreground">
               <li>
                 Replace <span className="font-mono">YOUR_ROBOFLOW_API_KEY</span>
-                , <span className="font-mono">YOUR_PROJECT_SLUG</span>, and the
-                model version with your published model.
+                , <span className="font-mono">YOUR_WORKSPACE_URL</span>,{" "}
+                <span className="font-mono">YOUR_MODEL_ID</span>, and the{" "}
+                <span className="font-mono">version</span> with your published
+                model.
               </li>
-              <li>
-                AR requires a physical device with ARKit/ARCore support.
-              </li>
+              <li>AR requires a physical device with ARKit/ARCore support.</li>
               <li>
                 If taps don&apos;t match detections, verify that{" "}
                 <span className="font-mono">onUserTap</span> coordinates and
@@ -466,4 +468,3 @@ CogniVision.analyze(image,
     </div>
   );
 }
-

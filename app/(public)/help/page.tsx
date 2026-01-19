@@ -43,8 +43,13 @@ import Roboflow from "react-native-cogni-vision-rnroboflow";
 
 useEffect(() => {
   (async () => {
-    await Roboflow.initialize("YOUR_ROBOFLOW_API_KEY");
-    await Roboflow.loadModel("your-project-slug", 1);
+    await Roboflow.initialize(
+      "YOUR_WORKSPACE_API_KEY",
+      "YOUR_WORKSPACE_URL",
+      "YOUR_MODEL_ID",
+      "YOUR_MODEL_VERSION"
+    );
+    await Roboflow.loadModel();
   })();
 }, []);`,
   }[platform];
@@ -73,7 +78,7 @@ useEffect(() => {
     kotlin:
       "All requests must be authenticated. Initialize the SDK with your API key found in your dashboard.",
     "react-native":
-      "Roboflow inference requires an API key. Keep it out of source control and load it from env/config. Initialize once on app start, then load your model by project slug + version.",
+      "Roboflow inference requires an API key. Keep it out of source control and load it from env/config. Initialize once with your workspace URL + model ID + version, then call loadModel().",
   }[platform];
 
   const imageType =
@@ -261,8 +266,9 @@ CogniVision.analyze(image,
               Render the AR Viewer
             </h4>
             <p className="leading-7 text-muted-foreground">
-              Mount <span className="font-mono">ArViewerView</span> with a ref so
-              you can call <span className="font-mono">takeScreenshot()</span>,{" "}
+              Mount <span className="font-mono">ArViewerView</span> with a ref
+              so you can call{" "}
+              <span className="font-mono">takeScreenshot()</span>,{" "}
               <span className="font-mono">getPositionVector3()</span>,{" "}
               <span className="font-mono">placeModel()</span>, and{" "}
               <span className="font-mono">createLineAndGetDistance()</span>.
@@ -457,7 +463,13 @@ textRenderer.createText(
                 <pre className="overflow-x-auto">
                   <code className="relative rounded font-mono text-sm text-zinc-50">
                     {`await Roboflow.initialize("YOUR_ROBOFLOW_API_KEY");
-await Roboflow.loadModel("your-project-slug", 1);
+await Roboflow.initialize(
+  "YOUR_ROBOFLOW_API_KEY",
+  "YOUR_WORKSPACE_URL",
+  "YOUR_MODEL_ID",
+  1
+);
+await Roboflow.loadModel();
 
 const result = await Roboflow.detectObjects(screenshot);
 // result.predictions: Prediction[]`}
