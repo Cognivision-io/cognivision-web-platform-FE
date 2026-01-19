@@ -28,7 +28,6 @@ import CustomToast from "../ui/sonner";
 const mainItems = [
   { title: "Use Case", url: "/dashboard", icon: Network },
   { title: "Projects", url: "/dashboard/dataset", icon: Database },
-  { title: "Deployments", url: "/dashboard/deployments", icon: Rocket },
   { title: "Monitoring", url: "/dashboard/monitoring", icon: BarChart3 },
 ];
 
@@ -97,7 +96,7 @@ export function AppSidebar() {
                           : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                         isActive
                           ? "active:bg-primary/10 active:text-primary"
-                          : "active:bg-accent active:text-accent-foreground"
+                          : "active:bg-accent active:text-accent-foreground",
                       )}
                     >
                       <Link
@@ -111,7 +110,7 @@ export function AppSidebar() {
                         <span
                           className={cn(
                             "ml-auto hidden h-full w-1 rounded bg-primary md:inline-block",
-                            isActive ? "opacity-100" : "opacity-0"
+                            isActive ? "opacity-100" : "opacity-0",
                           )}
                         />
                       </Link>
