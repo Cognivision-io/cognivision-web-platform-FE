@@ -19,7 +19,6 @@ import type { AnnotationItem } from "@/interfaces/project.interface";
 import type { Image } from "@/interfaces/image.interface";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
-import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +29,7 @@ import { useDropzone } from "react-dropzone";
 import { ArrowRight, CloudUpload } from "lucide-react";
 import { downloadImage } from "@/features/dataset/utils/dataset.utils";
 import CustomToast from "@/components/ui/sonner";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 interface TrainStepProps {
   onNext: () => void;
@@ -85,7 +85,7 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
       },
       onError: (error) => {
         console.error("Upload error:", error);
-        CustomToast.error("Failed to upload images");
+        CustomToast.error(getApiErrorMessage(error, "Failed to upload images"));
       },
     });
 
