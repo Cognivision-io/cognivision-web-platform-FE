@@ -25,6 +25,7 @@ import {
   useDeleteProjectMutation,
 } from "@/features/dataset/queries/project.query";
 import { useWorkspacesQuery } from "@/features/workspace/queries/workspace.query";
+import { CreateWorkspaceDialog } from "@/features/workspace/components/create-workspace-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -188,6 +189,41 @@ const DatasetPage = () => {
 
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex w-full flex-col gap-3 md:flex-row md:items-center">
+            <div className="w-full md:max-w-[240px]">
+              <Select
+                value={selectedWorkspaceId ? String(selectedWorkspaceId) : ""}
+                onValueChange={(value) => {
+                  const nextId = Number(value);
+                  if (Number.isNaN(nextId)) return;
+                  setSelectedWorkspaceId(nextId);
+                }}
+              >
+                <SelectTrigger className="h-10 w-full rounded-lg border border-[#e1e4f5] bg-white px-4 text-sm font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.02)] focus:ring-0">
+                  <SelectValue placeholder="Select workspace" />
+                </SelectTrigger>
+                <SelectContent>
+                  {workspacesLoading ? (
+                    <SelectItem value="loading" disabled>
+                      Loading workspaces...
+                    </SelectItem>
+                  ) : workspaces.length === 0 ? (
+                    <SelectItem value="empty" disabled>
+                      No workspaces available
+                    </SelectItem>
+                  ) : (
+                    workspaces.map((workspace) => (
+                      <SelectItem
+                        key={workspace.id}
+                        value={String(workspace.id)}
+                      >
+                        {workspace.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="relative w-full md:max-w-[300px]">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
@@ -198,9 +234,21 @@ const DatasetPage = () => {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
+
+            <button className="inline-flex w-full items-center justify-between gap-3 rounded-lg border border-[#e1e4f5] bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition hover:border-[#ced3f0] md:w-auto">
+              <span className="text-xs font-medium text-slate-500">Sort :</span>
+              <span className="text-sm font-semibold text-slate-900">
+                Date Edited
+              </span>
+              <ChevronDown className="h-4 w-4 text-slate-400" />
+            </button>
           </div>
 
           <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+            <CreateWorkspaceDialog
+              nextOrder={workspaces.length + 1}
+              onCreated={(workspace) => handleWorkspaceCreated(workspace.id)}
+            />
             <CreateProjectDialog
               workspaces={workspaces}
               defaultWorkspaceId={selectedWorkspaceId ?? undefined}
@@ -215,10 +263,11 @@ const DatasetPage = () => {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
                   <p className="text-[13px] font-semibold text-slate-900">
-                    Project API Key
+                    Workspace API Key
                   </p>
                   <p className="text-[12px] text-slate-500">
-                    Use this key to authenticate API requests for this project.
+                    Use this key to authenticate API requests for this
+                    workspace.
                   </p>
                 </div>
 
