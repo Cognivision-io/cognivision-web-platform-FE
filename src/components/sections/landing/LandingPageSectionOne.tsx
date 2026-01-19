@@ -67,7 +67,7 @@ export default function LandingPageSectionOne() {
 
               <div>
                 <div className="text-[26px] font-heading font-semibold tracking-tight text-[#0b1020]">
-                  15+
+                  50+
                 </div>
                 <div className="mt-2 text-[15px] leading-6 text-[#111827]/70">
                   Developers <br />
@@ -77,7 +77,7 @@ export default function LandingPageSectionOne() {
 
               <div>
                 <div className="text-[26px] font-heading font-semibold tracking-tight text-[#0b1020]">
-                  4+
+                  20+
                 </div>
                 <div className="mt-2 text-[15px] leading-6 text-[#111827]/70">
                   AR-Solutions <br />

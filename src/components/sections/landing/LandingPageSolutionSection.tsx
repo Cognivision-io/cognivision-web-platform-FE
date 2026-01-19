@@ -36,7 +36,7 @@ export default function LandingPageSectionSolutions() {
             <h2 className="font-heading text-[42px] font-semibold leading-[1.1] tracking-wide text-[#0b1020]">
               Our{" "}
               <span className="font-heading" style={{ color: PURPLE }}>
-                Solutions
+                Achievements
               </span>
             </h2>
 

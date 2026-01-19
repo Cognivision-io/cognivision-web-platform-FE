@@ -32,12 +32,6 @@ const FEATURES: Feature[] = [
       "Roll physical or digital dice with AR fanfare. Auto-calculate modifiers, and track combat stats because sometimes you need dice that can't fall off the table.",
     Icon: Dices,
   },
-  {
-    title: "DM Console",
-    description:
-      "A master control panel for Dungeon Masters. Track all player positions, reveal hidden enemies with dramatic AR animations, control environmental effects, and orchestrate epic battles from your phone or tablet.",
-    Icon: Monitor,
-  },
 ];
 
 function FeatureRow({ item }: { item: Feature }) {
