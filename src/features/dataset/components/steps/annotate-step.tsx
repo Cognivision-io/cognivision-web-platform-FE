@@ -1,17 +1,22 @@
-import { Pencil, Sparkles, Loader2 } from "lucide-react";
+import { Pencil, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import {
   useUnannotatedImagesQuery,
   useImageDetailQuery,
 } from "@/features/dataset/queries/image.query";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnnotateStepProps } from "@/interfaces/project.interface";
 import { useProjectQuery } from "@/features/dataset/queries/project.query";
 
 import { formatProjectDate } from "@/features/dataset/utils/dataset.utils";
+import { cn } from "@/lib/utils";
 
-export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
+export const AnnotateStep = ({
+  onNext,
+  uploadedData,
+  initialImageId,
+}: AnnotateStepProps) => {
   const params = useParams();
   const projectId = Number(params.id);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -23,6 +28,11 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
       enabled: !uploadedData,
     });
 
+  const unannotatedImages = useMemo(
+    () => imagesData?.results ?? [],
+    [imagesData?.results],
+  );
+
   const timestamp =
     projectData?.data?.project?.updated || projectData?.data?.project?.created;
 
@@ -33,7 +43,7 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
   const { data: imageDetail, isLoading: isLoadingDetail } = useImageDetailQuery(
     uploadedData?.roboflowProjectId || "",
     currentUploadImageId || "",
-    { enabled: !!uploadedData && !!currentUploadImageId }
+    { enabled: !!uploadedData && !!currentUploadImageId },
   );
 
   const isLoading = uploadedData ? isLoadingDetail : isLoadingUnannotated;
@@ -43,11 +53,32 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
   // If not, useUnannotatedImagesQuery returns { results: [...] }
   const currentImage = uploadedData
     ? imageDetail?.data?.image
-    : imagesData?.results?.[currentImageIndex];
+    : unannotatedImages[currentImageIndex];
 
   const totalImages = uploadedData
     ? uploadedData.imageIds.length
-    : imagesData?.results?.length || 0;
+    : unannotatedImages.length;
+
+  useEffect(() => {
+    if (!initialImageId) return;
+
+    if (uploadedData?.imageIds?.length) {
+      const nextIndex = uploadedData.imageIds.indexOf(initialImageId);
+      if (nextIndex >= 0 && nextIndex !== currentImageIndex) {
+        setCurrentImageIndex(nextIndex);
+      }
+      return;
+    }
+
+    if (unannotatedImages.length) {
+      const nextIndex = unannotatedImages.findIndex(
+        (image) => image.id === initialImageId,
+      );
+      if (nextIndex >= 0 && nextIndex !== currentImageIndex) {
+        setCurrentImageIndex(nextIndex);
+      }
+    }
+  }, [currentImageIndex, initialImageId, unannotatedImages, uploadedData]);
 
   return (
     <div className="p-8">
@@ -79,54 +110,114 @@ export const AnnotateStep = ({ onNext, uploadedData }: AnnotateStepProps) => {
 
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Left: Image Preview */}
-        <div className="flex items-center justify-center rounded-xl bg-[#f8f9fc] p-8 min-h-[400px]">
-          {isLoading ? (
-            <div className="flex flex-col items-center gap-2">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="text-sm text-slate-500">Loading images...</span>
-            </div>
-          ) : currentImage ? (
-            <div className="relative aspect-square w-full max-w-md">
-              <div className="flex h-full w-full items-center justify-center">
-                <img
-                  src={currentImage.urls?.original || currentImage.url}
-                  alt={currentImage.name}
-                  className="h-full w-full object-contain mix-blend-multiply"
-                />
+        <div>
+          <div className="flex items-center justify-center rounded-xl bg-[#f8f9fc] p-8 min-h-[400px]">
+            {isLoading ? (
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="text-sm text-slate-500">
+                  Loading images...
+                </span>
               </div>
-              {/* Simple pagination controls for preview if multiple images exist */}
-              {totalImages > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    disabled={currentImageIndex === 0}
-                    onClick={() =>
-                      setCurrentImageIndex((prev) => Math.max(0, prev - 1))
-                    }
-                  >
-                    Prev
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    disabled={currentImageIndex === totalImages - 1}
-                    onClick={() =>
-                      setCurrentImageIndex((prev) =>
-                        Math.min(totalImages - 1, prev + 1)
-                      )
-                    }
-                  >
-                    Next
-                  </Button>
+            ) : currentImage ? (
+              <div className="relative aspect-square w-full max-w-md">
+                <div className="flex h-full w-full items-center justify-center">
+                  <img
+                    src={currentImage.urls?.original || currentImage.url}
+                    alt={currentImage.name}
+                    className="h-full w-full object-contain mix-blend-multiply"
+                  />
                 </div>
-              )}
+                {/* Simple pagination controls for preview if multiple images exist */}
+                {totalImages > 1 && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={currentImageIndex === 0}
+                      onClick={() =>
+                        setCurrentImageIndex((prev) => Math.max(0, prev - 1))
+                      }
+                    >
+                      Prev
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={currentImageIndex === totalImages - 1}
+                      onClick={() =>
+                        setCurrentImageIndex((prev) =>
+                          Math.min(totalImages - 1, prev + 1),
+                        )
+                      }
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center text-slate-500">
+                No unannotated images found.
+              </div>
+            )}
+          </div>
+
+          {!uploadedData && unannotatedImages.length ? (
+            <div className="mt-4">
+              <div className="mb-2 flex items-center justify-between">
+                <div className="text-sm font-medium text-slate-700">
+                  Unannotated images
+                </div>
+                <div className="text-xs text-slate-500">
+                  {currentImageIndex + 1} / {totalImages}
+                </div>
+              </div>
+              <div className="max-h-56 overflow-y-auto pr-1">
+                <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-4 xl:grid-cols-6">
+                  {unannotatedImages.map((image, index) => {
+                    const thumbUrl =
+                      image.urls?.thumb ||
+                      image.url ||
+                      image.urls?.original ||
+                      "";
+                    const isSelected = index === currentImageIndex;
+
+                    return (
+                      <button
+                        key={image.id}
+                        type="button"
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={cn(
+                          "group relative aspect-square overflow-hidden rounded-md border bg-white",
+                          isSelected
+                            ? "border-[#6841ff] ring-2 ring-[#6841ff]/25"
+                            : "border-[#e3e5f1] hover:border-slate-300",
+                        )}
+                        aria-label={`Select ${image.name || image.id}`}
+                      >
+                        {thumbUrl ? (
+                          <img
+                            src={thumbUrl}
+                            alt={image.name || image.id}
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[10px] text-slate-400">
+                            Unavailable
+                          </div>
+                        )}
+                        {isSelected ? (
+                          <div className="pointer-events-none absolute inset-0 bg-[#6841ff]/10" />
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="text-center text-slate-500">
-              No unannotated images found.
-            </div>
-          )}
+          ) : null}
         </div>
 
         {/* Right: Labeling Options */}

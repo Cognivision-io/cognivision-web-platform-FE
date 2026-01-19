@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   CloudUpload,
   Crop,
@@ -41,13 +42,28 @@ const steps = [
   },
 ];
 
+const getStepIndexFromId = (stepId: string | null) => {
+  if (!stepId) return 0;
+  const index = steps.findIndex((step) => step.id === stepId);
+  return index >= 0 ? index : 0;
+};
+
 const UploadDatasetPage = () => {
- 
-  const [currentStep, setCurrentStep] = useState(0);
+  const searchParams = useSearchParams();
+  const stepParam = searchParams.get("step");
+  const focusImageId = searchParams.get("focusImageId") || undefined;
+
+  const [currentStep, setCurrentStep] = useState(() =>
+    getStepIndexFromId(stepParam)
+  );
   const [uploadedData, setUploadedData] = useState<{
     roboflowProjectId: string;
     imageIds: string[];
   } | null>(null);
+
+  useEffect(() => {
+    setCurrentStep(getStepIndexFromId(stepParam));
+  }, [stepParam]);
 
   const handleUploadSuccess = (data: { roboflowProjectId: string; imageIds: string[] }) => {
     setUploadedData(data);
@@ -77,6 +93,7 @@ const UploadDatasetPage = () => {
             <AnnotateStep 
               onNext={() => setCurrentStep(2)} 
               uploadedData={uploadedData}
+              initialImageId={focusImageId}
             />
           )}
 

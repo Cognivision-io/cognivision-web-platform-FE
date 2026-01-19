@@ -157,6 +157,7 @@ export type AutoAnnotationResponse = {
 export interface AnnotateStepProps {
   onNext: () => void;
   uploadedData?: { roboflowProjectId: string; imageIds: string[] } | null;
+  initialImageId?: string;
 }
 
 

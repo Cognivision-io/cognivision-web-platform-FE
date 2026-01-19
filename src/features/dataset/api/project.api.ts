@@ -18,10 +18,11 @@ const buildRoboflowUrls = (
 
   const baseUrl = `${ROBOFLOW_SOURCE_BASE}/${image.owner}/${image.id}`;
   const thumbUrl = `${baseUrl}/thumb.jpg`;
+  const originalUrl = `${baseUrl}/original.jpg`;
   const urls = {
     ...image.urls,
     thumb: image.urls?.thumb ?? thumbUrl,
-    original: image.urls?.original ?? thumbUrl,
+    original: image.urls?.original ?? originalUrl,
     ...(includeAnnotation
       ? {
           annotation:
@@ -32,7 +33,7 @@ const buildRoboflowUrls = (
 
   return {
     ...image,
-    url: image.url ?? urls.original ?? thumbUrl,
+    url: image.url ?? urls.thumb ?? thumbUrl,
     urls,
   };
 };

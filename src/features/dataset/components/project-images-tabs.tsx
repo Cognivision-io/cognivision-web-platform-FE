@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   useAnnotatedImagesQuery,
   useUnannotatedImagesQuery,
@@ -9,16 +10,64 @@ import {
 import type { Image } from "@/interfaces/image.interface";
 
 const ROBOFLOW_SOURCE_BASE = "https://source.roboflow.com";
+const GRID_GAP_PX = 16; // gap-4
 
 const buildImageUrl = (owner: string, id: string, suffix: string) =>
   `${ROBOFLOW_SOURCE_BASE}/${owner}/${id}/${suffix}`;
 
-const renderGrid = (
-  items: Image[],
-  renderItem: (image: Image) => ReactNode,
-  isLoading: boolean,
-  emptyText: string
-) => {
+const getColumnsForViewport = (viewportWidth: number) => {
+  if (viewportWidth >= 1280) return 5; // xl:grid-cols-5
+  if (viewportWidth >= 1024) return 4; // lg:grid-cols-4
+  if (viewportWidth >= 640) return 3; // sm:grid-cols-3
+  return 2; // grid-cols-2
+};
+
+const useThreeRowScrollMaxHeight = () => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [maxHeight, setMaxHeight] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const recompute = () => {
+      const containerWidth = el.clientWidth;
+      if (!containerWidth) return;
+
+      const cols = getColumnsForViewport(window.innerWidth);
+      const itemSize = (containerWidth - GRID_GAP_PX * (cols - 1)) / cols;
+      const totalHeight = itemSize * 3 + GRID_GAP_PX * 2;
+
+      setMaxHeight(Math.max(0, Math.round(totalHeight)));
+    };
+
+    const resizeObserver = new ResizeObserver(recompute);
+    resizeObserver.observe(el);
+    window.addEventListener("resize", recompute);
+    recompute();
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", recompute);
+    };
+  }, []);
+
+  return { ref, maxHeight };
+};
+
+const ImagesGrid = ({
+  items,
+  renderItem,
+  isLoading,
+  emptyText,
+}: {
+  items: Image[];
+  renderItem: (image: Image) => ReactNode;
+  isLoading: boolean;
+  emptyText: string;
+}) => {
+  const { ref, maxHeight } = useThreeRowScrollMaxHeight();
+
   if (isLoading) {
     return <div className="text-sm text-slate-500">Loading images...</div>;
   }
@@ -28,20 +77,28 @@ const renderGrid = (
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-      {items.map((image) => (
-        <div
-          key={image.id}
-          className="group relative aspect-square overflow-hidden rounded-lg border border-[#e3e5f1] bg-[#f8f9fc]"
-        >
-          {renderItem(image)}
-        </div>
-      ))}
+    <div
+      ref={ref}
+      className="overflow-y-auto pr-1"
+      style={maxHeight ? { maxHeight } : undefined}
+    >
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        {items.map((image) => (
+          <div
+            key={image.id}
+            className="group relative aspect-square overflow-hidden rounded-lg border border-[#e3e5f1] bg-[#f8f9fc]"
+          >
+            {renderItem(image)}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
 
 export const ProjectImagesTabs = ({ projectId }: { projectId: number }) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: unannotatedData, isLoading: isLoadingUnannotated } =
     useUnannotatedImagesQuery(projectId, 0, 50);
   const { data: annotatedData, isLoading: isLoadingAnnotated } =
@@ -52,8 +109,21 @@ export const ProjectImagesTabs = ({ projectId }: { projectId: number }) => {
 
   const unannotatedById = useMemo(
     () => new Map(unannotatedImages.map((image) => [image.id, image])),
-    [unannotatedImages]
+    [unannotatedImages],
   );
+
+  const navigateToAnnotate = (imageId: string) => {
+    const nextParams = new URLSearchParams();
+    const workspaceId = searchParams.get("workspaceId");
+
+    if (workspaceId) nextParams.set("workspaceId", workspaceId);
+    nextParams.set("step", "annotate");
+    nextParams.set("focusImageId", imageId);
+
+    router.push(
+      `/dashboard/dataset/${projectId}/upload-dataset?${nextParams.toString()}`
+    );
+  };
 
   return (
     <Tabs defaultValue="unannotated" className="w-full">
@@ -67,37 +137,50 @@ export const ProjectImagesTabs = ({ projectId }: { projectId: number }) => {
       </TabsList>
 
       <TabsContent value="unannotated">
-        {renderGrid(
-          unannotatedImages,
-          (image) => {
+        <ImagesGrid
+          items={unannotatedImages}
+          renderItem={(image) => {
             const imageUrl =
               image.url ||
               (image.owner
                 ? buildImageUrl(image.owner, image.id, "thumb.jpg")
                 : "");
 
-            return imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={image.name || `Unannotated ${image.id}`}
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
-                Image unavailable
-              </div>
+            return (
+              <button
+                type="button"
+                onClick={() => navigateToAnnotate(image.id)}
+                className="relative h-full w-full text-left"
+                aria-label={"Annotate " + (image.name || image.id)}
+              >
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt={image.name || "Unannotated " + image.id}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
+                    Image unavailable
+                  </div>
+                )}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-black/0 to-black/0 opacity-0 transition group-hover:opacity-100" />
+                <div className="pointer-events-none absolute bottom-2 left-2 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-slate-900 opacity-0 transition group-hover:opacity-100">
+                  Annotate
+                </div>
+              </button>
             );
-          },
-          isLoadingUnannotated,
-          "No unannotated images found."
-        )}
+          }}
+          isLoading={isLoadingUnannotated}
+          emptyText="No unannotated images found."
+        />
       </TabsContent>
 
       <TabsContent value="annotated">
-        {renderGrid(
-          annotatedImages,
-          (image) => {
+        <ImagesGrid
+          items={annotatedImages}
+          renderItem={(image) => {
             const fallbackImage = unannotatedById.get(image.id);
             const owner = image.owner || fallbackImage?.owner;
             const baseUrl =
@@ -122,7 +205,7 @@ export const ProjectImagesTabs = ({ projectId }: { projectId: number }) => {
               <>
                 <img
                   src={baseUrl}
-                  alt={image.name || `Annotated ${image.id}`}
+                  alt={image.name || "Annotated " + image.id}
                   className="h-full w-full object-cover"
                   loading="lazy"
                 />
@@ -136,10 +219,10 @@ export const ProjectImagesTabs = ({ projectId }: { projectId: number }) => {
                 ) : null}
               </>
             );
-          },
-          isLoadingAnnotated || isLoadingUnannotated,
-          "No annotated images found."
-        )}
+          }}
+          isLoading={isLoadingAnnotated || isLoadingUnannotated}
+          emptyText="No annotated images found."
+        />
       </TabsContent>
     </Tabs>
   );
