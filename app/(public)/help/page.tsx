@@ -14,12 +14,14 @@ import {
 export default function HelpPage() {
   const { platform } = useDocsStore();
   const isSwift = platform === "swift";
+  const isReactNative = platform === "react-native";
 
   const installCommand = {
     swift:
       '.package(url: "https://github.com/your-org/ARMeasurementKit.git", from: "1.0.0")',
     kotlin: "implementation 'com.cognivision:sdk:1.2.0'",
-    "react-native": "npm install @cognivision/react-native-sdk",
+    "react-native": `npm install react-native-cogni-vision-rnroboflow react-native-ar-viewer
+cd ios && pod install`,
   }[platform];
 
   const importCode = {
@@ -36,8 +38,15 @@ config.environmentTexturing = .automatic
 arView.session.run(config)`,
     kotlin:
       'import com.cognivision.sdk.CogniVision\n\nCogniVision.initialize(context, "YOUR_API_KEY")',
-    "react-native":
-      "import { CogniVision } from '@cognivision/react-native-sdk';\n\nconst client = new CogniVision({\n  apiKey: 'YOUR_API_KEY',\n});",
+    "react-native": `import { useEffect } from "react";
+import Roboflow from "react-native-cogni-vision-rnroboflow";
+
+useEffect(() => {
+  (async () => {
+    await Roboflow.initialize("YOUR_ROBOFLOW_API_KEY");
+    await Roboflow.loadModel("your-project-slug", 1);
+  })();
+}, []);`,
   }[platform];
 
   const introText = {
@@ -46,7 +55,7 @@ arView.session.run(config)`,
     kotlin:
       "Welcome to the CogniVision SDK documentation. This guide will help you integrate our powerful vision capabilities into your applications.",
     "react-native":
-      "Welcome to the CogniVision SDK documentation. This guide will help you integrate our powerful vision capabilities into your applications.",
+      "Build an AR workflow in React Native by combining our Roboflow-powered vision module with an AR viewer. Capture AR screenshots, run object detection, place 3D content at detected positions, and measure real-world distances by tapping objects.",
   }[platform];
 
   const overviewText = {
@@ -55,7 +64,7 @@ arView.session.run(config)`,
     kotlin:
       "Use the CogniVision client to run fast or accurate analysis on images with a single, typed entry point.",
     "react-native":
-      "Use the CogniVision client to run fast or accurate analysis on images with a single, typed entry point.",
+      "The React Native SDK is designed around a simple loop: render an AR session, capture a frame, run detection, then convert 2D detection coordinates into 3D world positions for placement and measurement.",
   }[platform];
 
   const authText = {
@@ -64,20 +73,20 @@ arView.session.run(config)`,
     kotlin:
       "All requests must be authenticated. Initialize the SDK with your API key found in your dashboard.",
     "react-native":
-      "All requests must be authenticated. Initialize the SDK with your API key found in your dashboard.",
+      "Roboflow inference requires an API key. Keep it out of source control and load it from env/config. Initialize once on app start, then load your model by project slug + version.",
   }[platform];
 
   const imageType =
     {
       kotlin: "Bitmap | ByteArray",
-      "react-native": "File | string (base64)",
+      "react-native": "ArViewerView screenshot (SDK compatible)",
       swift: "N/A",
     }[platform] || "File";
 
   const modeType =
     {
       kotlin: "AnalysisMode enum (FAST, ACCURATE)",
-      "react-native": "string ('fast' | 'accurate')",
+      "react-native": "N/A",
       swift: "N/A",
     }[platform] || "string";
 
@@ -104,12 +113,19 @@ CogniVision.analyze(image, AnalysisMode.FAST) { result ->
     println(error)
   }
 }`,
-    "react-native": `const result = await client.analyze({
-  image: fileInput.files[0],
-  mode: 'fast'
-});
+    "react-native": `// 1) Capture a frame from the AR view
+const screenshot = await arRef.current?.takeScreenshot();
+if (!screenshot) return;
 
-console.log(result.data);`,
+// 2) Run detection
+const detections = await Roboflow.detectObjects(screenshot);
+
+// 3) Convert detection centers to world positions and place content
+for (const det of detections.predictions) {
+  const p = await arRef.current?.getPositionVector3(det.x, det.y);
+  if (!p) continue;
+  arRef.current?.placeModel(p.x, p.y, p.z);
+}`,
   }[platform];
 
   const advancedExample = {
@@ -128,8 +144,11 @@ CogniVision.analyze(image,
 ) { result ->
   // Handle result
 }`,
-    "react-native": `// React Native specific hook usage would go here
-// ... (same as basic for now or custom logic)`,
+    "react-native": `// Tap to select an object, tap another to measure distance.
+// 1) Detect on tap (screenshot -> Roboflow.detectObjects)
+// 2) Hit-test the tap against detection boxes
+// 3) Use getPositionVector3(x, y) to raycast into 3D
+// 4) Draw a line between two world points and read its distance`,
   }[platform];
 
   return (
@@ -186,6 +205,59 @@ CogniVision.analyze(image,
             </code>
           </pre>
         </div>
+
+        {isReactNative ? (
+          <div className="space-y-4 pt-3">
+            <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+              Requirements
+            </h4>
+            <ul className="list-disc pl-6 leading-7 text-muted-foreground">
+              <li>
+                Use a physical device (ARKit/ARCore is not supported on most
+                simulators).
+              </li>
+              <li>
+                iOS: ARKit-capable device. Android: ARCore-capable device.
+              </li>
+              <li>
+                Expo: use a custom dev client / prebuild (these are native
+                modules).
+              </li>
+            </ul>
+
+            <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+              Permissions
+            </h4>
+            <p className="leading-7 text-muted-foreground">
+              The AR viewer needs camera access.
+            </p>
+
+            <div className="space-y-2">
+              <div className="text-sm font-semibold">iOS (Info.plist)</div>
+              <div className="relative rounded-lg bg-zinc-950 px-4 py-4 dark:bg-zinc-900">
+                <pre className="overflow-x-auto">
+                  <code className="relative rounded font-mono text-sm text-zinc-50">
+                    {`<key>NSCameraUsageDescription</key>
+<string>We use the camera to power AR and object detection.</string>`}
+                  </code>
+                </pre>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-sm font-semibold">
+                Android (AndroidManifest.xml)
+              </div>
+              <div className="relative rounded-lg bg-zinc-950 px-4 py-4 dark:bg-zinc-900">
+                <pre className="overflow-x-auto">
+                  <code className="relative rounded font-mono text-sm text-zinc-50">
+                    {`<uses-permission android:name="android.permission.CAMERA" />`}
+                  </code>
+                </pre>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </section>
 
       <section id="overview" className="scroll-mt-32 space-y-4">
@@ -280,6 +352,49 @@ textRenderer.createText(
                     </code>
                   </pre>
                 </div>
+              </div>
+            </div>
+          </div>
+        ) : isReactNative ? (
+          <div className="space-y-8">
+            <div className="space-y-3">
+              <h4 className="text-lg font-semibold">Roboflow</h4>
+              <p className="text-sm text-muted-foreground">
+                Initialize once, load a model, then run detection on AR
+                screenshots.
+              </p>
+              <div className="relative rounded-lg bg-zinc-950 px-4 py-4 dark:bg-zinc-900">
+                <pre className="overflow-x-auto">
+                  <code className="relative rounded font-mono text-sm text-zinc-50">
+                    {`await Roboflow.initialize("YOUR_ROBOFLOW_API_KEY");
+await Roboflow.loadModel("your-project-slug", 1);
+
+const result = await Roboflow.detectObjects(screenshot);
+// result.predictions: Prediction[]`}
+                  </code>
+                </pre>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-lg font-semibold">ArViewerView (ref)</h4>
+              <p className="text-sm text-muted-foreground">
+                Imperative helpers for capturing frames, raycasting into 3D, and
+                rendering overlays.
+              </p>
+              <div className="relative rounded-lg bg-zinc-950 px-4 py-4 dark:bg-zinc-900">
+                <pre className="overflow-x-auto">
+                  <code className="relative rounded font-mono text-sm text-zinc-50">
+                    {`const screenshot = await arRef.current?.takeScreenshot();
+const p = await arRef.current?.getPositionVector3(x, y);
+
+arRef.current?.placeModel(p.x, p.y, p.z);
+arRef.current?.placeText(p.x, p.y, p.z, "#FF0000", "Selected");
+
+const meters = await arRef.current?.createLineAndGetDistance(p1, p2, "#FF0000");
+arRef.current?.reset();`}
+                  </code>
+                </pre>
               </div>
             </div>
           </div>
