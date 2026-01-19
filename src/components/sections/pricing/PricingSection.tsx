@@ -10,6 +10,8 @@ import {
   Lock,
   MessagesSquare,
   Coins,
+  Gift,
+  CreditCard,
 } from "lucide-react";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import { GlowSection } from "@/components/layout/GlowLayout";
@@ -334,17 +336,35 @@ export function PricingSection() {
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 lg:px-0">
         {/* Title */}
         <div className="text-center">
+          {/* Heading */}
           <h1
             className="mx-auto max-w-6xl font-heading
-           text-[38px] font-semibold leading-[1.15] text-[#111827]"
+    text-[38px] font-semibold leading-[1.15] text-[#111827]"
           >
-            <span className="text-[#0b1020] sm:text-[40px]">Deploy </span>
-            <span style={{ color: PURPLE }}>Computer Vision</span>{" "}
             <span className="text-[#0b1020] sm:text-[40px]">
-              Without Infrastructure Overhead
+              Only pay for what you use with Cognivision&apos;s flexible pricing
+              model.
             </span>
           </h1>
 
+          {/* Feature row (NEW) */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-14">
+            <div className="flex items-center gap-3 text-sm font-medium text-[#4B5563]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#E5E7EB] bg-white">
+                <Gift className="h-8 w-8 text-[#6B7280]" />
+              </div>
+              <span>Start building for free</span>
+            </div>
+
+            <div className="flex items-center gap-3 text-sm font-medium text-[#4B5563]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#E5E7EB] bg-white">
+                <CreditCard className="h-8 w-8 text-[#6B7280]" />
+              </div>
+              <span>Flexible billing options</span>
+            </div>
+          </div>
+
+          {/* Toggle pill */}
           <div className="mt-10">
             <TogglePill value={billing} onChange={setBilling} />
           </div>
