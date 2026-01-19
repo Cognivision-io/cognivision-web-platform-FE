@@ -32,7 +32,6 @@ type Plan = {
   }[];
   includedTitle: string;
   included: string[];
-  bottomNote: { icon: React.ReactNode; text: string };
 };
 
 const PURPLE = "#5b2fe8";
@@ -181,10 +180,8 @@ function PricingCard({ plan, dimmed }: { plan: Plan; dimmed?: boolean }) {
           </a>
         </div>
       </div>
-
       {/* Divider */}
       <div className="mt-6 h-px w-full bg-[#eef2ff]" />
-
       {/* Top rows */}
       <div className="divide-y divide-[#eef2ff]">
         {plan.topRows.map((r, idx) => (
@@ -197,23 +194,10 @@ function PricingCard({ plan, dimmed }: { plan: Plan; dimmed?: boolean }) {
           />
         ))}
       </div>
-
       {/* Divider */}
       <div className="h-px w-full bg-[#eef2ff]" />
-
       {/* Included */}
       <IncludedList title={plan.includedTitle} items={plan.included} />
-
-      {/* Divider */}
-      <div className="h-px w-full bg-[#eef2ff]" />
-
-      {/* Bottom note */}
-      <div className="flex items-start gap-3 px-6 py-5">
-        <div className="mt-0.5 text-[#111827]/70">{plan.bottomNote.icon}</div>
-        <div className="text-[13px] leading-5 text-[#374151]">
-          {plan.bottomNote.text}
-        </div>
-      </div>
     </div>
   );
 }
@@ -263,10 +247,6 @@ export function PricingSection() {
           "Cloud hosted deployment",
           "Edge device sandbox",
         ],
-        bottomNote: {
-          icon: <Globe className="h-4 w-4" />,
-          text: "Data and models are open source on Cognivision Universe",
-        },
       },
       {
         key: "core",
@@ -305,10 +285,6 @@ export function PricingSection() {
           "Train concurrent models",
           "Download model weights",
         ],
-        bottomNote: {
-          icon: <Lock className="h-4 w-4" />,
-          text: "Data and models are private",
-        },
       },
       {
         key: "enterprise",
@@ -343,10 +319,6 @@ export function PricingSection() {
           "Model monitoring",
           "Filter model evaluation by tag",
         ],
-        bottomNote: {
-          icon: <Lock className="h-4 w-4" />,
-          text: "Data and models are private",
-        },
       },
     ];
   }, [billing]);
