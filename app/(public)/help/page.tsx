@@ -256,6 +256,96 @@ CogniVision.analyze(image,
                 </pre>
               </div>
             </div>
+
+            <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+              Render the AR Viewer
+            </h4>
+            <p className="leading-7 text-muted-foreground">
+              Mount <span className="font-mono">ArViewerView</span> with a ref so
+              you can call <span className="font-mono">takeScreenshot()</span>,{" "}
+              <span className="font-mono">getPositionVector3()</span>,{" "}
+              <span className="font-mono">placeModel()</span>, and{" "}
+              <span className="font-mono">createLineAndGetDistance()</span>.
+            </p>
+            <div className="relative rounded-lg bg-zinc-950 px-4 py-4 dark:bg-zinc-900">
+              <pre className="overflow-x-auto">
+                <code className="relative rounded font-mono text-sm text-zinc-50">
+                  {`import { useRef } from "react";
+import { View } from "react-native";
+import { ArViewerView } from "react-native-ar-viewer";
+
+const arRef = useRef<ArViewerView>(null);
+
+export function ARScreen({ modelUri }: { modelUri?: string }) {
+  return (
+    <View style={{ flex: 1 }}>
+      <ArViewerView
+        ref={arRef}
+        model={modelUri} // must be a file:// URI
+        style={{ flex: 1 }}
+        manageDepth
+        allowRotate
+        allowScale
+        allowTranslate
+        disableInstantPlacement
+        onStarted={() => arRef.current?.loadModel?.()}
+        onUserTap={(e) => {
+          const coords = e?.nativeEvent?.coordinates;
+          if (!coords) return;
+          // coords.x / coords.y are screen-space coordinates
+        }}
+        planeOrientation="both"
+      />
+    </View>
+  );
+}`}
+                </code>
+              </pre>
+            </div>
+
+            <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+              Load a 3D Model (local file)
+            </h4>
+            <p className="leading-7 text-muted-foreground">
+              The AR viewer expects a local model path. A common pattern is to
+              download a model once and keep it in{" "}
+              <span className="font-mono">RNFS.DocumentDirectoryPath</span>.
+              Android typically uses <span className="font-mono">.glb</span>;
+              iOS typically uses <span className="font-mono">.usdz</span>.
+            </p>
+            <div className="relative rounded-lg bg-zinc-950 px-4 py-4 dark:bg-zinc-900">
+              <pre className="overflow-x-auto">
+                <code className="relative rounded font-mono text-sm text-zinc-50">
+                  {`import { useEffect, useState } from "react";
+import { Platform } from "react-native";
+import RNFS from "react-native-fs";
+
+export function useLocalModelUri() {
+  const [uri, setUri] = useState<string>();
+
+  useEffect(() => {
+    (async () => {
+      const modelSrc =
+        Platform.OS === "android"
+          ? "https://.../model.glb"
+          : "https://.../model.usdz";
+
+      const ext = Platform.OS === "android" ? "glb" : "usdz";
+      const dst = \`\${RNFS.DocumentDirectoryPath}/model.\${ext}\`;
+
+      if (!(await RNFS.exists(dst))) {
+        await RNFS.downloadFile({ fromUrl: modelSrc, toFile: dst }).promise;
+      }
+
+      setUri("file://" + dst);
+    })();
+  }, []);
+
+  return uri;
+}`}
+                </code>
+              </pre>
+            </div>
           </div>
         ) : null}
       </section>
