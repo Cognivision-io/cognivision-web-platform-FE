@@ -30,6 +30,7 @@ export type UseCaseTemplate = {
     tags: string[];
   };
 };
+
 export const useCaseTemplates: UseCaseTemplate[] = [
   {
     id: "sports",
