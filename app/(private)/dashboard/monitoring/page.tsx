@@ -59,27 +59,20 @@ export default function MonitoringPage() {
 
   const projects = useMemo(() => projectsData?.data?.data ?? [], [projectsData]);
 
-  const filteredProjects = useMemo(() => {
-    if (!workspaceId) return [];
-    return projects.filter((project) => project.workspaceId === workspaceId);
-  }, [projects, workspaceId]);
-
   useEffect(() => {
-    if (filteredProjects.length === 0) return;
-    const isValid = filteredProjects.some(
-      (project) => project.id === selectedProjectId
-    );
+    if (projects.length === 0) return;
+    const isValid = projects.some((project) => project.id === selectedProjectId);
     if (isValid) return;
 
-    const nextProjectId = filteredProjects[0].id;
+    const nextProjectId = projects[0].id;
     setSelectedProjectId(nextProjectId);
 
     const nextParams = new URLSearchParams(searchParamsString);
     nextParams.set("project", nextProjectId);
     router.replace(`${pathname}?${nextParams.toString()}`);
   }, [
-    filteredProjects,
     pathname,
+    projects,
     router,
     searchParamsString,
     selectedProjectId,
@@ -134,7 +127,7 @@ export default function MonitoringPage() {
                     ? "No workspace assigned"
                     : "Select a project"}
               </option>
-              {filteredProjects.map((project) => (
+              {projects.map((project) => (
                 <option key={project.id} value={project.id}>
                   {project.name}
                 </option>

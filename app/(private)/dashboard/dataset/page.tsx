@@ -96,20 +96,15 @@ const DatasetPage = () => {
     }
   };
 
-  const filteredProjects = useMemo(() => {
-    if (!workspaceId) return [];
-    return projects.filter((project) => project.workspaceId === workspaceId);
-  }, [projects, workspaceId]);
-
   const selectedProjectIdForApiKey = useMemo(() => {
     if (
       preferredProjectIdForApiKey &&
-      filteredProjects.some((project) => project.id === preferredProjectIdForApiKey)
+      projects.some((project) => project.id === preferredProjectIdForApiKey)
     ) {
       return preferredProjectIdForApiKey;
     }
-    return filteredProjects[0]?.id ?? "";
-  }, [filteredProjects, preferredProjectIdForApiKey]);
+    return projects[0]?.id ?? "";
+  }, [preferredProjectIdForApiKey, projects]);
 
   const selectedProjectNumericIdForApiKey = useMemo(() => {
     const numeric = Number(selectedProjectIdForApiKey);
@@ -227,14 +222,14 @@ const DatasetPage = () => {
 	                        setPreferredProjectIdForApiKey(e.target.value)
 	                      }
 	                      className="w-full appearance-none rounded-lg border border-slate-200 bg-white px-4 py-3 pr-10 text-sm font-medium text-slate-900 shadow-sm hover:border-slate-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-	                      disabled={projectsLoading || filteredProjects.length === 0}
+	                      disabled={projectsLoading || projects.length === 0}
 	                    >
 	                      <option value="">
 	                        {projectsLoading
 	                          ? "Loading projects..."
 	                          : "Select a project"}
 	                      </option>
-	                      {filteredProjects.map((project) => (
+	                      {projects.map((project) => (
 	                        <option key={project.id} value={project.id}>
 	                          {project.name}
 	                        </option>
@@ -292,12 +287,12 @@ const DatasetPage = () => {
             <div className="text-center text-sm text-slate-500">
               Loading projects...
             </div>
-          ) : filteredProjects.length === 0 ? (
+          ) : projects.length === 0 ? (
             <div className="text-center text-sm text-slate-500">
               No projects found.
             </div>
           ) : (
-            filteredProjects.map((project) => (
+            projects.map((project) => (
               <div
                 key={project.id}
                 className="flex items-center gap-4 rounded-lg border border-[#e3e5f1] bg-white px-5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.04)] w-[60%] cursor-pointer transition-all hover:border-[#6841ff]/30 hover:shadow-[0_10px_24px_rgba(104,65,255,0.08)]"
