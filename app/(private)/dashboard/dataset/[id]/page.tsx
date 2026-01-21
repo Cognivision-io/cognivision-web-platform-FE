@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useProjectQuery } from "@/features/dataset/queries/project.query";
 import {
@@ -8,6 +9,7 @@ import {
   Calendar,
   Image as ImageIcon,
   Eye,
+  Link2,
   Shield,
   Tag,
 } from "lucide-react";
@@ -15,11 +17,15 @@ import { Button } from "@/components/ui/button";
 import { TestModelDialog } from "@/features/dataset/components/test-model/test-model-dialog";
 import { ProjectImagesTabs } from "@/features/dataset/components/project-images-tabs";
 import { formatDistanceToNow } from "date-fns";
+import { useCurrentWorkspaceId } from "@/hooks/use-current-workspace-id";
+import { useProjectApiKeyQuery } from "@/features/api-key/queries/api-key.query";
+import CustomToast from "@/components/ui/sonner";
 
 const ProjectDetailPage = () => {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const projectId = parseInt(params.id);
+  const workspaceIdFromUser = useCurrentWorkspaceId();
 
   const { data, isLoading, error } = useProjectQuery(projectId);
 
@@ -49,6 +55,42 @@ const ProjectDetailPage = () => {
   }
 
   const { workspace, project, versions } = data.data;
+
+  const workspaceIdForApiKey = useMemo(() => {
+    if (workspaceIdFromUser) return workspaceIdFromUser;
+    const fallback = typeof workspace?.id === "number" ? workspace.id : Number(workspace?.id);
+    return Number.isFinite(fallback) && fallback > 0 ? fallback : undefined;
+  }, [workspace?.id, workspaceIdFromUser]);
+
+  const {
+    data: projectApiKeyResponse,
+    isLoading: isProjectApiKeyLoading,
+    isError: isProjectApiKeyError,
+  } = useProjectApiKeyQuery({
+    workspaceId: workspaceIdForApiKey,
+    projectId,
+    page: 1,
+    limit: 1,
+  });
+
+  const projectApiKeyEntry = projectApiKeyResponse?.data?.data?.[0];
+  const projectApiKeyValue =
+    projectApiKeyEntry?.apiKey ||
+    projectApiKeyEntry?.key ||
+    projectApiKeyEntry?.token ||
+    projectApiKeyEntry?.value ||
+    "";
+
+  const copyProjectApiKey = async () => {
+    try {
+      if (!projectApiKeyValue) return;
+      await navigator.clipboard.writeText(projectApiKeyValue);
+      CustomToast.success("Copied API key");
+    } catch (error) {
+      console.error("Failed to copy API key", error);
+      CustomToast.error("Failed to copy. Please try again.");
+    }
+  };
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">
@@ -81,11 +123,11 @@ const ProjectDetailPage = () => {
           </Button>
         </div>
 
-        {/* Project Info Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <div className="flex flex-col gap-6">
-            {/* Workspace Card */}
-            <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
+	        {/* Project Info Grid */}
+	        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+	          <div className="flex flex-col gap-6">
+	            {/* Workspace Card */}
+	            <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
               <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
                 Workspace
               </h3>
@@ -107,9 +149,44 @@ const ProjectDetailPage = () => {
                   <p className="text-base font-medium text-slate-900">
                     {workspace.members}
                   </p>
+	              </div>
+	            </div>
+
+            {/* Project API Key Card */}
+            <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Project API Key
+              </h3>
+              <p className="text-xs text-slate-500">
+                Use this key to authenticate API requests for this project.
+              </p>
+
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex h-10 min-w-0 flex-1 items-center gap-3 rounded-lg border border-[#e1e4f5] bg-[#f9fafb] px-4">
+                  <span className="truncate font-mono text-[12px] text-slate-900">
+                    {!workspaceIdForApiKey
+                      ? "Workspace unavailable"
+                      : isProjectApiKeyLoading
+                        ? "Loading..."
+                        : isProjectApiKeyError
+                          ? "Failed to load"
+                          : projectApiKeyValue || "API key not found"}
+                  </span>
                 </div>
+
+                <button
+                  type="button"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#e1e4f5] bg-white px-4 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition hover:border-[#ced3f0] disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={() => void copyProjectApiKey()}
+                  disabled={!projectApiKeyValue || isProjectApiKeyLoading}
+                  aria-label="Copy project API key"
+                >
+                  <Link2 className="h-4 w-4 text-slate-500" />
+                  Copy
+                </button>
               </div>
             </div>
+	          </div>
           </div>
 
           {/* Project Info Card */}

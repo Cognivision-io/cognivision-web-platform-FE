@@ -5,7 +5,6 @@ import {
   ChevronDown,
   Edit,
   ImageIcon,
-  Link2,
   MoreHorizontal,
   Search,
   Users,
@@ -30,16 +29,12 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
 import { useCurrentWorkspaceId } from "@/hooks/use-current-workspace-id";
 import { useWorkspaceQuery } from "@/features/workspace/queries/workspace.query";
-import { useProjectApiKeyQuery } from "@/features/api-key/queries/api-key.query";
-import CustomToast from "@/components/ui/sonner";
 
 const DatasetPage = () => {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const workspaceId = useCurrentWorkspaceId();
   const [search, setSearch] = useState("");
-  const [preferredProjectIdForApiKey, setPreferredProjectIdForApiKey] =
-    useState<string | null>(null);
   const debouncedSearch = useDebounce(search, 500);
 
   // Get user initials
@@ -67,68 +62,6 @@ const DatasetPage = () => {
   const { mutate: deleteProject } = useDeleteProjectMutation();
 
   const projects = useMemo(() => projectsData?.data?.data ?? [], [projectsData]);
-
-  const copyToClipboard = async (value: string) => {
-    try {
-      if (!value) return;
-      if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(value);
-        CustomToast.success("Copied API key");
-        return;
-      }
-
-      const textarea = document.createElement("textarea");
-      textarea.value = value;
-      textarea.style.position = "fixed";
-      textarea.style.left = "-9999px";
-      textarea.style.top = "-9999px";
-      document.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-      const successful = document.execCommand("copy");
-      document.body.removeChild(textarea);
-
-      if (!successful) throw new Error("Copy command failed");
-      CustomToast.success("Copied API key");
-    } catch (error) {
-      console.error("Failed to copy API key", error);
-      CustomToast.error("Failed to copy. Please try again.");
-    }
-  };
-
-  const selectedProjectIdForApiKey = useMemo(() => {
-    if (
-      preferredProjectIdForApiKey &&
-      projects.some((project) => project.id === preferredProjectIdForApiKey)
-    ) {
-      return preferredProjectIdForApiKey;
-    }
-    return projects[0]?.id ?? "";
-  }, [preferredProjectIdForApiKey, projects]);
-
-  const selectedProjectNumericIdForApiKey = useMemo(() => {
-    const numeric = Number(selectedProjectIdForApiKey);
-    return Number.isFinite(numeric) && numeric > 0 ? numeric : undefined;
-  }, [selectedProjectIdForApiKey]);
-
-  const {
-    data: projectApiKeyResponse,
-    isLoading: projectApiKeyLoading,
-    isError: projectApiKeyError,
-  } = useProjectApiKeyQuery({
-    workspaceId,
-    projectId: selectedProjectNumericIdForApiKey,
-    page: 1,
-    limit: 1,
-  });
-
-  const projectApiKeyEntry = projectApiKeyResponse?.data?.data?.[0];
-  const projectApiKeyValue =
-    projectApiKeyEntry?.apiKey ||
-    projectApiKeyEntry?.key ||
-    projectApiKeyEntry?.token ||
-    projectApiKeyEntry?.value ||
-    "";
 
   const handleProjectClick = (projectId: string) => {
     router.push(`/dashboard/dataset/${projectId}`);
@@ -200,72 +133,10 @@ const DatasetPage = () => {
           </div>
         </div>
 
-	        {workspaceId && (
-	          <div className="space-y-4">
-	            <div className="rounded-xl border border-[#e1e4f5] bg-white px-6 py-5 shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
-	              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-	                <div className="space-y-1">
-	                  <p className="text-[13px] font-semibold text-slate-900">
-	                    Project API Key
-	                  </p>
-	                  <p className="text-[12px] text-slate-500">
-	                    Use this key to authenticate API requests for the selected
-	                    project.
-	                  </p>
-	                </div>
-
-	                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
-	                  <div className="relative w-full min-w-0 sm:w-[260px]">
-	                    <select
-	                      value={selectedProjectIdForApiKey}
-	                      onChange={(e) =>
-	                        setPreferredProjectIdForApiKey(e.target.value)
-	                      }
-	                      className="w-full appearance-none rounded-lg border border-slate-200 bg-white px-4 py-3 pr-10 text-sm font-medium text-slate-900 shadow-sm hover:border-slate-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-	                      disabled={projectsLoading || projects.length === 0}
-	                    >
-	                      <option value="">
-	                        {projectsLoading
-	                          ? "Loading projects..."
-	                          : "Select a project"}
-	                      </option>
-	                      {projects.map((project) => (
-	                        <option key={project.id} value={project.id}>
-	                          {project.name}
-	                        </option>
-	                      ))}
-	                    </select>
-	                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
-	                  </div>
-
-	                  <div className="flex items-center gap-3">
-	                    <div className="flex h-10 items-center gap-3 rounded-lg border border-[#e1e4f5] bg-[#f9fafb] px-4">
-	                      <span className="max-w-[320px] truncate font-mono text-[12px] text-slate-900">
-	                        {projectApiKeyLoading
-	                          ? "Loading..."
-	                          : !selectedProjectNumericIdForApiKey
-	                            ? "Select a project"
-	                            : projectApiKeyError
-	                              ? "Failed to load"
-	                              : projectApiKeyValue || "API key not found"}
-	                      </span>
-	                    </div>
-	                    <button
-	                      type="button"
-	                      className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#e1e4f5] bg-white px-4 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition hover:border-[#ced3f0] disabled:opacity-50 disabled:cursor-not-allowed"
-	                      onClick={() => void copyToClipboard(projectApiKeyValue)}
-	                      disabled={!projectApiKeyValue || projectApiKeyLoading}
-	                      aria-label="Copy project API key"
-	                    >
-	                      <Link2 className="h-4 w-4 text-slate-500" />
-	                      Copy
-	                    </button>
-	                  </div>
-	                </div>
-	              </div>
-	            </div>
-	            <WorkspaceCreditsSummaryCard
-	              workspaceId={workspaceId}
+        {workspaceId && (
+          <div className="space-y-4">
+            <WorkspaceCreditsSummaryCard
+              workspaceId={workspaceId}
               workspaceName={workspaceName}
             />
             <WorkspaceCreditsHistoryTable
@@ -277,9 +148,9 @@ const DatasetPage = () => {
           </div>
         )}
 
-        {/* Project list */}
-        <div className="space-y-4 pt-2">
-          {!workspaceId ? (
+	        {/* Project list */}
+	        <div className="space-y-4 pt-2">
+	          {!workspaceId ? (
             <div className="rounded-xl border border-[#e1e4f5] bg-white px-6 py-6 text-center text-sm text-slate-500 shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
               No workspace is assigned to your account yet.
             </div>
@@ -287,86 +158,88 @@ const DatasetPage = () => {
             <div className="text-center text-sm text-slate-500">
               Loading projects...
             </div>
-          ) : projects.length === 0 ? (
-            <div className="text-center text-sm text-slate-500">
-              No projects found.
-            </div>
-          ) : (
-            projects.map((project) => (
-              <div
-                key={project.id}
-                className="flex items-center gap-4 rounded-lg border border-[#e3e5f1] bg-white px-5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.04)] w-[60%] cursor-pointer transition-all hover:border-[#6841ff]/30 hover:shadow-[0_10px_24px_rgba(104,65,255,0.08)]"
-                role="button"
-                tabIndex={0}
-                onClick={() => handleProjectClick(project.id)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    handleProjectClick(project.id);
-                  }
-                }}
-              >
-                {/* Thumbnail */}
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#e4e6f2] bg-[#f7f7fd] text-slate-300">
-                  <ImageIcon className="h-7 w-7" />
-                </div>
-
-                {/* Content */}
-                <div className="flex flex-1 flex-col gap-1.5">
-                  <div className="flex flex-wrap items-start gap-3 sm:items-center sm:justify-between">
-                    <div>
-                      <span className="inline-flex rounded-full border border-[#e2e4f0] bg-[#f7f7fb] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-600">
-                        {project.type}
-                      </span>
-                      <h3 className="mt-2 text-base font-semibold text-slate-900">
-                        {project.name}
-                      </h3>
-                    </div>
-
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-slate-500 transition hover:text-slate-800"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleProjectClick(project.id);
-                          }}
-                          className="flex items-center gap-2"
-                        >
-                          <Edit className="h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteProject(project.id);
-                          }}
-                          className="text-red-600 focus:text-red-600"
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+	          ) : projects.length === 0 ? (
+	            <div className="text-center text-sm text-slate-500">
+	              No projects found.
+	            </div>
+	          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {projects.map((project) => (
+                <div
+                  key={project.id}
+                  className="flex w-full items-center gap-4 rounded-lg border border-[#e3e5f1] bg-white px-5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.04)] cursor-pointer transition-all hover:border-[#6841ff]/30 hover:shadow-[0_10px_24px_rgba(104,65,255,0.08)]"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleProjectClick(project.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleProjectClick(project.id);
+                    }
+                  }}
+                >
+                  {/* Thumbnail */}
+                  <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#e4e6f2] bg-[#f7f7fd] text-slate-300">
+                    <ImageIcon className="h-7 w-7" />
                   </div>
 
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    Edited{" "}
-                    {formatDistanceToNow(new Date(project.updatedAt), {
-                      addSuffix: true,
-                    })}
-                  </p>
+                  {/* Content */}
+                  <div className="flex flex-1 flex-col gap-1.5">
+                    <div className="flex flex-wrap items-start gap-3 sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <span className="inline-flex rounded-full border border-[#e2e4f0] bg-[#f7f7fb] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-600">
+                          {project.type}
+                        </span>
+                        <h3 className="mt-2 truncate text-base font-semibold text-slate-900">
+                          {project.name}
+                        </h3>
+                      </div>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-slate-500 transition hover:text-slate-800"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleProjectClick(project.id);
+                            }}
+                            className="flex items-center gap-2"
+                          >
+                            <Edit className="h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteProject(project.id);
+                            }}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    <p className="mt-0.5 text-xs text-slate-500">
+                      Edited{" "}
+                      {formatDistanceToNow(new Date(project.updatedAt), {
+                        addSuffix: true,
+                      })}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
+              ))}
+            </div>
+	          )}
+	        </div>
       </div>
     </div>
   );
