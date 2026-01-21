@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useProjectQuery } from "@/features/dataset/queries/project.query";
 import {
@@ -24,54 +23,42 @@ import CustomToast from "@/components/ui/sonner";
 const ProjectDetailPage = () => {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const projectId = parseInt(params.id);
+  const projectId = Number(params.id);
   const workspaceIdFromUser = useCurrentWorkspaceId();
 
   const { data, isLoading, error } = useProjectQuery(projectId);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-center">
-          <div className="text-lg text-slate-500">
-            Loading project details...
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const projectDetails = data?.data;
+  const workspace = projectDetails?.workspace;
+  const project = projectDetails?.project;
+  const versions = projectDetails?.versions;
 
-  if (error || !data?.data) {
-    return (
-      <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-4">
-          <div className="text-lg text-red-600">
-            Failed to load project details
-          </div>
-          <Button onClick={() => router.back()}>Go Back</Button>
-        </div>
-      </div>
-    );
-  }
-
-  const { workspace, project, versions } = data.data;
-
-  const workspaceIdForApiKey = useMemo(() => {
+  const workspaceIdForApiKey = (() => {
     if (workspaceIdFromUser) return workspaceIdFromUser;
-    const fallback = typeof workspace?.id === "number" ? workspace.id : Number(workspace?.id);
+    const fallback =
+      typeof workspace?.id === "number" ? workspace.id : Number(workspace?.id);
     return Number.isFinite(fallback) && fallback > 0 ? fallback : undefined;
-  }, [workspace?.id, workspaceIdFromUser]);
+  })();
 
   const {
     data: projectApiKeyResponse,
     isLoading: isProjectApiKeyLoading,
     isError: isProjectApiKeyError,
-  } = useProjectApiKeyQuery({
-    workspaceId: workspaceIdForApiKey,
-    projectId,
-    page: 1,
-    limit: 1,
-  });
+  } = useProjectApiKeyQuery(
+    {
+      workspaceId: workspaceIdForApiKey,
+      projectId: Number.isFinite(projectId) ? projectId : undefined,
+      page: 1,
+      limit: 1,
+    },
+    {
+      enabled:
+        !!workspaceIdForApiKey &&
+        !!projectDetails &&
+        Number.isFinite(projectId) &&
+        !isLoading,
+    }
+  );
 
   const projectApiKeyEntry = projectApiKeyResponse?.data?.data?.[0];
   const projectApiKeyValue =
@@ -86,11 +73,36 @@ const ProjectDetailPage = () => {
       if (!projectApiKeyValue) return;
       await navigator.clipboard.writeText(projectApiKeyValue);
       CustomToast.success("Copied API key");
-    } catch (error) {
-      console.error("Failed to copy API key", error);
+    } catch (copyError) {
+      console.error("Failed to copy API key", copyError);
       CustomToast.error("Failed to copy. Please try again.");
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-center">
+          <div className="text-lg text-slate-500">
+            Loading project details...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !projectDetails || !workspace || !project || !versions) {
+    return (
+      <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-4">
+          <div className="text-lg text-red-600">
+            Failed to load project details
+          </div>
+          <Button onClick={() => router.back()}>Go Back</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">

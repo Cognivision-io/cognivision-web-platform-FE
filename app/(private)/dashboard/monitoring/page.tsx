@@ -25,7 +25,7 @@ export default function MonitoringPage() {
 
   const selectedProjectFromUrl = searchParams.get("project") ?? "";
   const [selectedProjectId, setSelectedProjectId] = useState<string>(
-    selectedProjectFromUrl
+    selectedProjectFromUrl,
   );
   const [timeRange, setTimeRange] = useState<TimeRange>("7");
 
@@ -39,7 +39,7 @@ export default function MonitoringPage() {
       limit: 100,
       workspace: workspaceId,
     },
-    { enabled: !!workspaceId }
+    { enabled: !!workspaceId },
   );
 
   const dateRanges = useMemo(() => {
@@ -57,11 +57,16 @@ export default function MonitoringPage() {
     };
   }, []);
 
-  const projects = useMemo(() => projectsData?.data?.data ?? [], [projectsData]);
+  const projects = useMemo(
+    () => projectsData?.data?.data ?? [],
+    [projectsData],
+  );
 
   useEffect(() => {
     if (projects.length === 0) return;
-    const isValid = projects.some((project) => project.id === selectedProjectId);
+    const isValid = projects.some(
+      (project) => project.id === selectedProjectId,
+    );
     if (isValid) return;
 
     const nextProjectId = projects[0].id;
@@ -70,13 +75,7 @@ export default function MonitoringPage() {
     const nextParams = new URLSearchParams(searchParamsString);
     nextParams.set("project", nextProjectId);
     router.replace(`${pathname}?${nextParams.toString()}`);
-  }, [
-    pathname,
-    projects,
-    router,
-    searchParamsString,
-    selectedProjectId,
-  ]);
+  }, [pathname, projects, router, searchParamsString, selectedProjectId]);
 
   const { data: monitoringData, isLoading: monitoringLoading } =
     useMonitoringStats(
@@ -87,7 +86,7 @@ export default function MonitoringPage() {
             endTime: new Date().toISOString().split("T")[0],
           }
         : undefined,
-      { enabled: !!workspaceId && !!selectedProjectId }
+      { enabled: !!workspaceId && !!selectedProjectId },
     );
 
   return (
@@ -144,10 +143,8 @@ export default function MonitoringPage() {
             timeRange={timeRange}
             onTimeRangeChange={setTimeRange}
           />
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <AnnotationCard data={monitoringData} isLoading={monitoringLoading} />
-            <VersionTable data={monitoringData} isLoading={monitoringLoading} />
-          </div>
+          <AnnotationCard data={monitoringData} isLoading={monitoringLoading} />
+          <VersionTable data={monitoringData} isLoading={monitoringLoading} />
         </div>
 
         <DetailedLogsTable
