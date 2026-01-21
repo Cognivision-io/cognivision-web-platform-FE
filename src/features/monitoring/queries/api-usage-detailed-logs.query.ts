@@ -14,6 +14,7 @@ export const API_USAGE_DETAILED_LOGS_QUERY_KEY = [
 export const useApiUsageDetailedLogsQuery = (
   params: {
     workspaceId?: number;
+    projectId?: string;
     page?: number;
     limit?: number;
   },
@@ -27,11 +28,11 @@ export const useApiUsageDetailedLogsQuery = (
     queryFn: () =>
       apiUsageApi.getWorkspaceDetailedLogs({
         workspaceId: params.workspaceId as number,
+        projectId: params.projectId,
         page: params.page,
         limit: params.limit,
       }),
-    enabled: !!params.workspaceId,
+    enabled: !!params.workspaceId && !!params.projectId,
     ...options,
   });
 };
-

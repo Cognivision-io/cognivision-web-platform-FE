@@ -9,6 +9,7 @@ export const MONITORING_QUERY_KEY = ["monitoring", "inference-stats"] as const;
 
 export const useMonitoringStats = (
   params?: {
+    projectId?: string;
     startTime?: string;
     endTime?: string;
   },

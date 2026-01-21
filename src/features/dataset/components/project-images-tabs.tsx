@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   useAnnotatedImagesQuery,
   useUnannotatedImagesQuery,
@@ -98,7 +98,6 @@ const ImagesGrid = ({
 
 export const ProjectImagesTabs = ({ projectId }: { projectId: number }) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { data: unannotatedData, isLoading: isLoadingUnannotated } =
     useUnannotatedImagesQuery(projectId, 0, 50);
   const { data: annotatedData, isLoading: isLoadingAnnotated } =
@@ -114,9 +113,6 @@ export const ProjectImagesTabs = ({ projectId }: { projectId: number }) => {
 
   const navigateToAnnotate = (imageId: string) => {
     const nextParams = new URLSearchParams();
-    const workspaceId = searchParams.get("workspaceId");
-
-    if (workspaceId) nextParams.set("workspaceId", workspaceId);
     nextParams.set("step", "annotate");
     nextParams.set("focusImageId", imageId);
 

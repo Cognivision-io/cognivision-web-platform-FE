@@ -14,6 +14,7 @@ export const API_USAGE_SUMMARY_QUERY_KEY = [
 export const useApiUsageSummaryQuery = (
   params: {
     workspaceId?: number;
+    projectId?: string;
     startDate?: string;
     endDate?: string;
   },
@@ -27,11 +28,15 @@ export const useApiUsageSummaryQuery = (
     queryFn: () =>
       apiUsageApi.getWorkspaceSummary({
         workspaceId: params.workspaceId as number,
+        projectId: params.projectId,
         startDate: params.startDate as string,
         endDate: params.endDate as string,
       }),
-    enabled: !!params.workspaceId && !!params.startDate && !!params.endDate,
+    enabled:
+      !!params.workspaceId &&
+      !!params.projectId &&
+      !!params.startDate &&
+      !!params.endDate,
     ...options,
   });
 };
-

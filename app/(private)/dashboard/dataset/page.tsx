@@ -2,13 +2,6 @@
 
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   ChevronDown,
   Edit,
   ImageIcon,
@@ -24,8 +17,6 @@ import {
   useProjectsQuery,
   useDeleteProjectMutation,
 } from "@/features/dataset/queries/project.query";
-import { useWorkspacesQuery } from "@/features/workspace/queries/workspace.query";
-import { CreateWorkspaceDialog } from "@/features/workspace/components/create-workspace-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,21 +24,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
-import { useWorkspaceApiKeyQuery } from "@/features/workspace/queries/workspace.query";
+import { useCurrentWorkspaceId } from "@/hooks/use-current-workspace-id";
+import { useWorkspaceQuery } from "@/features/workspace/queries/workspace.query";
+import { useProjectApiKeyQuery } from "@/features/api-key/queries/api-key.query";
 import CustomToast from "@/components/ui/sonner";
 
 const DatasetPage = () => {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
+  const workspaceId = useCurrentWorkspaceId();
   const [search, setSearch] = useState("");
+  const [preferredProjectIdForApiKey, setPreferredProjectIdForApiKey] =
+    useState<string | null>(null);
   const debouncedSearch = useDebounce(search, 500);
-  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(
-    null,
-  );
 
   // Get user initials
   const getUserInitials = () => {
@@ -57,46 +50,23 @@ const DatasetPage = () => {
     return firstInitial + lastInitial || "U";
   };
 
-  const { data: workspacesData, isLoading: workspacesLoading } =
-    useWorkspacesQuery({
+  const { data: workspaceResponse, isLoading: workspaceLoading } =
+    useWorkspaceQuery(workspaceId);
+  const workspaceName = workspaceResponse?.data?.name;
+
+  const { data: projectsData, isLoading: projectsLoading } = useProjectsQuery(
+    {
       page: 1,
       limit: 50,
-    });
-
-  const { data: projectsData, isLoading: projectsLoading } = useProjectsQuery({
-    page: 1,
-    limit: 50,
-    search: debouncedSearch,
-  });
+      search: debouncedSearch,
+      workspace: workspaceId,
+    },
+    { enabled: !!workspaceId }
+  );
 
   const { mutate: deleteProject } = useDeleteProjectMutation();
 
-  const workspaces = workspacesData?.data?.data || [];
-  const projects = projectsData?.data?.data || [];
-
-  useEffect(() => {
-    if (workspaces.length === 0) {
-      setSelectedWorkspaceId(null);
-      return;
-    }
-
-    const hasSelectedWorkspace = workspaces.some(
-      (workspace) => workspace.id === selectedWorkspaceId,
-    );
-
-    if (!selectedWorkspaceId || !hasSelectedWorkspace) {
-      setSelectedWorkspaceId(workspaces[0].id);
-    }
-  }, [workspaces, selectedWorkspaceId]);
-
-  const selectedWorkspace = useMemo(
-    () => workspaces.find((workspace) => workspace.id === selectedWorkspaceId),
-    [workspaces, selectedWorkspaceId],
-  );
-
-  const { data: workspaceApiKeyResponse, isLoading: apiKeyLoading } =
-    useWorkspaceApiKeyQuery(selectedWorkspace?.id);
-  const workspaceApiKey = workspaceApiKeyResponse?.data?.apiKey || "";
+  const projects = useMemo(() => projectsData?.data?.data ?? [], [projectsData]);
 
   const copyToClipboard = async (value: string) => {
     try {
@@ -127,33 +97,47 @@ const DatasetPage = () => {
   };
 
   const filteredProjects = useMemo(() => {
-    if (!selectedWorkspaceId) return projects;
-    const projectIds = new Set(
-      (selectedWorkspace?.projects ?? [])
-        .map((projectId) => Number(projectId))
-        .filter((projectId) => !Number.isNaN(projectId)),
-    );
+    if (!workspaceId) return [];
+    return projects.filter((project) => project.workspaceId === workspaceId);
+  }, [projects, workspaceId]);
 
-    return projects.filter((project) => {
-      if (project.workspaceId === selectedWorkspaceId) return true;
-      const projectId = Number(project.id);
-      if (Number.isNaN(projectId)) return false;
-      return projectIds.has(projectId);
-    });
-  }, [projects, selectedWorkspace, selectedWorkspaceId]);
+  const selectedProjectIdForApiKey = useMemo(() => {
+    if (
+      preferredProjectIdForApiKey &&
+      filteredProjects.some((project) => project.id === preferredProjectIdForApiKey)
+    ) {
+      return preferredProjectIdForApiKey;
+    }
+    return filteredProjects[0]?.id ?? "";
+  }, [filteredProjects, preferredProjectIdForApiKey]);
+
+  const selectedProjectNumericIdForApiKey = useMemo(() => {
+    const numeric = Number(selectedProjectIdForApiKey);
+    return Number.isFinite(numeric) && numeric > 0 ? numeric : undefined;
+  }, [selectedProjectIdForApiKey]);
+
+  const {
+    data: projectApiKeyResponse,
+    isLoading: projectApiKeyLoading,
+    isError: projectApiKeyError,
+  } = useProjectApiKeyQuery({
+    workspaceId,
+    projectId: selectedProjectNumericIdForApiKey,
+    page: 1,
+    limit: 1,
+  });
+
+  const projectApiKeyEntry = projectApiKeyResponse?.data?.data?.[0];
+  const projectApiKeyValue =
+    projectApiKeyEntry?.apiKey ||
+    projectApiKeyEntry?.key ||
+    projectApiKeyEntry?.token ||
+    projectApiKeyEntry?.value ||
+    "";
 
   const handleProjectClick = (projectId: string) => {
-    const workspaceQuery = selectedWorkspaceId
-      ? `?workspaceId=${selectedWorkspaceId}`
-      : "";
-    router.push(`/dashboard/dataset/${projectId}${workspaceQuery}`);
+    router.push(`/dashboard/dataset/${projectId}`);
   };
-
-  const handleWorkspaceCreated = (workspaceId: number) => {
-    setSelectedWorkspaceId(workspaceId);
-  };
-
-  const canCreateProject = !!selectedWorkspaceId;
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">
@@ -166,9 +150,13 @@ const DatasetPage = () => {
               Projects
             </h1>
             <p className="mt-1 text-sm text-slate-500">
-              {selectedWorkspace
-                ? `Workspace: ${selectedWorkspace.name}`
-                : "Select a workspace to see its projects."}
+              {workspaceLoading
+                ? "Loading workspace..."
+                : workspaceName
+                  ? `Workspace: ${workspaceName}`
+                  : workspaceId
+                    ? `Workspace ID: ${workspaceId}`
+                    : "No workspace assigned to your account."}
             </p>
           </div>
 
@@ -189,41 +177,6 @@ const DatasetPage = () => {
 
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex w-full flex-col gap-3 md:flex-row md:items-center">
-            <div className="w-full md:max-w-[240px]">
-              <Select
-                value={selectedWorkspaceId ? String(selectedWorkspaceId) : ""}
-                onValueChange={(value) => {
-                  const nextId = Number(value);
-                  if (Number.isNaN(nextId)) return;
-                  setSelectedWorkspaceId(nextId);
-                }}
-              >
-                <SelectTrigger className="h-10 w-full rounded-lg border border-[#e1e4f5] bg-white px-4 text-sm font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.02)] focus:ring-0">
-                  <SelectValue placeholder="Select workspace" />
-                </SelectTrigger>
-                <SelectContent>
-                  {workspacesLoading ? (
-                    <SelectItem value="loading" disabled>
-                      Loading workspaces...
-                    </SelectItem>
-                  ) : workspaces.length === 0 ? (
-                    <SelectItem value="empty" disabled>
-                      No workspaces available
-                    </SelectItem>
-                  ) : (
-                    workspaces.map((workspace) => (
-                      <SelectItem
-                        key={workspace.id}
-                        value={String(workspace.id)}
-                      >
-                        {workspace.name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="relative w-full md:max-w-[300px]">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
@@ -245,58 +198,84 @@ const DatasetPage = () => {
           </div>
 
           <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
-            <CreateWorkspaceDialog
-              nextOrder={workspaces.length + 1}
-              onCreated={(workspace) => handleWorkspaceCreated(workspace.id)}
-            />
             <CreateProjectDialog
-              workspaces={workspaces}
-              defaultWorkspaceId={selectedWorkspaceId ?? undefined}
-              disabled={!canCreateProject}
+              workspaceId={workspaceId}
+              disabled={!workspaceId}
             />
           </div>
         </div>
 
-        {selectedWorkspace && (
-          <div className="space-y-4">
-            <div className="rounded-xl border border-[#e1e4f5] bg-white px-6 py-5 shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="space-y-1">
-                  <p className="text-[13px] font-semibold text-slate-900">
-                    Workspace API Key
-                  </p>
-                  <p className="text-[12px] text-slate-500">
-                    Use this key to authenticate API requests for this
-                    workspace.
-                  </p>
-                </div>
+	        {workspaceId && (
+	          <div className="space-y-4">
+	            <div className="rounded-xl border border-[#e1e4f5] bg-white px-6 py-5 shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
+	              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+	                <div className="space-y-1">
+	                  <p className="text-[13px] font-semibold text-slate-900">
+	                    Project API Key
+	                  </p>
+	                  <p className="text-[12px] text-slate-500">
+	                    Use this key to authenticate API requests for the selected
+	                    project.
+	                  </p>
+	                </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 items-center gap-3 rounded-lg border border-[#e1e4f5] bg-[#f9fafb] px-4">
-                    <span className="max-w-[320px] truncate font-mono text-[12px] text-slate-900">
-                      {apiKeyLoading ? "Loading..." : workspaceApiKey || "—"}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#e1e4f5] bg-white px-4 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition hover:border-[#ced3f0] disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => void copyToClipboard(workspaceApiKey)}
-                    disabled={!workspaceApiKey || apiKeyLoading}
-                    aria-label="Copy workspace API key"
-                  >
-                    <Link2 className="h-4 w-4 text-slate-500" />
-                    Copy
-                  </button>
-                </div>
-              </div>
-            </div>
-            <WorkspaceCreditsSummaryCard
-              workspaceId={selectedWorkspace.id}
-              workspaceName={selectedWorkspace.name}
+	                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
+	                  <div className="relative w-full min-w-0 sm:w-[260px]">
+	                    <select
+	                      value={selectedProjectIdForApiKey}
+	                      onChange={(e) =>
+	                        setPreferredProjectIdForApiKey(e.target.value)
+	                      }
+	                      className="w-full appearance-none rounded-lg border border-slate-200 bg-white px-4 py-3 pr-10 text-sm font-medium text-slate-900 shadow-sm hover:border-slate-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+	                      disabled={projectsLoading || filteredProjects.length === 0}
+	                    >
+	                      <option value="">
+	                        {projectsLoading
+	                          ? "Loading projects..."
+	                          : "Select a project"}
+	                      </option>
+	                      {filteredProjects.map((project) => (
+	                        <option key={project.id} value={project.id}>
+	                          {project.name}
+	                        </option>
+	                      ))}
+	                    </select>
+	                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+	                  </div>
+
+	                  <div className="flex items-center gap-3">
+	                    <div className="flex h-10 items-center gap-3 rounded-lg border border-[#e1e4f5] bg-[#f9fafb] px-4">
+	                      <span className="max-w-[320px] truncate font-mono text-[12px] text-slate-900">
+	                        {projectApiKeyLoading
+	                          ? "Loading..."
+	                          : !selectedProjectNumericIdForApiKey
+	                            ? "Select a project"
+	                            : projectApiKeyError
+	                              ? "Failed to load"
+	                              : projectApiKeyValue || "API key not found"}
+	                      </span>
+	                    </div>
+	                    <button
+	                      type="button"
+	                      className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#e1e4f5] bg-white px-4 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition hover:border-[#ced3f0] disabled:opacity-50 disabled:cursor-not-allowed"
+	                      onClick={() => void copyToClipboard(projectApiKeyValue)}
+	                      disabled={!projectApiKeyValue || projectApiKeyLoading}
+	                      aria-label="Copy project API key"
+	                    >
+	                      <Link2 className="h-4 w-4 text-slate-500" />
+	                      Copy
+	                    </button>
+	                  </div>
+	                </div>
+	              </div>
+	            </div>
+	            <WorkspaceCreditsSummaryCard
+	              workspaceId={workspaceId}
+              workspaceName={workspaceName}
             />
             <WorkspaceCreditsHistoryTable
-              workspaceId={selectedWorkspace.id}
-              workspaceName={selectedWorkspace.name}
+              workspaceId={workspaceId}
+              workspaceName={workspaceName}
               collapsible
               defaultCollapsed
             />
@@ -305,13 +284,9 @@ const DatasetPage = () => {
 
         {/* Project list */}
         <div className="space-y-4 pt-2">
-          {workspacesLoading ? (
-            <div className="text-center text-sm text-slate-500">
-              Loading workspaces...
-            </div>
-          ) : workspaces.length === 0 ? (
+          {!workspaceId ? (
             <div className="rounded-xl border border-[#e1e4f5] bg-white px-6 py-6 text-center text-sm text-slate-500 shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
-              No workspaces yet. Create one to start your first project.
+              No workspace is assigned to your account yet.
             </div>
           ) : projectsLoading ? (
             <div className="text-center text-sm text-slate-500">
@@ -319,7 +294,7 @@ const DatasetPage = () => {
             </div>
           ) : filteredProjects.length === 0 ? (
             <div className="text-center text-sm text-slate-500">
-              No projects found in this workspace.
+              No projects found.
             </div>
           ) : (
             filteredProjects.map((project) => (

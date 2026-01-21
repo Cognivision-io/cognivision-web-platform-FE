@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useProjectQuery } from "@/features/dataset/queries/project.query";
 import {
   ArrowLeft,
@@ -19,7 +19,6 @@ import { formatDistanceToNow } from "date-fns";
 const ProjectDetailPage = () => {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const projectId = parseInt(params.id);
 
   const { data, isLoading, error } = useProjectQuery(projectId);
@@ -50,13 +49,6 @@ const ProjectDetailPage = () => {
   }
 
   const { workspace, project, versions } = data.data;
-  const workspaceIdParam = searchParams.get("workspaceId");
-  const workspaceIdQuery =
-    workspaceIdParam && !Number.isNaN(Number(workspaceIdParam))
-      ? `?workspaceId=${workspaceIdParam}`
-      : workspace?.id
-      ? `?workspaceId=${workspace.id}`
-      : "";
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] bg-[#f4f6ff] px-6 py-8 lg:px-10">
@@ -79,7 +71,7 @@ const ProjectDetailPage = () => {
           <Button
             onClick={() =>
               router.push(
-                `/dashboard/dataset/${params.id}/upload-dataset${workspaceIdQuery}`
+                `/dashboard/dataset/${params.id}/upload-dataset`
               )
             }
             className="bg-[#6841ff] hover:bg-[#5835e6]"

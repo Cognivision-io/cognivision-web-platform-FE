@@ -1,55 +1,45 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import SummaryCards from "@/components/dashboard/monitoring/SummaryCards";
 import AnnotationCard from "@/components/dashboard/monitoring/AnnotationCard";
 import VersionTable from "@/components/dashboard/monitoring/VersionTable";
 import DetailedLogsTable from "@/components/dashboard/monitoring/DetailedLogsTable";
 import { useProjectsQuery } from "@/features/dataset/queries/project.query";
 import { useMonitoringStats } from "@/features/monitoring/queries/monitoring.query";
-import { useWorkspacesQuery } from "@/features/workspace/queries/workspace.query";
-import { Card, CardContent } from "@/components/ui/card";
 import { ChevronDown } from "lucide-react";
 import type { TimeRange } from "@/interfaces/monitoring.interface";
+import { useCurrentWorkspaceId } from "@/hooks/use-current-workspace-id";
+import { useWorkspaceQuery } from "@/features/workspace/queries/workspace.query";
 
 export default function MonitoringPage() {
-  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(
-    null
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamsString = searchParams.toString();
+
+  const workspaceId = useCurrentWorkspaceId();
+  const { data: workspaceResponse } = useWorkspaceQuery(workspaceId);
+  const workspaceName = workspaceResponse?.data?.name;
+
+  const selectedProjectFromUrl = searchParams.get("project") ?? "";
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(
+    selectedProjectFromUrl
   );
-  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [timeRange, setTimeRange] = useState<TimeRange>("7");
 
-  const { data: workspacesData, isLoading: workspacesLoading } =
-    useWorkspacesQuery({
-      page: 1,
-      limit: 50,
-    });
-
-  const { data: projectsData, isLoading: projectsLoading } = useProjectsQuery({
-    page: 1,
-    limit: 100,
-  });
-
-  const workspaces = workspacesData?.data?.data || [];
-
   useEffect(() => {
-    if (workspaces.length === 0) {
-      setSelectedWorkspaceId(null);
-      return;
-    }
+    setSelectedProjectId(selectedProjectFromUrl);
+  }, [selectedProjectFromUrl]);
 
-    const hasSelectedWorkspace = workspaces.some(
-      (workspace) => workspace.id === selectedWorkspaceId
-    );
-
-    if (!selectedWorkspaceId || !hasSelectedWorkspace) {
-      setSelectedWorkspaceId(workspaces[0].id);
-    }
-  }, [workspaces, selectedWorkspaceId]);
-
-  const selectedWorkspace = useMemo(
-    () => workspaces.find((workspace) => workspace.id === selectedWorkspaceId),
-    [workspaces, selectedWorkspaceId]
+  const { data: projectsData, isLoading: projectsLoading } = useProjectsQuery(
+    {
+      page: 1,
+      limit: 100,
+      workspace: workspaceId,
+    },
+    { enabled: !!workspaceId }
   );
 
   const dateRanges = useMemo(() => {
@@ -67,47 +57,44 @@ export default function MonitoringPage() {
     };
   }, []);
 
-  const projects = projectsData?.data?.data || [];
+  const projects = useMemo(() => projectsData?.data?.data ?? [], [projectsData]);
 
   const filteredProjects = useMemo(() => {
-    if (!selectedWorkspaceId) return [];
-
-    const projectIds = new Set(
-      (selectedWorkspace?.projects ?? [])
-        .map((projectId) => Number(projectId))
-        .filter((projectId) => !Number.isNaN(projectId))
-    );
-
-    return projects.filter((project) => {
-      if (project.workspaceId === selectedWorkspaceId) return true;
-      const projectId = Number(project.id);
-      if (Number.isNaN(projectId)) return false;
-      return projectIds.has(projectId);
-    });
-  }, [projects, selectedWorkspace, selectedWorkspaceId]);
+    if (!workspaceId) return [];
+    return projects.filter((project) => project.workspaceId === workspaceId);
+  }, [projects, workspaceId]);
 
   useEffect(() => {
-    if (!selectedWorkspaceId) {
-      setSelectedProjectId("");
-      return;
-    }
-
-    if (!selectedProjectId) return;
-    const stillValid = filteredProjects.some(
+    if (filteredProjects.length === 0) return;
+    const isValid = filteredProjects.some(
       (project) => project.id === selectedProjectId
     );
-    if (!stillValid) setSelectedProjectId("");
-  }, [filteredProjects, selectedProjectId, selectedWorkspaceId]);
+    if (isValid) return;
+
+    const nextProjectId = filteredProjects[0].id;
+    setSelectedProjectId(nextProjectId);
+
+    const nextParams = new URLSearchParams(searchParamsString);
+    nextParams.set("project", nextProjectId);
+    router.replace(`${pathname}?${nextParams.toString()}`);
+  }, [
+    filteredProjects,
+    pathname,
+    router,
+    searchParamsString,
+    selectedProjectId,
+  ]);
 
   const { data: monitoringData, isLoading: monitoringLoading } =
     useMonitoringStats(
       selectedProjectId
         ? {
+            projectId: selectedProjectId,
             startTime: dateRanges[timeRange],
             endTime: new Date().toISOString().split("T")[0],
           }
         : undefined,
-      { enabled: !!selectedWorkspaceId && !!selectedProjectId }
+      { enabled: !!workspaceId && !!selectedProjectId }
     );
 
   return (
@@ -121,26 +108,35 @@ export default function MonitoringPage() {
         </div>
 
         <div className="mb-6 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
-          {/* Workspace Selector */}
+          {/* Project Selector */}
           <div className="relative w-full min-w-0 max-w-md">
             <select
-              value={selectedWorkspaceId ? String(selectedWorkspaceId) : ""}
+              value={selectedProjectId}
               onChange={(e) => {
-                const nextId = Number(e.target.value);
-                if (Number.isNaN(nextId)) return;
-                setSelectedWorkspaceId(nextId);
+                const nextProjectId = e.target.value;
+                setSelectedProjectId(nextProjectId);
+
+                const nextParams = new URLSearchParams(searchParamsString);
+                if (nextProjectId) {
+                  nextParams.set("project", nextProjectId);
+                } else {
+                  nextParams.delete("project");
+                }
+                router.replace(`${pathname}?${nextParams.toString()}`);
               }}
               className="w-full appearance-none rounded-lg border border-slate-200 bg-white px-4 py-3 pr-10 text-sm font-medium text-slate-900 shadow-sm hover:border-slate-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              disabled={workspacesLoading}
+              disabled={projectsLoading || !workspaceId}
             >
               <option value="">
-                {workspacesLoading
-                  ? "Loading workspaces..."
-                  : "Select a workspace"}
+                {projectsLoading
+                  ? "Loading projects..."
+                  : !workspaceId
+                    ? "No workspace assigned"
+                    : "Select a project"}
               </option>
-              {workspaces.map((workspace) => (
-                <option key={workspace.id} value={String(workspace.id)}>
-                  {workspace.name}
+              {filteredProjects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
                 </option>
               ))}
             </select>
@@ -148,9 +144,24 @@ export default function MonitoringPage() {
           </div>
         </div>
 
+        <div className="space-y-6">
+          <SummaryCards
+            data={monitoringData}
+            isLoading={monitoringLoading}
+            timeRange={timeRange}
+            onTimeRangeChange={setTimeRange}
+          />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <AnnotationCard data={monitoringData} isLoading={monitoringLoading} />
+            <VersionTable data={monitoringData} isLoading={monitoringLoading} />
+          </div>
+        </div>
+
         <DetailedLogsTable
-          workspaceId={selectedWorkspace?.id}
-          workspaceName={selectedWorkspace?.name}
+          key={`${workspaceId ?? "no-workspace"}:${selectedProjectId ?? "no-project"}`}
+          workspaceId={workspaceId}
+          workspaceName={workspaceName}
+          projectId={selectedProjectId || undefined}
         />
       </section>
     </div>

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -22,11 +22,9 @@ import { Hash, ImageIcon, Plus, Workflow, X } from "lucide-react";
 import { useCreateProjectMutation } from "@/features/dataset/mutations/project.mutation";
 import { useQueryClient } from "@tanstack/react-query";
 import { PROJECTS_QUERY_KEY } from "@/features/dataset/queries/project.query";
-import type { Workspace } from "@/interfaces/workspace.interface";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { toast } from "sonner";
 import CustomToast from "@/components/ui/sonner";
 
 const useCaseOptions = [
@@ -44,7 +42,6 @@ type ProjectType =
 type LabelMode = "" | "single" | "multi";
 
 const schema = yup.object({
-  workspaceId: yup.string().required("Workspace is required"),
   name: yup.string().required("Project Name is required"),
   annotation: yup.string().required("Annotation Group is required"),
   tool: yup.string().oneOf(["traditional", "rapid"]).default("traditional"),
@@ -96,14 +93,12 @@ function RadioOption({
 }
 
 type CreateProjectDialogProps = {
-  workspaces: Workspace[];
-  defaultWorkspaceId?: number;
+  workspaceId?: number;
   disabled?: boolean;
 };
 
 export const CreateProjectDialog = ({
-  workspaces,
-  defaultWorkspaceId,
+  workspaceId,
   disabled = false,
 }: CreateProjectDialogProps) => {
   const [open, setOpen] = useState(false);
@@ -120,7 +115,6 @@ export const CreateProjectDialog = ({
   } = useForm<FormData>({
     resolver: yupResolver(schema),
     defaultValues: {
-      workspaceId: defaultWorkspaceId ? String(defaultWorkspaceId) : "",
       name: "",
       annotation: "",
       tool: "traditional",
@@ -130,27 +124,16 @@ export const CreateProjectDialog = ({
     },
   });
 
-  useEffect(() => {
-    if (defaultWorkspaceId) {
-      setValue("workspaceId", String(defaultWorkspaceId));
-    }
-  }, [defaultWorkspaceId, setValue]);
-
   const tool = watch("tool") as Tool;
   const selectedType = watch("selectedType") as ProjectType;
   const labelMode = watch("labelMode") as LabelMode;
 
   const { mutate: createProject, isPending } = useCreateProjectMutation({
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
       setOpen(false);
       CustomToast.success("Project created successfully");
-      const workspaceQuery = variables.workspace
-        ? `?workspaceId=${variables.workspace}`
-        : "";
-      router.push(
-        `/dashboard/dataset/${data.data.id}/upload-dataset${workspaceQuery}`
-      );
+      router.push(`/dashboard/dataset/${data.data.id}/upload-dataset`);
       reset();
     },
     onError: (error) => {
@@ -159,9 +142,8 @@ export const CreateProjectDialog = ({
   });
 
   const onSubmit = (data: FormData) => {
-    const workspaceId = Number(data.workspaceId);
     if (!workspaceId) {
-      CustomToast.error("Please select a workspace");
+      CustomToast.error("No workspace assigned to your account");
       return;
     }
 
@@ -198,7 +180,7 @@ export const CreateProjectDialog = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          disabled={disabled}
+          disabled={disabled || !workspaceId}
           className="h-10 rounded-lg bg-primary px-3 text-sm font-semibold shadow-[0_12px_30px_rgba(91,33,255,0.35)] hover:bg-primary/90"
         >
           <Plus className="h-4 w-4" />
@@ -244,49 +226,14 @@ export const CreateProjectDialog = ({
               <div className="px-5 pb-9 pt-2 md:px-10">
                 <form
                   id="create-project-form"
-                  onSubmit={handleSubmit(onSubmit)}
-                >
-                  {/* Top fields */}
-                  <div className="grid gap-x-5 gap-y-5 md:grid-cols-3">
-                    <div className="space-y-2">
-                      <Label className="text-[13px] font-semibold text-slate-900">
-                        Workspace
-                      </Label>
-                      <Controller
-                        name="workspaceId"
-                        control={control}
-                        render={({ field }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger className="h-10 w-full rounded-[12px] border-slate-300 bg-white px-4 text-[14px] font-medium text-slate-700 shadow-none focus:ring-0">
-                              <SelectValue placeholder="Select workspace" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {workspaces.map((workspace) => (
-                                <SelectItem
-                                  key={workspace.id}
-                                  value={String(workspace.id)}
-                                >
-                                  {workspace.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                      {errors.workspaceId && (
-                        <p className="text-xs text-red-500">
-                          {errors.workspaceId.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-[13px] font-semibold text-slate-900">
-                        Project Name
-                      </Label>
+	                  onSubmit={handleSubmit(onSubmit)}
+	                >
+	                  {/* Top fields */}
+	                  <div className="grid gap-x-5 gap-y-5 md:grid-cols-2">
+	                    <div className="space-y-2">
+	                      <Label className="text-[13px] font-semibold text-slate-900">
+	                        Project Name
+	                      </Label>
                       <Controller
                         name="name"
                         control={control}

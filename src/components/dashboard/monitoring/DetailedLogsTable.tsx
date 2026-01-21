@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   DataGrid,
   type GridColDef,
@@ -82,12 +82,14 @@ const asTruncatedText = (value: unknown) => {
 type DetailedLogsTableProps = {
   workspaceId?: number;
   workspaceName?: string;
+  projectId?: string;
   className?: string;
 };
 
 export default function DetailedLogsTable({
   workspaceId,
   workspaceName,
+  projectId,
   className,
 }: DetailedLogsTableProps) {
   const [dateRange, setDateRange] = useState<DateRange>(() => {
@@ -99,10 +101,6 @@ export default function DetailedLogsTable({
     page: 0,
     pageSize: 10,
   });
-
-  useEffect(() => {
-    setPaginationModel({ page: 0, pageSize: 10 });
-  }, [workspaceId]);
 
   const startDate = useMemo(() => {
     return dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : undefined;
@@ -130,6 +128,7 @@ export default function DetailedLogsTable({
     isError: isSummaryError,
   } = useApiUsageSummaryQuery({
     workspaceId,
+    projectId,
     startDate,
     endDate,
   });
@@ -140,6 +139,7 @@ export default function DetailedLogsTable({
     isError: isLogsError,
   } = useApiUsageDetailedLogsQuery({
     workspaceId,
+    projectId,
     page: paginationModel.page + 1,
     limit: paginationModel.pageSize,
   });
@@ -419,7 +419,7 @@ export default function DetailedLogsTable({
                   type="button"
                   variant="outline"
                   className="justify-start gap-2 border-slate-200 bg-white text-slate-900 shadow-sm hover:bg-slate-50"
-                  disabled={!workspaceId}
+                  disabled={!workspaceId || !projectId}
                 >
                   <CalendarDays className="h-4 w-4 text-slate-500" />
                   <span className="text-sm font-medium">{dateRangeLabel}</span>
@@ -444,7 +444,13 @@ export default function DetailedLogsTable({
           {!workspaceId ? (
             <div className="flex items-center justify-center py-12">
               <p className="text-sm text-muted-foreground">
-                Select a workspace to view usage summary.
+                Workspace is unavailable.
+              </p>
+            </div>
+          ) : !projectId ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-sm text-muted-foreground">
+                Select a project to view usage summary.
               </p>
             </div>
           ) : !startDate || !endDate ? (
@@ -625,7 +631,13 @@ export default function DetailedLogsTable({
           {!workspaceId ? (
             <div className="flex items-center justify-center py-12">
               <p className="text-sm text-muted-foreground">
-                Select a workspace to view detailed logs.
+                Workspace is unavailable.
+              </p>
+            </div>
+          ) : !projectId ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-sm text-muted-foreground">
+                Select a project to view detailed logs.
               </p>
             </div>
           ) : isLogsError ? (

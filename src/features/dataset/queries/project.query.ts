@@ -7,7 +7,6 @@ import {
 import type { AxiosError } from "axios";
 import { projectApi } from "@/features/dataset/api/project.api";
 import type { GetProjectsResponse } from "@/interfaces/project.interface";
-import { toast } from "sonner";
 import CustomToast from "@/components/ui/sonner";
 
 type ProjectError = AxiosError<{ message?: string | string[] }>;
@@ -19,8 +18,12 @@ export const useProjectsQuery = (
     page?: number;
     limit?: number;
     search?: string;
+    workspace?: number;
   },
-  options?: UseQueryOptions<GetProjectsResponse, ProjectError>
+  options?: Omit<
+    UseQueryOptions<GetProjectsResponse, ProjectError>,
+    "queryKey" | "queryFn"
+  >
 ) => {
   return useQuery({
     queryKey: [...PROJECTS_QUERY_KEY, params],
@@ -70,8 +73,13 @@ export const useCreateVersionMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: any }) =>
-      projectApi.createVersion(id, payload),
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: number;
+      payload: Record<string, unknown>;
+    }) => projectApi.createVersion(id, payload),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: [...PROJECT_QUERY_KEY, id] });
     },

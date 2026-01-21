@@ -1,6 +1,13 @@
 "use client";
 
-import { FormEvent, Suspense, useCallback, useEffect, useState } from "react";
+import {
+  FormEvent,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +21,6 @@ import {
   useResendOtpMutation,
   useVerifyOtpMutation,
 } from "@/features/auth/mutations/auth.mutation";
-import { useCreateWorkspaceMutation } from "@/features/workspace/mutations/workspace.mutation";
 import CustomToast from "@/components/ui/sonner";
 import { useAuthStore } from "@/stores/auth-store";
 import Link from "next/link";
@@ -25,13 +31,11 @@ const VerifyOtpContent = () => {
   const email = searchParams.get("email") ?? "";
   const shouldAutoSend = searchParams.get("autoSend") === "true";
   const [otp, setOtp] = useState("");
-  const [hasTriggeredAutoSend, setHasTriggeredAutoSend] = useState(false);
+  const hasTriggeredAutoSendRef = useRef(false);
   const { mutateAsync: verifyOtpMutation, isPending: isVerifying } =
     useVerifyOtpMutation();
   const { mutateAsync: resendOtpMutation, isPending: isResending } =
     useResendOtpMutation();
-  const { mutateAsync: createWorkspace, isPending: isCreatingWorkspace } =
-    useCreateWorkspaceMutation();
 
   const handleVerifyOtp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -48,11 +52,6 @@ const VerifyOtpContent = () => {
         useAuthStore.getState().setToken(token);
       }
 
-      await createWorkspace({
-        name: "Default Workspace",
-        status: true,
-        order: 1,
-      });
       CustomToast.success("Successfully verified your code");
       router.replace("/login");
     } catch (error: unknown) {
@@ -94,12 +93,28 @@ const VerifyOtpContent = () => {
   }, [email, resendOtpMutation]);
 
   useEffect(() => {
-    if (!shouldAutoSend || !email || hasTriggeredAutoSend) {
+    if (!shouldAutoSend || !email || hasTriggeredAutoSendRef.current) {
       return;
     }
-    setHasTriggeredAutoSend(true);
-    void resendOtp();
-  }, [shouldAutoSend, email, hasTriggeredAutoSend, resendOtp]);
+    hasTriggeredAutoSendRef.current = true;
+    void (async () => {
+      try {
+        await resendOtpMutation({ email });
+        CustomToast.success("A new OTP has been sent to your email");
+      } catch (error: unknown) {
+        const message = (
+          error as { response?: { data?: { message?: string | string[] } } }
+        )?.response?.data?.message;
+        if (Array.isArray(message)) {
+          message.forEach((msg: string) => CustomToast.error(capitalize(msg)));
+        } else if (typeof message === "string") {
+          CustomToast.error(capitalize(message));
+        } else {
+          CustomToast.error("Something went wrong. Please try again.");
+        }
+      }
+    })();
+  }, [shouldAutoSend, email, resendOtpMutation]);
 
   const handleResendCode = () => {
     void resendOtp();
@@ -151,9 +166,9 @@ const VerifyOtpContent = () => {
             type="submit"
             className="h-12 w-full text-base font-medium"
             size="lg"
-            disabled={isVerifying || isCreatingWorkspace}
+            disabled={isVerifying}
           >
-            {isVerifying || isCreatingWorkspace ? "Verifying..." : "Verify OTP"}
+            {isVerifying ? "Verifying..." : "Verify OTP"}
           </Button>
 
           <div className="text-center text-sm">

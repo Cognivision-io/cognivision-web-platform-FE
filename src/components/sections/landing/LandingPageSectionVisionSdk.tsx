@@ -37,12 +37,6 @@ const FEATURES: Feature[] = [
       "Understand surfaces, depth, and real-world geometry for precise AR overlays.",
     Icon: Box,
   },
-  {
-    title: "Cross-Platform Performance",
-    description:
-      "Runs seamlessly on iOS, Android, and web with optimized edge + cloud inference.",
-    Icon: Gauge,
-  },
 ];
 
 function FeatureRow({ item }: { item: Feature }) {

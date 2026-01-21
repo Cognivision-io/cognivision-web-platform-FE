@@ -51,6 +51,7 @@ export const projectApi = {
     page?: number;
     limit?: number;
     search?: string;
+    workspace?: number;
   }) => {
     const response = await api.get<GetProjectsResponse>("/project/all", {
       params,
@@ -91,18 +92,20 @@ export const projectApi = {
     return response.data;
   },
 
-  uploadFolder: async (payload: {
-    projectId: string;
-    batch?: string;
-    files: File[];
-    id: string;
-  }) => {
-    const formData = new FormData();
-    payload.files.forEach((file) => {
-      // Use webkitRelativePath to preserve folder structure for upload-folder endpoint
-      const path = (file as any).webkitRelativePath || file.name;
-      formData.append("files", file, path);
-    });
+	  uploadFolder: async (payload: {
+	    projectId: string;
+	    batch?: string;
+	    files: File[];
+	    id: string;
+	  }) => {
+	    const formData = new FormData();
+	    payload.files.forEach((file) => {
+	      // Use webkitRelativePath to preserve folder structure for upload-folder endpoint
+	      const path =
+	        (file as File & { webkitRelativePath?: string }).webkitRelativePath ||
+	        file.name;
+	      formData.append("files", file, path);
+	    });
 
     const response = await api.post("/project/upload-folder", formData, {
       params: {
@@ -219,10 +222,10 @@ export const projectApi = {
     return response.data;
   },
 
-  createVersion: async (id: number, payload: any) => {
-    const response = await api.post(`/project/${id}/create-version`, payload);
-    return response.data;
-  },
+	  createVersion: async (id: number, payload: Record<string, unknown>) => {
+	    const response = await api.post(`/project/${id}/create-version`, payload);
+	    return response.data;
+	  },
 
   trainModel: async (payload: {
     projectId: number;
