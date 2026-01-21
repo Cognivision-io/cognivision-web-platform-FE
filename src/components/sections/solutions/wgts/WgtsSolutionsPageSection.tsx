@@ -38,7 +38,8 @@ export default function WgtsSolutionsPageSection() {
               disputes.
             </p>
 
-            <div className="mt-10">
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              {/* iOS */}
               <Link
                 href="https://apps.apple.com/au/app/wgts/id6739811024"
                 className="inline-flex h-[50px] items-center gap-3 rounded-md px-6 text-[15px] font-semibold text-white shadow-[0_16px_34px_rgba(91,47,232,0.25)] transition-transform hover:-translate-y-0.5 active:translate-y-0"
@@ -47,7 +48,16 @@ export default function WgtsSolutionsPageSection() {
                 <span className="grid h-8 w-8 place-items-center rounded-full bg-black/15">
                   <ArrowUpRight className="h-4 w-4 text-white" />
                 </span>
-                Download App
+                Download for iOS
+              </Link>
+              <Link
+                href="https://play.google.com/store/apps/details?id=com.toucher&pcampaignid=web_share"
+                className="inline-flex h-[50px] items-center gap-3 rounded-md border border-black/10 bg-white px-6 text-[15px] font-semibold text-[#0b1020] shadow-[0_10px_26px_rgba(0,0,0,0.08)] transition-transform hover:-translate-y-0.5 active:translate-y-0"
+              >
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-black/5">
+                  <ArrowUpRight className="h-4 w-4 text-[#0b1020]" />
+                </span>
+                Download for Android
               </Link>
             </div>
           </div>

@@ -158,7 +158,8 @@ textRenderer.createText(
                   <TableRow>
                     <TableCell className="font-mono">loadModel</TableCell>
                     <TableCell className="font-mono text-xs">
-                      () =&gt; Promise&lt;void&gt;
+                      (projectSlug: string, version: number) =&gt;
+                      Promise&lt;void&gt;
                     </TableCell>
                     <TableCell>
                       Load the model configured in{" "}

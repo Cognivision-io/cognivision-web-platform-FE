@@ -2,7 +2,7 @@
 
 import { GlowSection } from "@/components/layout/GlowLayout";
 import { SteppedImageCollage } from "@/features/dataset/components/ui/SteppedImageCollage";
-import { Layers3, Cpu, Box, Gauge } from "lucide-react";
+import { Layers3, Cpu, Box, Gauge, Code, Terminal } from "lucide-react";
 
 const PURPLE = "#5b2fe8";
 
@@ -18,6 +18,12 @@ const FEATURES: Feature[] = [
     description:
       "One SDK for React Native & Flutter — no need for native ARKit/ARCore coding.",
     Icon: Layers3,
+  },
+  {
+    title: "Native-First AR",
+    description:
+      "Native Swift and Kotlin SDKs that expose the full power of ARKit and ARCore without boilerplate.",
+    Icon: Box,
   },
   {
     title: "Computer Vision + ML Inference",

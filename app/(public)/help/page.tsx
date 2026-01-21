@@ -38,14 +38,17 @@ config.environmentTexturing = .automatic
 arView.session.run(config)`,
     kotlin:
       'import com.cognivision.sdk.CogniVision\n\nCogniVision.initialize(context, "YOUR_API_KEY")',
-    "react-native": `import { useEffect } from "react";
+    "react-native": `import { useEffect, useState } from "react";
 import Roboflow from "react-native-cogni-vision-rnroboflow";
 
-useEffect(() => {
-  (async () => {
+export function useRoboflowReady() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    (async () => {
     await Roboflow.initialize(
       "YOUR_WORKSPACE_API_KEY",
-      "YOUR_WORKSPACE_URL",
+      "YOUR_WORKSPACE_NAME",
       "YOUR_MODEL_ID",
       "YOUR_MODEL_VERSION"
     );
@@ -78,7 +81,7 @@ useEffect(() => {
     kotlin:
       "All requests must be authenticated. Initialize the SDK with your API key found in your dashboard.",
     "react-native":
-      "Roboflow inference requires an API key. Keep it out of source control and load it from env/config. Initialize once with your workspace URL + model ID + version, then call loadModel().",
+      "Roboflow inference requires an API key. Keep it out of source control and load it from env/config. Initialize once with your API key, then choose a published model via loadModel(projectSlug, version).",
   }[platform];
 
   const imageType =
@@ -122,10 +125,10 @@ CogniVision.analyze(image, AnalysisMode.FAST) { result ->
 const screenshot = await arRef.current?.takeScreenshot();
 if (!screenshot) return;
 
-// 2) Run detection
+// 2) Run detection on the screenshot
 const detections = await Roboflow.detectObjects(screenshot);
 
-// 3) Convert detection centers to world positions and place content
+// 3) Convert detection centers (2D) to world positions (3D) and place content
 for (const det of detections.predictions) {
   const p = await arRef.current?.getPositionVector3(det.x, det.y);
   if (!p) continue;
@@ -149,11 +152,39 @@ CogniVision.analyze(image,
 ) { result ->
   // Handle result
 }`,
-    "react-native": `// Tap to select an object, tap another to measure distance.
-// 1) Detect on tap (screenshot -> Roboflow.detectObjects)
-// 2) Hit-test the tap against detection boxes
-// 3) Use getPositionVector3(x, y) to raycast into 3D
-// 4) Draw a line between two world points and read its distance`,
+    "react-native": `// Tap workflow: tap to select, tap again to measure (between centers).
+const didUserTapObject = (tapX, tapY, box) => {
+  const left = box.x - box.width / 2;
+  const right = box.x + box.width / 2;
+  const top = box.y - box.height / 2;
+  const bottom = box.y + box.height / 2;
+  return tapX >= left && tapX <= right && tapY >= top && tapY <= bottom;
+};
+
+const onUserTap = async (coords) => {
+  const screenshot = await arRef.current?.takeScreenshot();
+  if (!screenshot) return;
+
+  const { predictions } = await Roboflow.detectObjects(screenshot);
+  const hit = predictions.find((p) => didUserTapObject(coords.x, coords.y, p));
+  if (!hit) return;
+
+  // 1st tap: select and annotate
+  if (!selectedObject) {
+    setSelectedObject(hit);
+    const p = await arRef.current?.getPositionVector3(coords.x, coords.y);
+    if (p) arRef.current?.placeText(p.x, p.y, p.z, "#FF0000", "Selected");
+    return;
+  }
+
+  // 2nd tap: measure distance between 2D detection centers projected into 3D
+  const p1 = await arRef.current?.getPositionVector3(selectedObject.x, selectedObject.y);
+  const p2 = await arRef.current?.getPositionVector3(hit.x, hit.y);
+  if (!p1 || !p2) return;
+
+  const meters = await arRef.current?.createLineAndGetDistance(p1, p2, "#FF0000");
+  console.log("📏 Distance (m):", meters);
+};`,
   }[platform];
 
   return (
@@ -352,6 +383,37 @@ export function useLocalModelUri() {
                 </code>
               </pre>
             </div>
+
+            <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+              Putting It Together (AR + Roboflow)
+            </h4>
+            <p className="leading-7 text-muted-foreground">
+              The core loop is{" "}
+              <span className="font-mono">
+                takeScreenshot → detectObjects → getPositionVector3 → render
+              </span>
+              .
+            </p>
+            <div className="relative rounded-lg bg-zinc-950 px-4 py-4 dark:bg-zinc-900">
+              <pre className="overflow-x-auto">
+                <code className="relative rounded font-mono text-sm text-zinc-50">
+                  {`const scan = async () => {
+  arRef.current?.reset();
+
+  const screenshot = await arRef.current?.takeScreenshot();
+  if (!screenshot) return;
+
+  const { predictions } = await Roboflow.detectObjects(screenshot);
+
+  for (const det of predictions) {
+    const p = await arRef.current?.getPositionVector3(det.x, det.y);
+    if (!p) continue;
+    arRef.current?.placeModel(p.x, p.y, p.z);
+  }
+};`}
+                </code>
+              </pre>
+            </div>
           </div>
         ) : null}
       </section>
@@ -463,13 +525,7 @@ textRenderer.createText(
                 <pre className="overflow-x-auto">
                   <code className="relative rounded font-mono text-sm text-zinc-50">
                     {`await Roboflow.initialize("YOUR_ROBOFLOW_API_KEY");
-await Roboflow.initialize(
-  "YOUR_ROBOFLOW_API_KEY",
-  "YOUR_WORKSPACE_URL",
-  "YOUR_MODEL_ID",
-  1
-);
-await Roboflow.loadModel();
+await Roboflow.loadModel("YOUR_PROJECT_SLUG", 1);
 
 const result = await Roboflow.detectObjects(screenshot);
 // result.predictions: Prediction[]`}
