@@ -26,8 +26,16 @@ const CARDS: UseCaseCard[] = [
   {
     title: "Collaborative Spatial Workflows",
     description:
-    "Enable real-time, shared AR experiences that allow distributed teams to visualize, annotate, and interact with spatial data as if co-located. ",
+      "Enable real-time, shared AR experiences that allow distributed teams to visualize, annotate, and interact with spatial data as if co-located. ",
     image: "/Hero8.svg",
+    hrefTry: "/register",
+    hrefExplore: "/solutions",
+  },
+  {
+    title: "Spatial Travel & Location Experiences",
+    description:
+      "Deliver location-aware experiences that combine real-world environments with digital storytelling.",
+    image: "/Hero11.svg",
     hrefTry: "/register",
     hrefExplore: "/solutions",
   },
@@ -44,14 +52,6 @@ const CARDS: UseCaseCard[] = [
     description:
       "Deliver immersive virtual and AR concerts with real-time environment understanding and spatial anchoring.",
     image: "/Hero9.svg",
-    hrefTry: "/register",
-    hrefExplore: "/solutions",
-  },
-  {
-    title: "Spatial Travel & Location Experiences",
-    description:
-      "Deliver location-aware experiences that combine real-world environments with digital storytelling.",
-    image: "/Hero11.svg",
     hrefTry: "/register",
     hrefExplore: "/solutions",
   },
