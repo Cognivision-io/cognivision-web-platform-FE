@@ -13,6 +13,9 @@ import type { TimeRange } from "@/interfaces/monitoring.interface";
 import { useCurrentWorkspaceId } from "@/hooks/use-current-workspace-id";
 import { useWorkspaceQuery } from "@/features/workspace/queries/workspace.query";
 
+const normalizeProjectId = (value: unknown) =>
+  value === null || value === undefined ? "" : String(value);
+
 export default function MonitoringPage() {
   const router = useRouter();
   const pathname = usePathname();
@@ -23,7 +26,7 @@ export default function MonitoringPage() {
   const { data: workspaceResponse } = useWorkspaceQuery(workspaceId);
   const workspaceName = workspaceResponse?.data?.name;
 
-  const selectedProjectFromUrl = searchParams.get("project") ?? "";
+  const selectedProjectFromUrl = normalizeProjectId(searchParams.get("project"));
   const [selectedProjectId, setSelectedProjectId] = useState<string>(
     selectedProjectFromUrl,
   );
@@ -65,11 +68,11 @@ export default function MonitoringPage() {
   useEffect(() => {
     if (projects.length === 0) return;
     const isValid = projects.some(
-      (project) => project.id === selectedProjectId,
+      (project) => normalizeProjectId(project.id) === selectedProjectId,
     );
     if (isValid) return;
 
-    const nextProjectId = projects[0].id;
+    const nextProjectId = normalizeProjectId(projects[0].id);
     setSelectedProjectId(nextProjectId);
 
     const nextParams = new URLSearchParams(searchParamsString);
@@ -127,7 +130,10 @@ export default function MonitoringPage() {
                     : "Select a project"}
               </option>
               {projects.map((project) => (
-                <option key={project.id} value={project.id}>
+                <option
+                  key={normalizeProjectId(project.id)}
+                  value={normalizeProjectId(project.id)}
+                >
                   {project.name}
                 </option>
               ))}

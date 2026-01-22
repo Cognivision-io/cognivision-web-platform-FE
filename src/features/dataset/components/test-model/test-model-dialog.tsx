@@ -66,7 +66,6 @@ export const TestModelDialog = ({
   const { data: workspaceApiKeyResponse } =
     useWorkspaceApiKeyQuery(workspaceId);
   const apiKey = workspaceApiKeyResponse?.data?.apiKey || "";
-  console.log("🔑 Using API Key:", project);
   // Check if model is ready (HTTP API doesn't need complex initialization)
   useEffect(() => {
     if (version.model?.id && apiKey) {
@@ -100,7 +99,7 @@ export const TestModelDialog = ({
         confidenceThreshold,
         overlapThreshold,
         version.model.endpoint, // unused (kept for compatibility)
-        workspaceName
+        workspaceName,
       );
 
       console.log("✅ Inference complete:", result);
@@ -207,7 +206,7 @@ export const TestModelDialog = ({
                   isEngineReady &&
                     !isDragActive &&
                     "cursor-pointer border-slate-200 hover:border-[#6841ff]/50",
-                  isDragActive && "border-[#6841ff] bg-[#6841ff]/5"
+                  isDragActive && "border-[#6841ff] bg-[#6841ff]/5",
                 )}
               >
                 <input {...getInputProps()} disabled={!isEngineReady} />
@@ -336,12 +335,12 @@ export const TestModelDialog = ({
               <div className="absolute bottom-6 right-6 bg-slate-900 text-white text-xs px-3 py-1.5 rounded-md shadow-md z-30">
                 {
                   inferenceResult.predictions.filter(
-                    (p) => p.confidence >= confidenceThreshold / 100
+                    (p) => p.confidence >= confidenceThreshold / 100,
                   ).length
                 }{" "}
                 object
                 {inferenceResult.predictions.filter(
-                  (p) => p.confidence >= confidenceThreshold / 100
+                  (p) => p.confidence >= confidenceThreshold / 100,
                 ).length !== 1
                   ? "s"
                   : ""}{" "}

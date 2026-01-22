@@ -57,7 +57,7 @@ const ProjectDetailPage = () => {
         !!projectDetails &&
         Number.isFinite(projectId) &&
         !isLoading,
-    }
+    },
   );
 
   const projectApiKeyEntry = projectApiKeyResponse?.data?.data?.[0];
@@ -124,9 +124,7 @@ const ProjectDetailPage = () => {
         <div className="flex gap-3">
           <Button
             onClick={() =>
-              router.push(
-                `/dashboard/dataset/${params.id}/upload-dataset`
-              )
+              router.push(`/dashboard/dataset/${params.id}/upload-dataset`)
             }
             className="bg-[#6841ff] hover:bg-[#5835e6]"
           >
@@ -134,12 +132,51 @@ const ProjectDetailPage = () => {
             Upload Data
           </Button>
         </div>
+        <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            {/* LEFT: Title + helper */}
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Project API Key
+              </h3>
+              <p className="mt-1 text-xs text-slate-500">
+                Use this API key to authenticate requests for this project.
+              </p>
+            </div>
 
-	        {/* Project Info Grid */}
-	        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-	          <div className="flex flex-col gap-6">
-	            {/* Workspace Card */}
-	            <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
+            {/* RIGHT: Key + copy */}
+            <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center md:justify-end">
+              <div className="flex h-10 w-full md:w-[420px] min-w-0 items-center gap-3 rounded-lg border border-[#e1e4f5] bg-[#f9fafb] px-4">
+                <span className="min-w-0 truncate font-mono text-[12px] text-slate-900">
+                  {!workspaceIdForApiKey
+                    ? "Workspace unavailable"
+                    : isProjectApiKeyLoading
+                      ? "Loading..."
+                      : isProjectApiKeyError
+                        ? "Failed to load"
+                        : projectApiKeyValue || "API key not found"}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg border border-[#e1e4f5] bg-white px-4 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition hover:border-[#ced3f0] disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={() => void copyProjectApiKey()}
+                disabled={!projectApiKeyValue || isProjectApiKeyLoading}
+                aria-label="Copy project API key"
+              >
+                <Link2 className="h-4 w-4 text-slate-500" />
+                Copy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Project Info Grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col gap-6">
+            {/* Workspace Card */}
+            <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
               <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
                 Workspace
               </h3>
@@ -161,44 +198,11 @@ const ProjectDetailPage = () => {
                   <p className="text-base font-medium text-slate-900">
                     {workspace.members}
                   </p>
-	              </div>
-	            </div>
-
-            {/* Project API Key Card */}
-            <div className="rounded-xl border border-[#e1e4f5] bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Project API Key
-              </h3>
-              <p className="text-xs text-slate-500">
-                Use this key to authenticate API requests for this project.
-              </p>
-
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex h-10 min-w-0 flex-1 items-center gap-3 rounded-lg border border-[#e1e4f5] bg-[#f9fafb] px-4">
-                  <span className="truncate font-mono text-[12px] text-slate-900">
-                    {!workspaceIdForApiKey
-                      ? "Workspace unavailable"
-                      : isProjectApiKeyLoading
-                        ? "Loading..."
-                        : isProjectApiKeyError
-                          ? "Failed to load"
-                          : projectApiKeyValue || "API key not found"}
-                  </span>
                 </div>
-
-                <button
-                  type="button"
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#e1e4f5] bg-white px-4 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition hover:border-[#ced3f0] disabled:cursor-not-allowed disabled:opacity-50"
-                  onClick={() => void copyProjectApiKey()}
-                  disabled={!projectApiKeyValue || isProjectApiKeyLoading}
-                  aria-label="Copy project API key"
-                >
-                  <Link2 className="h-4 w-4 text-slate-500" />
-                  Copy
-                </button>
               </div>
+
+              {/* Project API Key Card */}
             </div>
-	          </div>
           </div>
 
           {/* Project Info Card */}
