@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -41,6 +41,8 @@ type RegisterFormValues = InferType<typeof registerSchema>;
 
 const RegisterPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
   const [showPassword, setShowPassword] = useState(false);
   const { mutateAsync: register, isPending } = useRegisterMutation();
   const form = useForm<RegisterFormValues>({
@@ -76,6 +78,9 @@ const RegisterPage = () => {
       const params = new URLSearchParams({
         email: values.email,
       });
+      if (callbackUrl) {
+        params.set("callbackUrl", callbackUrl);
+      }
       router.push(`/verify-otp?${params.toString()}`);
     } catch (error: unknown) {
       handleError(error);

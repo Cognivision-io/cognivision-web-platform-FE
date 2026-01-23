@@ -29,6 +29,7 @@ const VerifyOtpContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") ?? "";
+  const callbackUrl = searchParams.get("callbackUrl");
   const shouldAutoSend = searchParams.get("autoSend") === "true";
   const [otp, setOtp] = useState("");
   const hasTriggeredAutoSendRef = useRef(false);
@@ -53,7 +54,10 @@ const VerifyOtpContent = () => {
       }
 
       CustomToast.success("Successfully verified your code");
-      router.replace("/login");
+      const loginRedirect = callbackUrl
+        ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
+        : "/login";
+      router.replace(loginRedirect);
     } catch (error: unknown) {
       const message = (
         error as { response?: { data?: { message?: string | string[] } } }
