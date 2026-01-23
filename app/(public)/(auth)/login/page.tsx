@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import CustomToast from "@/components/ui/sonner";
 
 const LoginPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
   const login = useAuthStore((state) => state.login);
   const { mutateAsync: loginMutation, isPending } = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
@@ -50,7 +52,7 @@ const LoginPage = () => {
 
       await login(token, userPayload);
 
-      router.replace("/dashboard");
+      router.replace(callbackUrl ?? "/dashboard");
     } catch (error: unknown) {
       const errorResponse = (
         error as {

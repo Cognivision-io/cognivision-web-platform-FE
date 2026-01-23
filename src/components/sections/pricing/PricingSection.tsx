@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 import {
   CheckCircle2,
   Database,
@@ -15,17 +17,25 @@ import {
 } from "lucide-react";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import { GlowSection } from "@/components/layout/GlowLayout";
+import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/stores/auth-store";
+import { useSubscriptionModalStore } from "@/stores/subscription-modal-store";
+import { SubscriptionPlanKey } from "@/features/subscription/types";
 
 type Billing = "monthly" | "annual";
 
 type Plan = {
-  key: "public" | "core" | "enterprise";
+  key: SubscriptionPlanKey;
   title: string;
   subtitle: string;
   priceLabel: string; // "Free" | "$79" | "Contact Us"
   strikeLabel?: string; // "$99"
   priceMeta?: string; // "per month, billed annually"
-  cta: { label: string; href: string };
+  cta: {
+    label: string;
+    href?: string;
+    onClick?: () => void;
+  };
   topRows: {
     icon: React.ReactNode;
     label: string;
@@ -173,13 +183,26 @@ function PricingCard({ plan, dimmed }: { plan: Plan; dimmed?: boolean }) {
         </div>
 
         <div className="mt-auto pt-6">
-          <a
-            href={plan.cta.href}
-            className="inline-flex h-11 w-full items-center justify-center rounded-md text-[13px] font-semibold text-white"
-            style={{ backgroundColor: PURPLE }}
-          >
-            {plan.cta.label}
-          </a>
+          {plan.cta.href ? (
+            <Button
+              asChild
+              size="lg"
+              className="w-full"
+              style={{ backgroundColor: PURPLE }}
+            >
+              <Link href={plan.cta.href}>{plan.cta.label}</Link>
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              size="lg"
+              className="w-full"
+              onClick={plan.cta.onClick}
+              style={{ backgroundColor: PURPLE }}
+            >
+              {plan.cta.label}
+            </Button>
+          )}
         </div>
       </div>
       {/* Divider */}
@@ -206,124 +229,137 @@ function PricingCard({ plan, dimmed }: { plan: Plan; dimmed?: boolean }) {
 
 export function PricingSection() {
   const [billing, setBilling] = useState<Billing>("monthly");
+  const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const openModal = useSubscriptionModalStore((state) => state.openModal);
 
-  const plans = useMemo<Plan[]>(() => {
-    const corePrice = billing === "annual" ? "$79" : "$99";
-    const coreStrike = billing === "annual" ? "$99" : undefined;
-    const coreMeta =
-      billing === "annual"
-        ? "per month, billed annually"
-        : "per month, billed monthly";
+  const handlePlanUpgrade = (planKey: SubscriptionPlanKey) => {
+    if (user) {
+      openModal(planKey);
+      return;
+    }
+    const callbackUrl = `/dashboard?upgradePlan=${planKey}`;
+    router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  };
 
-    return [
-      {
-        key: "public",
-        title: "Public",
-        subtitle: "Best for Open Source and Exploration",
-        priceLabel: "Free",
-        cta: { label: "Get Started for Free", href: "/register" },
-        topRows: [
-          {
-            icon: <Database className="h-4 w-4" />,
-            value: "$60/mo",
-            label: "free credits",
-          },
-          {
-            icon: <Coins className="h-4 w-4" />,
-            value: "$4/credit",
-            label: "",
-          },
-          { icon: <Users className="h-4 w-4" />, value: "2 users", label: "" },
-          {
-            icon: <MessagesSquare className="h-4 w-4" />,
-            value: "Community Support",
-            label: "",
-          },
-        ],
-        includedTitle: "What’s included:",
-        included: [
-          "Swift & Kotlin SDKs",
-          "Data labeling suite w/ AI features",
-          "Model training",
-          "Workflow builder",
-          "Cloud hosted deployment",
-          "Edge device sandbox",
-        ],
+  const corePrice = billing === "annual" ? "$79" : "$99";
+  const coreStrike = billing === "annual" ? "$99" : undefined;
+  const coreMeta =
+    billing === "annual"
+      ? "per month, billed annually"
+      : "per month, billed monthly";
+
+  const plans: Plan[] = [
+    {
+      key: "public",
+      title: "Public",
+      subtitle: "Best for Open Source and Exploration",
+      priceLabel: "Free",
+      cta: { label: "Get Started for Free", href: "/register" },
+      topRows: [
+        {
+          icon: <Database className="h-4 w-4" />,
+          value: "$60/mo",
+          label: "free credits",
+        },
+        {
+          icon: <Coins className="h-4 w-4" />,
+          value: "$4/credit",
+          label: "",
+        },
+        { icon: <Users className="h-4 w-4" />, value: "2 users", label: "" },
+        {
+          icon: <MessagesSquare className="h-4 w-4" />,
+          value: "Community Support",
+          label: "",
+        },
+      ],
+      includedTitle: "What’s included:",
+      included: [
+        "Swift & Kotlin SDKs",
+        "Data labeling suite w/ AI features",
+        "Model training",
+        "Workflow builder",
+        "Cloud hosted deployment",
+        "Edge device sandbox",
+      ],
+    },
+    {
+      key: "core",
+      title: "Core",
+      subtitle: "Best for Small Projects with Private Data",
+      priceLabel: corePrice,
+      strikeLabel: coreStrike,
+      priceMeta: coreMeta,
+      cta: {
+        label: "Upgrade to Core",
+        onClick: () => handlePlanUpgrade("core"),
       },
-      {
-        key: "core",
-        title: "Core",
-        subtitle: "Best for Small Projects with Private Data",
-        priceLabel: corePrice,
-        strikeLabel: coreStrike,
-        priceMeta: coreMeta,
-        cta: { label: "Get Started for Free", href: "/register" },
-        topRows: [
-          {
-            icon: <Database className="h-4 w-4" />,
-            value: "$60/mo",
-            label: "free credits",
-            sub: "(Annual commitments receive all credits immediately)",
-          },
-          {
-            icon: <Coins className="h-4 w-4" />,
-            value: "$4/credit",
-            label: "",
-          },
-          { icon: <Users className="h-4 w-4" />, value: "3 users", label: "" },
-          {
-            icon: <MessagesSquare className="h-4 w-4" />,
-            value: "Community Support",
-            label: "",
-          },
-        ],
-        includedTitle: "Features in Public, plus:",
-        included: [
-          "React Native & Flutter SDKs",
-          "Private data & models",
-          "Training analytics",
-          "Model evaluation",
-          "Preprocessing & augmentations",
-          "Train concurrent models",
-          "Download model weights",
-        ],
-      },
-      {
-        key: "enterprise",
-        title: "Enterprise",
-        subtitle: "Best for Production Deployments",
-        priceLabel: "Contact Us",
-        cta: { label: "Contact Sales", href: "/contact-us" },
-        topRows: [
-          {
-            icon: <Database className="h-4 w-4" />,
-            value: "Custom",
-            label: "",
-          },
-          {
-            icon: <Coins className="h-4 w-4" />,
-            value: "Custom",
-            label: "",
-          },
-          { icon: <Users className="h-4 w-4" />, value: "Custom", label: "" },
-          {
-            icon: <Headphones className="h-4 w-4" />,
-            value: "Enterprise Support",
-            label: "",
-          },
-        ],
-        includedTitle: "Features in Core, plus:",
-        included: [
-          "Deploy to the edge with commercial Inference model license",
-          "Priority access to faster cloud GPUs",
-          "RBAC with annotation review",
-          "Workflow versioning",
-          "Model monitoring",
-          "Filter model evaluation by tag",
-        ],
-      },
-    ];
-  }, [billing]);
+      topRows: [
+        {
+          icon: <Database className="h-4 w-4" />,
+          value: "$60/mo",
+          label: "free credits",
+          sub: "(Annual commitments receive all credits immediately)",
+        },
+        {
+          icon: <Coins className="h-4 w-4" />,
+          value: "$4/credit",
+          label: "",
+        },
+        { icon: <Users className="h-4 w-4" />, value: "3 users", label: "" },
+        {
+          icon: <MessagesSquare className="h-4 w-4" />,
+          value: "Community Support",
+          label: "",
+        },
+      ],
+      includedTitle: "Features in Public, plus:",
+      included: [
+        "React Native & Flutter SDKs",
+        "Private data & models",
+        "Training analytics",
+        "Model evaluation",
+        "Preprocessing & augmentations",
+        "Train concurrent models",
+        "Download model weights",
+      ],
+    },
+    {
+      key: "enterprise",
+      title: "Enterprise",
+      subtitle: "Best for Production Deployments",
+      priceLabel: "Contact Us",
+      cta: { label: "Contact Sales", href: "/contact-us" },
+      topRows: [
+        {
+          icon: <Database className="h-4 w-4" />,
+          value: "Custom",
+          label: "",
+        },
+        {
+          icon: <Coins className="h-4 w-4" />,
+          value: "Custom",
+          label: "",
+        },
+        { icon: <Users className="h-4 w-4" />, value: "Custom", label: "" },
+        {
+          icon: <Headphones className="h-4 w-4" />,
+          value: "Enterprise Support",
+          label: "",
+        },
+      ],
+      includedTitle: "Features in Core, plus:",
+      included: [
+        "Deploy to the edge with commercial Inference model license",
+        "Priority access to faster cloud GPUs",
+        "RBAC with annotation review",
+        "Workflow versioning",
+        "Model monitoring",
+        "Filter model evaluation by tag",
+      ],
+    },
+  ];
 
   return (
     <GlowSection

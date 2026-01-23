@@ -23,8 +23,12 @@ import {
   useLogoutMutation,
   useUpdateUserMutation,
 } from "@/features/auth/mutations/auth.mutation";
+import {
+  useGetSubscriptionQuery,
+} from "@/features/subscription/mutations/subscription.mutation";
 import { isValidEmail } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
+import { useSubscriptionModalStore } from "@/stores/subscription-modal-store";
 
 const LoginSecurityPage = () => {
   const router = useRouter();
@@ -40,6 +44,27 @@ const LoginSecurityPage = () => {
     useUpdateUserMutation();
   const [isChangeEmailOpen, setIsChangeEmailOpen] = useState(false);
   const [newEmail, setNewEmail] = useState("");
+  const openSubscriptionModal = useSubscriptionModalStore(
+    (state) => state.openModal
+  );
+  const subscriptionPlanId = user?.subscriptionPlans?.[0];
+  const { data: subscriptionPlanResponse, isLoading: isPlanLoading } =
+    useGetSubscriptionQuery(subscriptionPlanId);
+
+  const subscriptionPlan = subscriptionPlanResponse?.data;
+  const planPrice = subscriptionPlan?.price
+    ? Number(subscriptionPlan.price)
+    : 0;
+  const planCycle = subscriptionPlan?.billingCycle ?? "monthly";
+  const planCurrency = subscriptionPlan?.currency ?? "USD";
+  const annualTotal =
+    planCycle === "annual" ? (planPrice * 12).toFixed(2) : null;
+  const planDisplayName = subscriptionPlan?.name ?? "Public Plan";
+  const planPriceLabel = isPlanLoading
+    ? "Loading..."
+    : subscriptionPlan
+      ? `$${planPrice.toFixed(2)}/mo`
+      : "$0.00/mo";
 
   const displayName = useMemo(() => {
     if (!user) return "Hania Hasan";
@@ -187,10 +212,45 @@ const LoginSecurityPage = () => {
         </div>
       </div>
 
+      <div className="rounded-lg border border-[#e0e5ff] bg-white px-5 py-6 shadow-[0_24px_50px_rgba(41,53,108,0.07)]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9aa1c5]">
+              Current Plan
+            </p>
+            <p className="text-lg font-semibold text-[#1b2559]">
+              {isPlanLoading ? "Checking plan..." : planDisplayName}
+            </p>
+            <p className="text-sm text-[#6c7292]">
+              {subscriptionPlan
+                ? `${planCycle === "annual" ? "Annual billing" : "Monthly billing"} · ${planCurrency}`
+                : "Public tier · Free"}
+            </p>
+            {subscriptionPlan && planCycle === "annual" && annualTotal && (
+              <p className="text-xs text-[#9aa1c5]">
+                ${annualTotal} billed once a year
+              </p>
+            )}
+          </div>
+          <div className="flex items-end gap-4">
+            <div className="text-2xl font-bold text-[#141b2d]">
+              {planPriceLabel}
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => openSubscriptionModal("core")}
+              className="h-10 rounded-xl px-4 text-sm font-semibold"
+            >
+              Upgrade Plan
+            </Button>
+          </div>
+        </div>
+      </div>
+
       <div>
         <h2 className="text-lg font-semibold text-[#1b2559]">Modify Account</h2>
         <div className="mt-4 flex flex-wrap gap-3">
-          <Dialog open={isChangeEmailOpen} onOpenChange={setIsChangeEmailOpen}>
+            <Dialog open={isChangeEmailOpen} onOpenChange={setIsChangeEmailOpen}>
             <DialogTrigger asChild>
               <Button
                 type="button"
@@ -234,8 +294,8 @@ const LoginSecurityPage = () => {
                 </DialogFooter>
               </form>
             </DialogContent>
-          </Dialog>
-          <Button
+            </Dialog>
+            <Button
             type="button"
             variant="outline"
             disabled={isDeletingUser}
