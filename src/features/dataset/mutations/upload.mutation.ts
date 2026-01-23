@@ -8,7 +8,6 @@ import type {
 } from "@/interfaces/upload.interface";
 
 type UploadError = AxiosError<{ message?: string | string[] }>;
-
 export const UPLOAD_IMAGES_MUTATION_KEY = ["project", "upload-images"] as const;
 export const UPLOAD_FOLDER_MUTATION_KEY = ["project", "upload-folder"] as const;
 
