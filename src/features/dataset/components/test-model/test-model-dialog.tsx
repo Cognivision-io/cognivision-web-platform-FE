@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,12 +29,12 @@ interface TestModelDialogProps {
   children: React.ReactNode;
 }
 
-export const TestModelDialog = ({
+function TestModelDialogInner({
   version,
   project,
   workspaceName,
   children,
-}: TestModelDialogProps) => {
+}: TestModelDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [confidenceThreshold, setConfidenceThreshold] = useState(50);
@@ -437,5 +437,13 @@ export const TestModelDialog = ({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export const TestModelDialog = (props: TestModelDialogProps) => {
+  return (
+    <Suspense fallback={null}>
+      <TestModelDialogInner {...props} />
+    </Suspense>
   );
 };

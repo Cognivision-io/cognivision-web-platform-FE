@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import SummaryCards from "@/components/dashboard/monitoring/SummaryCards";
 import AnnotationCard from "@/components/dashboard/monitoring/AnnotationCard";
@@ -16,7 +16,7 @@ import { useWorkspaceQuery } from "@/features/workspace/queries/workspace.query"
 const normalizeProjectId = (value: unknown) =>
   value === null || value === undefined ? "" : String(value);
 
-export default function MonitoringPage() {
+function MonitoringPageInner() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -161,5 +161,19 @@ export default function MonitoringPage() {
         />
       </section>
     </div>
+  );
+}
+
+export default function MonitoringPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto w-full max-w-7xl space-y-6 px-6 py-8 text-muted-foreground lg:px-10">
+          <div className="text-sm">Loading monitoring...</div>
+        </div>
+      }
+    >
+      <MonitoringPageInner />
+    </Suspense>
   );
 }

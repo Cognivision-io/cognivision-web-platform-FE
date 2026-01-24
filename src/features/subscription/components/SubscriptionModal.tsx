@@ -65,7 +65,7 @@ const PLAN_LABELS: Record<SubscriptionPlanKey, string> = {
 const SubscriptionModal = () => {
   const { isOpen, planKey, closeModal } = useSubscriptionModalStore();
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
-  const { mutateAsync, isLoading } = useCreateSubscriptionMutation();
+  const { mutateAsync, isPending } = useCreateSubscriptionMutation();
   const refreshUser = useAuthStore((state) => state.refreshUserFromSession);
 
   useEffect(() => {
@@ -161,10 +161,10 @@ const SubscriptionModal = () => {
         <DialogFooter>
           <Button
             className="w-full"
-            disabled={isLoading || !plan}
+            disabled={isPending || !plan}
             onClick={handleConfirm}
           >
-            {isLoading ? "Processing..." : "Confirm Upgrade"}
+            {isPending ? "Processing..." : "Confirm Upgrade"}
           </Button>
         </DialogFooter>
       </DialogContent>
