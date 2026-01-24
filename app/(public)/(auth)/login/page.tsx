@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
@@ -12,7 +12,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useLoginMutation } from "@/features/auth/mutations/auth.mutation";
 import CustomToast from "@/components/ui/sonner";
 
-const LoginPage = () => {
+function LoginPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
@@ -180,6 +180,20 @@ const LoginPage = () => {
         </form>
       </div>
     </div>
+  );
+};
+
+const LoginPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex w-full items-center justify-center px-6 py-12 text-muted-foreground lg:w-1/2 lg:px-12">
+          <div className="text-center text-sm">Loading login...</div>
+        </div>
+      }
+    >
+      <LoginPageInner />
+    </Suspense>
   );
 };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
@@ -39,7 +39,7 @@ const registerSchema = yup.object({
 
 type RegisterFormValues = InferType<typeof registerSchema>;
 
-const RegisterPage = () => {
+function RegisterPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
@@ -222,6 +222,20 @@ const RegisterPage = () => {
         </Form>
       </div>
     </div>
+  );
+};
+
+const RegisterPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex w-full items-center justify-center px-6 py-12 text-muted-foreground lg:w-1/2 lg:px-12">
+          <div className="text-center text-sm">Loading registration...</div>
+        </div>
+      }
+    >
+      <RegisterPageInner />
+    </Suspense>
   );
 };
 

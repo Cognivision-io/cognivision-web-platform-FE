@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
@@ -13,7 +13,7 @@ import {
 } from "@/features/subscription/types";
 import SubscriptionModal from "@/features/subscription/components/SubscriptionModal";
 
-export default function PrivateLayout({
+function PrivateLayoutInner({
   children,
 }: {
   children: React.ReactNode;
@@ -72,5 +72,23 @@ export default function PrivateLayout({
       </div>
       <SubscriptionModal />
     </SidebarProvider>
+  );
+}
+
+export default function PrivateLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid min-h-screen place-items-center bg-background text-foreground">
+          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+        </div>
+      }
+    >
+      <PrivateLayoutInner>{children}</PrivateLayoutInner>
+    </Suspense>
   );
 }
