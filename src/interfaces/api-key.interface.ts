@@ -25,3 +25,10 @@ export type GetProjectApiKeysResponse = {
   message: string;
 };
 
+export type GetProjectApiKeyValueResponse = {
+  statusCode: number;
+  data: {
+    apiKey: string;
+  };
+  message: string;
+};
