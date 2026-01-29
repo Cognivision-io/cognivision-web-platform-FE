@@ -17,8 +17,13 @@ import { TestModelDialog } from "@/features/dataset/components/test-model/test-m
 import { ProjectImagesTabs } from "@/features/dataset/components/project-images-tabs";
 import { formatDistanceToNow } from "date-fns";
 import { useCurrentWorkspaceId } from "@/hooks/use-current-workspace-id";
-import { useProjectApiKeyQuery } from "@/features/api-key/queries/api-key.query";
+import {
+  useProjectApiKeyQuery,
+  useProjectApiKeyValueQuery,
+} from "@/features/api-key/queries/api-key.query";
 import CustomToast from "@/components/ui/sonner";
+import { useMemo } from "react";
+import { Input } from "@/components/ui/input";
 
 const ProjectDetailPage = () => {
   const params = useParams<{ id: string }>();
@@ -49,7 +54,7 @@ const ProjectDetailPage = () => {
       workspaceId: workspaceIdForApiKey,
       projectId: Number.isFinite(projectId) ? projectId : undefined,
       page: 1,
-      limit: 1,
+      limit: 10,
     },
     {
       enabled:
@@ -60,13 +65,34 @@ const ProjectDetailPage = () => {
     },
   );
 
-  const projectApiKeyEntry = projectApiKeyResponse?.data?.data?.[0];
-  const projectApiKeyValue =
-    projectApiKeyEntry?.apiKey ||
-    projectApiKeyEntry?.key ||
-    projectApiKeyEntry?.token ||
-    projectApiKeyEntry?.value ||
-    "";
+  const projectApiKeyEntry = useMemo(() => {
+    const entries = projectApiKeyResponse?.data?.data ?? [];
+    const match = entries.find((entry) => entry.project === projectId);
+    return match ?? entries[0];
+  }, [projectApiKeyResponse?.data?.data, projectId]);
+
+  const projectApiKeyId = projectApiKeyEntry?.id;
+
+  const {
+    data: projectApiKeyValueResponse,
+    isLoading: isProjectApiKeyValueLoading,
+    isError: isProjectApiKeyValueError,
+  } = useProjectApiKeyValueQuery(
+    { apiKeyId: projectApiKeyId },
+    {
+      enabled:
+        !!workspaceIdForApiKey &&
+        !!projectApiKeyId &&
+        !isProjectApiKeyLoading &&
+        !isProjectApiKeyError,
+    },
+  );
+
+  const projectApiKeyValue = projectApiKeyValueResponse?.data?.apiKey ?? "";
+
+  const maskedProjectApiKeyValue = projectApiKeyValue
+    ? "pj_**************************"
+    : "";
 
   const copyProjectApiKey = async () => {
     try {
@@ -146,23 +172,29 @@ const ProjectDetailPage = () => {
 
             {/* RIGHT: Key + copy */}
             <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center md:justify-end">
-              <div className="flex h-10 w-full md:w-[420px] min-w-0 items-center gap-3 rounded-lg border border-[#e1e4f5] bg-[#f9fafb] px-4">
-                <span className="min-w-0 truncate font-mono text-[12px] text-slate-900">
-                  {!workspaceIdForApiKey
+              <Input
+                readOnly
+                value={
+                  !workspaceIdForApiKey
                     ? "Workspace unavailable"
-                    : isProjectApiKeyLoading
+                    : isProjectApiKeyLoading || isProjectApiKeyValueLoading
                       ? "Loading..."
-                      : isProjectApiKeyError
+                      : isProjectApiKeyError || isProjectApiKeyValueError
                         ? "Failed to load"
-                        : projectApiKeyValue || "API key not found"}
-                </span>
-              </div>
+                        : maskedProjectApiKeyValue || "API key not found"
+                }
+                className="h-10 w-full md:w-[420px] font-mono text-[12px] text-slate-900 border-[#e1e4f5] bg-[#f9fafb] focus-visible:ring-0"
+              />
 
               <button
                 type="button"
                 className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg border border-[#e1e4f5] bg-white px-4 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition hover:border-[#ced3f0] disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={() => void copyProjectApiKey()}
-                disabled={!projectApiKeyValue || isProjectApiKeyLoading}
+                disabled={
+                  !projectApiKeyValue ||
+                  isProjectApiKeyLoading ||
+                  isProjectApiKeyValueLoading
+                }
                 aria-label="Copy project API key"
               >
                 <Link2 className="h-4 w-4 text-slate-500" />
