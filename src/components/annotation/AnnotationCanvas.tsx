@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { Polygon, Point, ImageItem, AnnotationClass } from '@/types/annotation';
-import { Move, Edit3, Trash2, Tag, ZoomIn, ZoomOut, RefreshCw } from 'lucide-react';
+import { Move, Edit3, Trash2, Tag } from 'lucide-react';
 
 interface AnnotationCanvasProps {
                     image: ImageItem | null;
@@ -28,175 +28,248 @@ export default function AnnotationCanvas({
                     const [tool, setTool] = useState<Tool>('select');
                     const [selectedPolygonId, setSelectedPolygonId] = useState<string | null>(null);
                     const [draggedVertexIndex, setDraggedVertexIndex] = useState<number | null>(null);
-                    const [zoom, setZoom] = useState(1);
-                    const [baseScale, setBaseScale] = useState(1);
-                    const [offset, setOffset] = useState({ x: 0, y: 0 });
-                    const [isPanning, setIsPanning] = useState(false);
-                    const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+
+                    const [scale, setScale] = useState(1);
+                    const [offsetX, setOffsetX] = useState(0);
+                    const [offsetY, setOffsetY] = useState(0);
+
+                    const [isDrawingSelection, setIsDrawingSelection] = useState(false);
+                    const [selectionStart, setSelectionStart] = useState<Point | null>(null);
+                    const [selectionEnd, setSelectionEnd] = useState<Point | null>(null);
+
+                    useEffect(() => {
+                                        if (!image || !canvasRef.current || !containerRef.current) return;
+
+                                        const canvas = canvasRef.current;
+                                        const container = containerRef.current;
+
+                                        canvas.width = container.clientWidth;
+                                        canvas.height = container.clientHeight;
+
+                                        const fitScale = Math.min(
+                                                            canvas.width / image.width!,
+                                                            canvas.height / image.height!,
+                                                            1
+                                        );
+
+                                        setScale(fitScale);
+                                        setOffsetX((canvas.width - image.width! * fitScale) / 2);
+                                        setOffsetY((canvas.height - image.height! * fitScale) / 2);
+                    }, [image]);
 
                     useEffect(() => {
                                         if (!image || !canvasRef.current) return;
+                                        draw();
+                    }, [image, polygons, selectedPolygonId, tool, scale, offsetX, offsetY, selectionStart, selectionEnd]);
 
+                    const draw = () => {
                                         const canvas = canvasRef.current;
+                                        if (!canvas || !image) return;
+
                                         const ctx = canvas.getContext('2d');
                                         if (!ctx) return;
 
-                                        const img = new window.Image();
+                                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                                        const img = new Image();
                                         img.onload = () => {
-                                                            const containerWidth = containerRef.current?.clientWidth || 800;
-                                                            const containerHeight = containerRef.current?.clientHeight || 600;
+                                                            ctx.save();
+                                                            ctx.translate(offsetX, offsetY);
+                                                            ctx.scale(scale, scale);
+                                                            ctx.drawImage(img, 0, 0, image.width!, image.height!);
+                                                            ctx.restore();
 
-                                                            const scaleX = containerWidth / img.width;
-                                                            const scaleY = containerHeight / img.height;
-                                                            const newBaseScale = Math.min(scaleX, scaleY, 1);
+                                                            polygons.forEach((polygon) => {
+                                                                                const cls = classes.find((c) => c.id === polygon.classId);
+                                                                                const color = cls?.color || '#3b82f6';
+                                                                                const isSelected = polygon.id === selectedPolygonId;
 
-                                                            setBaseScale(newBaseScale);
-                                                            canvas.width = img.width;
-                                                            canvas.height = img.height;
+                                                                                ctx.beginPath();
+                                                                                polygon.points.forEach((point, i) => {
+                                                                                                    const screenX = point.x * scale + offsetX;
+                                                                                                    const screenY = point.y * scale + offsetY;
+                                                                                                    if (i === 0) ctx.moveTo(screenX, screenY);
+                                                                                                    else ctx.lineTo(screenX, screenY);
+                                                                                });
+                                                                                ctx.closePath();
 
-                                                            const offsetX = (containerWidth - img.width * newBaseScale * zoom) / 2;
-                                                            const offsetY = (containerHeight - img.height * newBaseScale * zoom) / 2;
-                                                            setOffset({ x: offsetX, y: offsetY });
+                                                                                ctx.fillStyle = color + '33';
+                                                                                ctx.fill();
+                                                                                ctx.strokeStyle = isSelected ? '#ffffff' : color;
+                                                                                ctx.lineWidth = isSelected ? 3 : 2;
+                                                                                ctx.stroke();
 
-                                                            drawCanvas(ctx, img);
+                                                                                if (isSelected && tool === 'edit') {
+                                                                                                    polygon.points.forEach((point) => {
+                                                                                                                        const screenX = point.x * scale + offsetX;
+                                                                                                                        const screenY = point.y * scale + offsetY;
+                                                                                                                        ctx.beginPath();
+                                                                                                                        ctx.arc(screenX, screenY, 5, 0, Math.PI * 2);
+                                                                                                                        ctx.fillStyle = '#ffffff';
+                                                                                                                        ctx.fill();
+                                                                                                                        ctx.strokeStyle = color;
+                                                                                                                        ctx.lineWidth = 2;
+                                                                                                                        ctx.stroke();
+                                                                                                    });
+                                                                                }
+                                                            });
+
+                                                            // Draw selection rectangle
+                                                            if (selectionStart && selectionEnd) {
+                                                                                const startX = selectionStart.x * scale + offsetX;
+                                                                                const startY = selectionStart.y * scale + offsetY;
+                                                                                const endX = selectionEnd.x * scale + offsetX;
+                                                                                const endY = selectionEnd.y * scale + offsetY;
+
+                                                                                ctx.strokeStyle = '#3b82f6';
+                                                                                ctx.lineWidth = 2;
+                                                                                ctx.setLineDash([5, 5]);
+                                                                                ctx.strokeRect(
+                                                                                                    Math.min(startX, endX),
+                                                                                                    Math.min(startY, endY),
+                                                                                                    Math.abs(endX - startX),
+                                                                                                    Math.abs(endY - startY)
+                                                                                );
+                                                                                ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+                                                                                ctx.fillRect(
+                                                                                                    Math.min(startX, endX),
+                                                                                                    Math.min(startY, endY),
+                                                                                                    Math.abs(endX - startX),
+                                                                                                    Math.abs(endY - startY)
+                                                                                );
+                                                                                ctx.setLineDash([]);
+                                                            }
                                         };
                                         img.src = image.url;
-                    }, [image, polygons, selectedPolygonId, tool, zoom]);
-
-                    const drawCanvas = (ctx: CanvasRenderingContext2D, img: HTMLImageElement) => {
-                                        const scale = baseScale * zoom;
-                                        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                        ctx.save();
-                                        ctx.scale(scale, scale);
-                                        ctx.drawImage(img, 0, 0);
-                                        ctx.restore();
-
-                                        polygons.forEach((polygon) => {
-                                                            const cls = classes.find((c) => c.id === polygon.classId);
-                                                            const color = cls?.color || '#3b82f6';
-                                                            const isSelected = polygon.id === selectedPolygonId;
-
-                                                            ctx.beginPath();
-                                                            polygon.points.forEach((point, i) => {
-                                                                                const x = point.x * scale;
-                                                                                const y = point.y * scale;
-                                                                                if (i === 0) ctx.moveTo(x, y);
-                                                                                else ctx.lineTo(x, y);
-                                                            });
-                                                            ctx.closePath();
-
-                                                            ctx.fillStyle = color + '33';
-                                                            ctx.fill();
-                                                            ctx.strokeStyle = isSelected ? '#ffffff' : color;
-                                                            ctx.lineWidth = isSelected ? 3 : 2;
-                                                            ctx.stroke();
-
-                                                            if (isSelected && tool === 'edit') {
-                                                                                polygon.points.forEach((point) => {
-                                                                                                    const x = point.x * scale;
-                                                                                                    const y = point.y * scale;
-                                                                                                    ctx.beginPath();
-                                                                                                    ctx.arc(x, y, 5, 0, Math.PI * 2);
-                                                                                                    ctx.fillStyle = '#ffffff';
-                                                                                                    ctx.fill();
-                                                                                                    ctx.strokeStyle = color;
-                                                                                                    ctx.lineWidth = 2;
-                                                                                                    ctx.stroke();
-                                                                                });
-                                                            }
-                                        });
                     };
 
-                    const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-                                        e.preventDefault();
-                                        const delta = e.deltaY > 0 ? 0.9 : 1.1;
-                                        setZoom((prev) => Math.min(Math.max(prev * delta, 0.1), 5));
-                    };
-
-                    const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-                                        const canvas = canvasRef.current;
-                                        if (!canvas) return;
-
-                                        const scale = baseScale * zoom;
-                                        const rect = canvas.getBoundingClientRect();
-                                        const x = (e.clientX - rect.left) / scale;
-                                        const y = (e.clientY - rect.top) / scale;
-
-                                        const clickedPolygon = polygons.find((polygon) =>
-                                                            isPointInPolygon({ x, y }, polygon.points)
-                                        );
-
-                                        if (tool === 'select') {
-                                                            setSelectedPolygonId(clickedPolygon?.id || null);
-                                        } else if (tool === 'delete' && clickedPolygon) {
-                                                            onDeletePolygon(clickedPolygon.id);
-                                                            setSelectedPolygonId(null);
-                                        }
+                    const screenToImage = (screenX: number, screenY: number): Point => {
+                                        return {
+                                                            x: (screenX - offsetX) / scale,
+                                                            y: (screenY - offsetY) / scale
+                                        };
                     };
 
                     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-                                        if (tool !== 'edit' || !selectedPolygonId) return;
-
                                         const canvas = canvasRef.current;
                                         if (!canvas) return;
 
-                                        const scale = baseScale * zoom;
                                         const rect = canvas.getBoundingClientRect();
-                                        const x = (e.clientX - rect.left) / scale;
-                                        const y = (e.clientY - rect.top) / scale;
+                                        const mouseX = e.clientX - rect.left;
+                                        const mouseY = e.clientY - rect.top;
+                                        const imagePoint = screenToImage(mouseX, mouseY);
 
-                                        const selectedPolygon = polygons.find((p) => p.id === selectedPolygonId);
-                                        if (!selectedPolygon) return;
+                                        if (tool === 'select') {
+                                                            setIsDrawingSelection(true);
+                                                            setSelectionStart(imagePoint);
+                                                            setSelectionEnd(imagePoint);
+                                                            return;
+                                        }
 
-                                        const vertexIndex = selectedPolygon.points.findIndex((point) => {
-                                                            const distance = Math.sqrt(Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2));
-                                                            return distance < 10 / scale;
-                                        });
+                                        if (tool === 'edit' && selectedPolygonId) {
+                                                            const selectedPolygon = polygons.find((p) => p.id === selectedPolygonId);
+                                                            if (!selectedPolygon) return;
 
-                                        if (vertexIndex !== -1) {
-                                                            setDraggedVertexIndex(vertexIndex);
+                                                            const vertexIndex = selectedPolygon.points.findIndex((point) => {
+                                                                                const dist = Math.sqrt(
+                                                                                                    Math.pow(point.x - imagePoint.x, 2) +
+                                                                                                    Math.pow(point.y - imagePoint.y, 2)
+                                                                                );
+                                                                                return dist < 10 / scale;
+                                                            });
+
+                                                            if (vertexIndex !== -1) {
+                                                                                setDraggedVertexIndex(vertexIndex);
+                                                            }
                                         }
                     };
 
                     const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-                                        if (draggedVertexIndex === null || !selectedPolygonId) return;
+                                        const canvas = canvasRef.current;
+                                        if (!canvas) return;
+
+                                        const rect = canvas.getBoundingClientRect();
+                                        const mouseX = e.clientX - rect.left;
+                                        const mouseY = e.clientY - rect.top;
+                                        const imagePoint = screenToImage(mouseX, mouseY);
+
+                                        if (isDrawingSelection && selectionStart) {
+                                                            setSelectionEnd(imagePoint);
+                                                            return;
+                                        }
+
+                                        if (draggedVertexIndex !== null && selectedPolygonId) {
+                                                            const selectedPolygon = polygons.find((p) => p.id === selectedPolygonId);
+                                                            if (!selectedPolygon) return;
+
+                                                            const newPoints = [...selectedPolygon.points];
+                                                            newPoints[draggedVertexIndex] = imagePoint;
+                                                            onUpdatePolygon(selectedPolygonId, newPoints);
+                                        }
+                    };
+
+                    const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
+                                        if (isDrawingSelection && selectionStart && selectionEnd) {
+                                                            const minX = Math.min(selectionStart.x, selectionEnd.x);
+                                                            const maxX = Math.max(selectionStart.x, selectionEnd.x);
+                                                            const minY = Math.min(selectionStart.y, selectionEnd.y);
+                                                            const maxY = Math.max(selectionStart.y, selectionEnd.y);
+
+                                                            // Find polygon that intersects with selection box
+                                                            const selectedPolygon = polygons.find((polygon) => {
+                                                                                return polygon.points.some((point) => {
+                                                                                                    return point.x >= minX && point.x <= maxX && point.y >= minY && point.y <= maxY;
+                                                                                });
+                                                            });
+
+                                                            if (selectedPolygon) {
+                                                                                setSelectedPolygonId(selectedPolygon.id);
+                                                            } else {
+                                                                                setSelectedPolygonId(null);
+                                                            }
+
+                                                            setIsDrawingSelection(false);
+                                                            setSelectionStart(null);
+                                                            setSelectionEnd(null);
+                                                            return;
+                                        }
+
+                                        if (draggedVertexIndex !== null) {
+                                                            setDraggedVertexIndex(null);
+                                                            return;
+                                        }
 
                                         const canvas = canvasRef.current;
                                         if (!canvas) return;
 
-                                        const scale = baseScale * zoom;
                                         const rect = canvas.getBoundingClientRect();
-                                        const x = (e.clientX - rect.left) / scale;
-                                        const y = (e.clientY - rect.top) / scale;
+                                        const mouseX = e.clientX - rect.left;
+                                        const mouseY = e.clientY - rect.top;
+                                        const imagePoint = screenToImage(mouseX, mouseY);
 
-                                        const selectedPolygon = polygons.find((p) => p.id === selectedPolygonId);
-                                        if (!selectedPolygon) return;
+                                        if (tool === 'delete') {
+                                                            const clickedPolygon = polygons.find((polygon) =>
+                                                                                isPointInPolygon(imagePoint, polygon.points)
+                                                            );
 
-                                        const newPoints = [...selectedPolygon.points];
-                                        newPoints[draggedVertexIndex] = { x, y };
-                                        onUpdatePolygon(selectedPolygonId, newPoints);
+                                                            if (clickedPolygon) {
+                                                                                onDeletePolygon(clickedPolygon.id);
+                                                                                setSelectedPolygonId(null);
+                                                            }
+                                        }
                     };
 
-                    const handleMouseUp = () => {
+                    const handleMouseLeave = () => {
                                         setDraggedVertexIndex(null);
+                                        setIsDrawingSelection(false);
+                                        setSelectionStart(null);
+                                        setSelectionEnd(null);
                     };
 
                     const handleRelabel = (newClassId: string) => {
                                         if (selectedPolygonId) {
                                                             onRelabelPolygon(selectedPolygonId, newClassId);
                                         }
-                    };
-
-                    const handleZoomIn = () => {
-                                        setZoom((prev) => Math.min(prev * 1.2, 5));
-                    };
-
-                    const handleZoomOut = () => {
-                                        setZoom((prev) => Math.max(prev / 1.2, 0.1));
-                    };
-
-                    const handleResetZoom = () => {
-                                        setZoom(1);
                     };
 
                     const isPointInPolygon = (point: Point, polygon: Point[]): boolean => {
@@ -264,56 +337,21 @@ export default function AnnotationCanvas({
                                                                                                                         ))}
                                                                                                     </select>
                                                                                 )}
-
-                                                                                <div className="ml-auto flex gap-1">
-                                                                                                    <button
-                                                                                                                        onClick={handleZoomOut}
-                                                                                                                        className="px-2 py-2 bg-white text-gray-700 hover:bg-gray-50 rounded"
-                                                                                                                        title="Zoom out"
-                                                                                                    >
-                                                                                                                        <ZoomOut className="w-4 h-4" />
-                                                                                                    </button>
-                                                                                                    <button
-                                                                                                                        onClick={handleResetZoom}
-                                                                                                                        className="px-2 py-2 bg-white text-gray-700 hover:bg-gray-50 rounded"
-                                                                                                                        title="Reset zoom"
-                                                                                                    >
-                                                                                                                        <RefreshCw className="w-4 h-4" />
-                                                                                                    </button>
-                                                                                                    <button
-                                                                                                                        onClick={handleZoomIn}
-                                                                                                                        className="px-2 py-2 bg-white text-gray-700 hover:bg-gray-50 rounded"
-                                                                                                                        title="Zoom in"
-                                                                                                    >
-                                                                                                                        <ZoomIn className="w-4 h-4" />
-                                                                                                    </button>
-                                                                                                    <span className="px-3 py-2 bg-white text-gray-700 rounded text-sm">
-                                                                                                                        {Math.round(zoom * 100)}%
-                                                                                                    </span>
-                                                                                </div>
                                                             </div>
 
                                                             <div
                                                                                 ref={containerRef}
                                                                                 className="relative bg-gray-900 rounded-lg overflow-hidden"
                                                                                 style={{ height: '600px' }}
-                                                                                onWheel={handleWheel}
                                                             >
                                                                                 {image ? (
                                                                                                     <canvas
                                                                                                                         ref={canvasRef}
-                                                                                                                        onClick={handleCanvasClick}
                                                                                                                         onMouseDown={handleMouseDown}
                                                                                                                         onMouseMove={handleMouseMove}
                                                                                                                         onMouseUp={handleMouseUp}
-                                                                                                                        onMouseLeave={handleMouseUp}
-                                                                                                                        className="absolute cursor-crosshair"
-                                                                                                                        style={{
-                                                                                                                                            left: `${offset.x}px`,
-                                                                                                                                            top: `${offset.y}px`,
-                                                                                                                                            width: `${image.width! * baseScale * zoom}px`,
-                                                                                                                                            height: `${image.height! * baseScale * zoom}px`,
-                                                                                                                        }}
+                                                                                                                        onMouseLeave={handleMouseLeave}
+                                                                                                                        className="absolute top-0 left-0 w-full h-full cursor-crosshair"
                                                                                                     />
                                                                                 ) : (
                                                                                                     <div className="flex items-center justify-center h-full text-gray-400">

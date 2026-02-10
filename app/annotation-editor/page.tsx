@@ -27,14 +27,14 @@ export default function AnnotationEditor() {
                                                             id: `class-${Date.now()}`,
                                                             name,
                                                             color,
-                                                            prompt: `all ${name} visible in the image`
+                                                            prompt: name
                                         };
                                         setClasses([...classes, newClass]);
                     };
 
                     const handleEditClass = (id: string, name: string, color: string) => {
                                         setClasses(classes.map(cls =>
-                                                            cls.id === id ? { ...cls, name, color, prompt: `all ${name} visible in the image` } : cls
+                                                            cls.id === id ? { ...cls, name, color, prompt: name } : cls
                                         ));
                     };
 
