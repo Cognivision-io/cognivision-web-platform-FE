@@ -57,7 +57,7 @@ export default function AIInference({ classes, imageUrl, onMasksReceived }: AIIn
                                                             const allMasks: Polygon[] = [];
 
                                                             for (const cls of classes) {
-                                                                                const prompt = cls.prompt || `all ${cls.name} visible in the image`;
+                                                                                const prompt = cls.prompt || cls.name;
 
                                                                                 try {
                                                                                                     const response = await fetch('/api/annotation/infer', {

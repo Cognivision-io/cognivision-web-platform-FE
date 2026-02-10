@@ -142,7 +142,7 @@ export default function ClassManager({
                                                                                                                                             <label className="text-xs text-gray-500">Auto-generated prompt:</label>
                                                                                                                                             <input
                                                                                                                                                                 type="text"
-                                                                                                                                                                value={cls.prompt || `all ${cls.name} visible in the image`}
+                                                                                                                                                                value={cls.prompt || cls.name}
                                                                                                                                                                 onChange={(e) => onUpdatePrompt(cls.id, e.target.value)}
                                                                                                                                                                 className="w-full px-2 py-1 border rounded text-sm bg-gray-50"
                                                                                                                                                                 placeholder="Custom prompt"
