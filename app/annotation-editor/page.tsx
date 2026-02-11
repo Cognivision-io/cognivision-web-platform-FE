@@ -11,72 +11,109 @@ import { Save, Download } from 'lucide-react';
 export default function AnnotationEditor() {
                     const [images, setImages] = useState<ImageItem[]>([]);
                     const [currentImage, setCurrentImage] = useState<ImageItem | null>(null);
-                    const [classes, setClasses] = useState<AnnotationClass[]>([]);
-                    const [polygons, setPolygons] = useState<Polygon[]>([]);
+                    const [imageClasses, setImageClasses] = useState<Record<string, AnnotationClass[]>>({});
+                    const [imagePolygons, setImagePolygons] = useState<Record<string, Polygon[]>>({});
+
+                    const currentClasses = currentImage ? (imageClasses[currentImage.id] || []) : [];
+                    const currentPolygons = currentImage ? (imagePolygons[currentImage.id] || []) : [];
 
                     const handleImageSelect = (image: ImageItem) => {
                                         if (!images.find(img => img.id === image.id)) {
                                                             setImages([...images, image]);
                                         }
                                         setCurrentImage(image);
-                                        setPolygons([]);
                     };
 
                     const handleAddClass = (name: string, color: string) => {
+                                        if (!currentImage) return;
                                         const newClass: AnnotationClass = {
                                                             id: `class-${Date.now()}`,
                                                             name,
                                                             color,
                                                             prompt: name
                                         };
-                                        setClasses([...classes, newClass]);
+                                        setImageClasses({
+                                                            ...imageClasses,
+                                                            [currentImage.id]: [...currentClasses, newClass]
+                                        });
                     };
 
                     const handleEditClass = (id: string, name: string, color: string) => {
-                                        setClasses(classes.map(cls =>
-                                                            cls.id === id ? { ...cls, name, color, prompt: name } : cls
-                                        ));
+                                        if (!currentImage) return;
+                                        setImageClasses({
+                                                            ...imageClasses,
+                                                            [currentImage.id]: currentClasses.map(cls =>
+                                                                                cls.id === id ? { ...cls, name, color, prompt: name } : cls
+                                                            )
+                                        });
                     };
 
                     const handleDeleteClass = (id: string) => {
-                                        setClasses(classes.filter(cls => cls.id !== id));
-                                        setPolygons(polygons.filter(p => p.classId !== id));
+                                        if (!currentImage) return;
+                                        setImageClasses({
+                                                            ...imageClasses,
+                                                            [currentImage.id]: currentClasses.filter(cls => cls.id !== id)
+                                        });
+                                        setImagePolygons({
+                                                            ...imagePolygons,
+                                                            [currentImage.id]: currentPolygons.filter(p => p.classId !== id)
+                                        });
                     };
 
                     const handleUpdatePrompt = (id: string, prompt: string) => {
-                                        setClasses(classes.map(cls =>
-                                                            cls.id === id ? { ...cls, prompt } : cls
-                                        ));
+                                        if (!currentImage) return;
+                                        setImageClasses({
+                                                            ...imageClasses,
+                                                            [currentImage.id]: currentClasses.map(cls =>
+                                                                                cls.id === id ? { ...cls, prompt } : cls
+                                                            )
+                                        });
                     };
 
                     const handleMasksReceived = (masks: Polygon[]) => {
-                                        setPolygons([...polygons, ...masks]);
+                                        if (!currentImage) return;
+                                        setImagePolygons({
+                                                            ...imagePolygons,
+                                                            [currentImage.id]: [...currentPolygons, ...masks]
+                                        });
                     };
 
                     const handleUpdatePolygon = (id: string, points: any[]) => {
-                                        setPolygons(polygons.map(p =>
-                                                            p.id === id ? { ...p, points } : p
-                                        ));
+                                        if (!currentImage) return;
+                                        setImagePolygons({
+                                                            ...imagePolygons,
+                                                            [currentImage.id]: currentPolygons.map(p =>
+                                                                                p.id === id ? { ...p, points } : p
+                                                            )
+                                        });
                     };
 
                     const handleDeletePolygon = (id: string) => {
-                                        setPolygons(polygons.filter(p => p.id !== id));
+                                        if (!currentImage) return;
+                                        setImagePolygons({
+                                                            ...imagePolygons,
+                                                            [currentImage.id]: currentPolygons.filter(p => p.id !== id)
+                                        });
                     };
 
                     const handleRelabelPolygon = (id: string, newClassId: string) => {
-                                        const newClass = classes.find(c => c.id === newClassId);
+                                        if (!currentImage) return;
+                                        const newClass = currentClasses.find(c => c.id === newClassId);
                                         if (!newClass) return;
 
-                                        setPolygons(polygons.map(p =>
-                                                            p.id === id ? { ...p, classId: newClassId, className: newClass.name } : p
-                                        ));
+                                        setImagePolygons({
+                                                            ...imagePolygons,
+                                                            [currentImage.id]: currentPolygons.map(p =>
+                                                                                p.id === id ? { ...p, classId: newClassId, className: newClass.name } : p
+                                                            )
+                                        });
                     };
 
                     const handleSave = async () => {
                                         const annotations = {
                                                             image: currentImage,
-                                                            classes,
-                                                            polygons: polygons.filter(p => p.accepted),
+                                                            classes: currentClasses,
+                                                            polygons: currentPolygons.filter(p => p.accepted),
                                                             timestamp: new Date().toISOString()
                                         };
 
@@ -100,8 +137,8 @@ export default function AnnotationEditor() {
                     const handleExport = () => {
                                         const annotations = {
                                                             image: currentImage,
-                                                            classes,
-                                                            polygons: polygons.filter(p => p.accepted),
+                                                            classes: currentClasses,
+                                                            polygons: currentPolygons.filter(p => p.accepted),
                                                             timestamp: new Date().toISOString()
                                         };
 
@@ -130,7 +167,7 @@ export default function AnnotationEditor() {
 
                                                                                                                         <div className="bg-white rounded-lg shadow-sm p-4">
                                                                                                                                             <ClassManager
-                                                                                                                                                                classes={classes}
+                                                                                                                                                                classes={currentClasses}
                                                                                                                                                                 onAddClass={handleAddClass}
                                                                                                                                                                 onEditClass={handleEditClass}
                                                                                                                                                                 onDeleteClass={handleDeleteClass}
@@ -140,7 +177,7 @@ export default function AnnotationEditor() {
 
                                                                                                                         <div className="bg-white rounded-lg shadow-sm p-4">
                                                                                                                                             <AIInference
-                                                                                                                                                                classes={classes}
+                                                                                                                                                                classes={currentClasses}
                                                                                                                                                                 imageUrl={currentImage?.url || null}
                                                                                                                                                                 onMasksReceived={handleMasksReceived}
                                                                                                                                             />
@@ -149,7 +186,7 @@ export default function AnnotationEditor() {
                                                                                                                         <div className="bg-white rounded-lg shadow-sm p-4 space-y-2">
                                                                                                                                             <button
                                                                                                                                                                 onClick={handleSave}
-                                                                                                                                                                disabled={!currentImage || polygons.filter(p => p.accepted).length === 0}
+                                                                                                                                                                disabled={!currentImage || currentPolygons.filter(p => p.accepted).length === 0}
                                                                                                                                                                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                                                                                                                             >
                                                                                                                                                                 <Save className="w-4 h-4" />
@@ -157,7 +194,7 @@ export default function AnnotationEditor() {
                                                                                                                                             </button>
                                                                                                                                             <button
                                                                                                                                                                 onClick={handleExport}
-                                                                                                                                                                disabled={!currentImage || polygons.filter(p => p.accepted).length === 0}
+                                                                                                                                                                disabled={!currentImage || currentPolygons.filter(p => p.accepted).length === 0}
                                                                                                                                                                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                                                                                                                             >
                                                                                                                                                                 <Download className="w-4 h-4" />
@@ -169,17 +206,17 @@ export default function AnnotationEditor() {
                                                                                                     <div className="col-span-9 bg-white rounded-lg shadow-sm p-6">
                                                                                                                         <AnnotationCanvas
                                                                                                                                             image={currentImage}
-                                                                                                                                            polygons={polygons}
-                                                                                                                                            classes={classes}
+                                                                                                                                            polygons={currentPolygons}
+                                                                                                                                            classes={currentClasses}
                                                                                                                                             onUpdatePolygon={handleUpdatePolygon}
                                                                                                                                             onDeletePolygon={handleDeletePolygon}
                                                                                                                                             onRelabelPolygon={handleRelabelPolygon}
                                                                                                                         />
 
-                                                                                                                        {polygons.length > 0 && (
+                                                                                                                        {currentPolygons.length > 0 && (
                                                                                                                                             <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                                                                                                                                                                 <p className="text-sm text-gray-600">
-                                                                                                                                                                                    {polygons.filter(p => p.accepted).length} accepted, {polygons.filter(p => !p.accepted).length} pending
+                                                                                                                                                                                    {currentPolygons.filter(p => p.accepted).length} accepted, {currentPolygons.filter(p => !p.accepted).length} pending
                                                                                                                                                                 </p>
                                                                                                                                             </div>
                                                                                                                         )}
