@@ -11,3 +11,4 @@ export const capitalize = (text: string) =>
 export const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 
 export const isValidEmail = (email: string) => emailRegex.test(email.trim());
+//deploy
