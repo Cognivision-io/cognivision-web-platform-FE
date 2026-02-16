@@ -2,7 +2,7 @@ import axios, { AxiosHeaders } from "axios";
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: "https://modflow-backend-dev.yameenyousuf.com",
   headers: {
     "Content-Type": "application/json",
   },

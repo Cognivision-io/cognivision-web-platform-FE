@@ -14,35 +14,6 @@ export default function AIInference({ classes, imageUrl, onMasksReceived }: AIIn
                     const [loading, setLoading] = useState(false);
                     const [pendingMasks, setPendingMasks] = useState<Polygon[]>([]);
 
-                    const imageToBase64 = (url: string): Promise<string> => {
-                                        return new Promise((resolve, reject) => {
-                                                            const img = new Image();
-                                                            img.crossOrigin = 'anonymous';
-
-                                                            img.onload = () => {
-                                                                                const canvas = document.createElement('canvas');
-                                                                                canvas.width = img.width;
-                                                                                canvas.height = img.height;
-
-                                                                                const ctx = canvas.getContext('2d');
-                                                                                if (!ctx) {
-                                                                                                    reject(new Error('Failed to get canvas context'));
-                                                                                                    return;
-                                                                                }
-
-                                                                                ctx.drawImage(img, 0, 0);
-
-                                                                                // Get base64 without the data:image/png;base64, prefix
-                                                                                const dataURL = canvas.toDataURL('image/png');
-                                                                                const base64 = dataURL.split(',')[1];
-                                                                                resolve(base64);
-                                                            };
-
-                                                            img.onerror = () => reject(new Error('Failed to load image'));
-                                                            img.src = url;
-                                        });
-                    };
-
                     const runInference = async () => {
                                         if (!imageUrl || classes.length === 0) {
                                                             alert('Please upload an image and create at least one class');
@@ -51,19 +22,17 @@ export default function AIInference({ classes, imageUrl, onMasksReceived }: AIIn
 
                                         setLoading(true);
                                         try {
-                                                            // Convert image to base64 using canvas for better reliability
-                                                            const imageBase64 = await imageToBase64(imageUrl);
-
                                                             const allMasks: Polygon[] = [];
 
                                                             for (const cls of classes) {
                                                                                 const prompt = cls.prompt || cls.name;
 
                                                                                 try {
+                                                                                                    // Send imageUrl directly to avoid CORS issues
                                                                                                     const response = await fetch('/api/annotation/infer', {
                                                                                                                         method: 'POST',
                                                                                                                         headers: { 'Content-Type': 'application/json' },
-                                                                                                                        body: JSON.stringify({ imageBase64, text: prompt })
+                                                                                                                        body: JSON.stringify({ imageUrl, text: prompt })
                                                                                                     });
 
                                                                                                     if (!response.ok) {
