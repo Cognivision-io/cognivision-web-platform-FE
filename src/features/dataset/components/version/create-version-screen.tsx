@@ -256,16 +256,16 @@ export const CreateVersionScreen = ({
                 <div className="grid grid-cols-[120px_1fr] gap-y-2 text-sm">
                   <span className="font-bold text-slate-700">Images:</span>
                   <span className="text-slate-600">{project?.images || 0}</span>
-                  <span className="font-bold text-slate-700">Classes:</span>
+                  {/* <span className="font-bold text-slate-700">Classes:</span>
                   <span className="text-slate-600">19</span>
                   <span className="font-bold text-slate-700">Unannotated:</span>
-                  <span className="text-slate-600">15</span>
+                  <span className="text-slate-600">15</span> */}
                 </div>
               </div>
             </div>
 
             {/* Step 2: Train/Test Split */}
-            <div className="flex gap-6">
+            {/* <div className="flex gap-6">
               <div className="flex flex-col items-center">
                 <div className="h-10 w-10 bg-[#6841ff] rounded-full flex items-center justify-center shadow-lg shadow-[#6841ff]/20">
                   <Check className="h-5 w-5 text-white" />
@@ -289,7 +289,7 @@ export const CreateVersionScreen = ({
                   <span className="text-slate-600">1 images</span>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Step 3: Preprocessing */}
             <div className="flex gap-6">

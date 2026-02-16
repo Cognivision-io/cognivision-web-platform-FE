@@ -293,7 +293,7 @@ export const CreateProjectDialog = ({
                           Traditional
                         </button>
 
-                        <button
+                        {/* <button
                           type="button"
                           onClick={() => setValue("tool", "rapid")}
                           className={cn(
@@ -304,7 +304,7 @@ export const CreateProjectDialog = ({
                           )}
                         >
                           Rapid
-                        </button>
+                        </button> */}
                       </div>
                     </div>
 
@@ -483,12 +483,12 @@ export const CreateProjectDialog = ({
                     </div>
 
                     {/* Other */}
-                    <button
+                    {/* <button
                       type="button"
                       className="mt-6 w-full rounded-[12px] border border-slate-300 bg-white py-4 text-center text-[14px] font-medium text-slate-700 hover:bg-slate-50"
                     >
                       Other
-                    </button>
+                    </button> */}
 
                     <div className="sr-only" aria-hidden="true">
                       {projectTypeDescription}
