@@ -12,7 +12,7 @@ import { Stepper } from "@/components/ui/stepper";
 import { cn } from "@/lib/utils";
 import { UploadStep } from "@/features/dataset/components/steps/upload-step";
 import { AnnotateStep } from "@/features/dataset/components/steps/annotate-step";
-import { TrainStep } from "@/features/dataset/components/steps/train-step";
+import { ProjectAnnotationStep } from "@/features/dataset/components/steps/project-annotation-step";
 import { TestStep } from "@/features/dataset/components/steps/test-step";
 
 const steps = [
@@ -98,8 +98,8 @@ function UploadDatasetPageInner() {
           )}
 
           {currentStep === 2 && (
-            <TrainStep 
-              onNext={() => setCurrentStep(3)} 
+            <ProjectAnnotationStep
+              onNext={() => setCurrentStep(3)}
               uploadedData={uploadedData}
             />
           )}
