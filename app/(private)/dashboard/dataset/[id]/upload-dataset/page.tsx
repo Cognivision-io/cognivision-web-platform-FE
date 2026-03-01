@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   CloudUpload,
@@ -12,7 +12,7 @@ import { Stepper } from "@/components/ui/stepper";
 import { cn } from "@/lib/utils";
 import { UploadStep } from "@/features/dataset/components/steps/upload-step";
 import { AnnotateStep } from "@/features/dataset/components/steps/annotate-step";
-import { TrainStep } from "@/features/dataset/components/steps/train-step";
+import { ProjectAnnotationStep } from "@/features/dataset/components/steps/project-annotation-step";
 import { TestStep } from "@/features/dataset/components/steps/test-step";
 
 const steps = [
@@ -48,7 +48,7 @@ const getStepIndexFromId = (stepId: string | null) => {
   return index >= 0 ? index : 0;
 };
 
-const UploadDatasetPage = () => {
+function UploadDatasetPageInner() {
   const searchParams = useSearchParams();
   const stepParam = searchParams.get("step");
   const focusImageId = searchParams.get("focusImageId") || undefined;
@@ -98,8 +98,8 @@ const UploadDatasetPage = () => {
           )}
 
           {currentStep === 2 && (
-            <TrainStep 
-              onNext={() => setCurrentStep(3)} 
+            <ProjectAnnotationStep
+              onNext={() => setCurrentStep(3)}
               uploadedData={uploadedData}
             />
           )}
@@ -110,6 +110,22 @@ const UploadDatasetPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const UploadDatasetPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[calc(100vh-3.5rem)] bg-[#f8f9fc] px-6 py-8 text-muted-foreground lg:px-10">
+          <div className="mx-auto w-full max-w-7xl text-sm">
+            Loading dataset workflow...
+          </div>
+        </div>
+      }
+    >
+      <UploadDatasetPageInner />
+    </Suspense>
   );
 };
 

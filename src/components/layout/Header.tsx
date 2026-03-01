@@ -11,6 +11,7 @@ const PURPLE = "#5b2fe8";
 const navItems = [
   { label: "About", href: "/about" },
   { label: "Solutions", href: "/solutions", hasDropdown: true },
+  { label: "ARkitect Bot", href: "/agent" },
   { label: "Pricing", href: "/pricing" },
   { label: "Docs", href: "/help" },
   { label: "Contact", href: "/contact-us" },
@@ -304,6 +305,13 @@ export default function Header() {
                     </div>
                   ) : null}
                 </div>
+
+                <Link
+                  href="/agent"
+                  className="block rounded-lg px-3 py-3 text-[15px] font-medium text-[#111827] hover:bg-black/[0.04]"
+                >
+                  ARkitect
+                </Link>
 
                 <Link
                   href="/pricing"

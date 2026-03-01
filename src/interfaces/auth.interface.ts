@@ -51,7 +51,9 @@ export type AuthenticatedUser = {
   hasReceivedSignupCredits: boolean;
   role: string | null;
   workspaces: number[];
-  projects: unknown[];
+  projects: number[];
+  apiKeys: number[];
+  subscriptionPlans: number[];
 };
 
 export type LoginResponse = {
