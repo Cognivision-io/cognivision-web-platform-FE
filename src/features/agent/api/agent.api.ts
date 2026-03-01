@@ -1,7 +1,7 @@
 import type { AgentChatPayload } from "@/features/agent/types";
 
 const AGENT_BASE_URL =
-  process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:8000/api/v1";
+  process.env.NEXT_PUBLIC_AGENT_API_URL || "https://cogni-bot.yameenyousuf.com/api/v1";
 
 export const agentApi = {
  

@@ -1,10 +1,51 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Check, Copy } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Check, Copy, Loader2 } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { cn } from "@/lib/utils";
 import type { AgentBlock } from "@/features/agent/types";
+
+const THINKING_PHRASES = [
+  "Thinking",
+  "Analyzing your request",
+  "Searching SDK docs",
+  "Crafting a response",
+  "Building your answer",
+  "Processing",
+];
+
+function ThinkingLoader() {
+  const [index, setIndex] = useState(0);
+  const [dots, setDots] = useState(1);
+
+  const nextPhrase = useCallback(() => {
+    setIndex((i) => (i + 1) % THINKING_PHRASES.length);
+  }, []);
+
+  useEffect(() => {
+    const dotInterval = setInterval(() => {
+      setDots((d) => (d >= 3 ? 1 : d + 1));
+    }, 500);
+
+    const phraseInterval = setInterval(nextPhrase, 3000);
+
+    return () => {
+      clearInterval(dotInterval);
+      clearInterval(phraseInterval);
+    };
+  }, [nextPhrase]);
+
+  return (
+    <div className="flex items-center gap-2.5">
+      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+      <span className="text-sm text-zinc-400">
+        {THINKING_PHRASES[index]}
+        {".".repeat(dots)}
+      </span>
+    </div>
+  );
+}
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -126,10 +167,14 @@ export function AgentStreamingResponse() {
           {isStreaming && (
             <div className="mr-auto max-w-full rounded-xl bg-zinc-800/60 px-4 py-3">
               <div className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-200">
-                {streamingContent || (
-                  <span className="text-zinc-500">Thinking...</span>
+                {streamingContent ? (
+                  <>
+                    {streamingContent}
+                    <span className="ml-0.5 inline-block h-4 w-1 animate-pulse bg-primary" />
+                  </>
+                ) : (
+                  <ThinkingLoader />
                 )}
-                <span className="ml-0.5 inline-block h-4 w-1 animate-pulse bg-primary" />
               </div>
             </div>
           )}
