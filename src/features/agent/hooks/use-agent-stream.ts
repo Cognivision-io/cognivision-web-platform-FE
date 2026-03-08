@@ -2,6 +2,7 @@
 
 import { useCallback, useRef } from "react";
 import { agentApi } from "@/features/agent/api/agent.api";
+import { conversationApi } from "@/features/agent/api/conversation.api";
 import { useAgentStore } from "@/stores/agent-store";
 import type { AgentChatPayload, AgentDoneEvent } from "@/features/agent/types";
 
@@ -59,6 +60,7 @@ export function useAgentStream() {
   const addMessage = useAgentStore((s) => s.addMessage);
   const setConversationId = useAgentStore((s) => s.setConversationId);
   const setSuggestedQuestions = useAgentStore((s) => s.setSuggestedQuestions);
+  const setTokensUsed = useAgentStore((s) => s.setTokensUsed);
 
   const startStream = useCallback(
     async (payload: AgentChatPayload) => {
@@ -72,6 +74,7 @@ export function useAgentStream() {
       setStatus("generating");
 
       let doneHandled = false;
+      let savedTokensUsed: number | null = null;
 
       try {
         const response = await agentApi.streamChat(payload, controller.signal);
@@ -102,10 +105,23 @@ export function useAgentStream() {
             doneHandled = true;
             const doneData = result.parsed as unknown as AgentDoneEvent | null;
 
+            // Debug: log raw done event to verify usage structure
+            console.log("[ARkitect] done event payload:", result.parsed);
+
             if (doneData) {
               setConversationId(doneData.conversation_id);
               setStreamingBlocks(doneData.blocks ?? []);
               setSuggestedQuestions(doneData.suggested_questions ?? []);
+
+              // Extract usage — check both top-level and nested locations
+              const usage =
+                doneData.usage ??
+                (result.parsed?.usage as AgentDoneEvent["usage"]);
+              if (usage) {
+                savedTokensUsed =
+                  (usage.input_tokens ?? 0) + (usage.output_tokens ?? 0);
+                setTokensUsed(savedTokensUsed);
+              }
 
               addMessage({
                 id: crypto.randomUUID(),
@@ -160,6 +176,19 @@ export function useAgentStream() {
         }
 
         setStatus("completed");
+
+        // Save conversation to backend
+        if (fullContent) {
+          conversationApi
+            .create({
+              prompt: payload.message,
+              response: fullContent,
+              tokensUsed: savedTokensUsed ?? undefined,
+            })
+            .catch((err) => {
+              console.error("Failed to save conversation:", err);
+            });
+        }
       } catch (error: unknown) {
         if (error instanceof DOMException && error.name === "AbortError") {
           setStatus("idle");
@@ -177,6 +206,7 @@ export function useAgentStream() {
       addMessage,
       setConversationId,
       setSuggestedQuestions,
+      setTokensUsed,
     ]
   );
 
