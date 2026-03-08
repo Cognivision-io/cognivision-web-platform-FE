@@ -33,6 +33,9 @@ type AgentStore = {
   status: AgentJobStatus;
   setStatus: (status: AgentJobStatus) => void;
 
+  tokensUsed: number | null;
+  setTokensUsed: (tokens: number | null) => void;
+
   reset: () => void;
 };
 
@@ -45,6 +48,7 @@ const initialState = {
   streamingBlocks: [] as AgentBlock[],
   suggestedQuestions: [] as string[],
   status: "idle" as AgentJobStatus,
+  tokensUsed: null as number | null,
 };
 
 export const useAgentStore = create<AgentStore>((set) => ({
@@ -72,6 +76,8 @@ export const useAgentStore = create<AgentStore>((set) => ({
     set({ suggestedQuestions: questions }),
 
   setStatus: (status) => set({ status }),
+
+  setTokensUsed: (tokens) => set({ tokensUsed: tokens }),
 
   reset: () => set(initialState),
 }));
