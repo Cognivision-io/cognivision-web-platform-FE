@@ -28,7 +28,7 @@ import CustomToast from "../ui/sonner";
 const mainItems = [
   { title: "Use Case", url: "/dashboard", icon: Network },
   { title: "Projects", url: "/dashboard/dataset", icon: Database },
-  { title: "ARkitect", url: "/agent", icon: Bot },
+  { title: "ARkitect", url: "/dashboard/agent", icon: Bot },
   { title: "Monitoring", url: "/dashboard/monitoring", icon: BarChart3 },
 ];
 
