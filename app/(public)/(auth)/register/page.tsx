@@ -20,11 +20,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useRegisterMutation } from "@/features/auth/mutations/auth.mutation";
+import { useAuthStore } from "@/stores/auth-store";
 import { capitalize, emailRegex } from "@/lib/utils";
 import CustomToast from "@/components/ui/sonner";
 
 const registerSchema = yup.object({
-  firstName: yup.string().trim().required("Full Name is required"),
+  name: yup.string().trim().required("Full Name is required"),
   email: yup
     .string()
     .trim()
@@ -34,7 +35,6 @@ const registerSchema = yup.object({
     .string()
     .min(8, "Password must be at least 8 characters")
     .required("Password is required"),
-  useCase: yup.string().trim().required("Define Use Case is required"),
 });
 
 type RegisterFormValues = InferType<typeof registerSchema>;
@@ -45,13 +45,13 @@ function RegisterPageInner() {
   const callbackUrl = searchParams.get("callbackUrl");
   const [showPassword, setShowPassword] = useState(false);
   const { mutateAsync: register, isPending } = useRegisterMutation();
+  const login = useAuthStore((state) => state.login);
   const form = useForm<RegisterFormValues>({
     resolver: yupResolver(registerSchema),
     defaultValues: {
-      firstName: "",
+      name: "",
       email: "",
       password: "",
-      useCase: "",
     },
   });
 
@@ -71,17 +71,32 @@ function RegisterPageInner() {
 
   const handleSubmit = async (values: RegisterFormValues) => {
     try {
-      const data = await register(values);
-      CustomToast.success(
-        capitalize(data.message ?? "Account created successfully")
-      );
-      const params = new URLSearchParams({
+      const data = await register({
         email: values.email,
+        password: values.password,
+        name: values.name,
       });
+      const accessToken = data.tokens?.access_token;
+      const user = data.user;
+      if (!accessToken || !user) {
+        CustomToast.error("Something went wrong. Please try again.");
+        return;
+      }
+
+      await login(accessToken, user, data.tokens.refresh_token);
+      CustomToast.success("Account created successfully");
+
+      const params = new URLSearchParams({ email: values.email });
       if (callbackUrl) {
         params.set("callbackUrl", callbackUrl);
       }
-      router.push(`/verify-otp?${params.toString()}`);
+
+      if (!user.verified) {
+        router.push(`/verify-otp?${params.toString()}`);
+        return;
+      }
+
+      router.replace(callbackUrl ?? "/dashboard");
     } catch (error: unknown) {
       handleError(error);
     }
@@ -123,7 +138,7 @@ function RegisterPageInner() {
           >
             <FormField
               control={form.control}
-              name="firstName"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Full Name</FormLabel>
@@ -187,24 +202,6 @@ function RegisterPageInner() {
                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                   </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="useCase"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Define Use Case</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Describe how you plan to use CogniVision"
-                      className="h-12"
-                    />
-                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +16,7 @@ import { Upload, Link as LinkIcon, Copy, Monitor } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import { cn } from "@/lib/utils";
 import { type RoboflowInferenceResponse } from "@/interfaces/project.interface";
-import { useWorkspaceApiKeyQuery } from "@/features/workspace/queries/workspace.query";
-import { useSearchParams } from "next/navigation";
+import { useUserApiKeyQuery } from "@/features/api-key/queries/api-key.query";
 import CustomToast from "@/components/ui/sonner";
 
 interface TestModelDialogProps {
@@ -43,27 +42,8 @@ function TestModelDialogInner({
   const [isEngineReady, setIsEngineReady] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
-  const searchParams = useSearchParams();
-
-  const workspaceId = useMemo(() => {
-    const workspaceIdFromUrl = searchParams.get("workspaceId");
-    const parsedFromUrl = workspaceIdFromUrl
-      ? Number(workspaceIdFromUrl)
-      : undefined;
-    if (parsedFromUrl && !Number.isNaN(parsedFromUrl)) return parsedFromUrl;
-
-    const raw =
-      project?.workspaceId ??
-      project?.workspace?.id ??
-      project?.project?.workspaceId ??
-      project?.project?.workspace?.id;
-    const numeric = typeof raw === "number" ? raw : Number(raw);
-    return Number.isNaN(numeric) ? undefined : numeric;
-  }, [project, searchParams]);
-
-  const { data: workspaceApiKeyResponse } =
-    useWorkspaceApiKeyQuery(workspaceId);
-  const apiKey = workspaceApiKeyResponse?.data?.apiKey || "";
+  const { data: userApiKey } = useUserApiKeyQuery();
+  const apiKey = userApiKey?.key?.trim() ?? "";
   // Check if model is ready (HTTP API doesn't need complex initialization)
   useEffect(() => {
     if (version.model?.id && apiKey) {

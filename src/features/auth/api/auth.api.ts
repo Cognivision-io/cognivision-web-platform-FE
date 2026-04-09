@@ -22,9 +22,6 @@ export const authApi = {
     const response = await api.post<LoginResponse>("/auth/login", payload);
     return response.data;
   },
-  logout: async () => {
-    await api.get("/auth/logout");
-  },
   verifyOtp: async (payload: VerifyOtpPayload) => {
     const response = await api.post<VerifyOtpResponse>(
       "/auth/verify-otp",

@@ -11,7 +11,11 @@ type AuthStore = {
   hydrate: () => Promise<void>;
   setUser: (user: AuthenticatedUser | null) => void;
   setToken: (token: string | null) => void;
-  login: (token: string, user: AuthenticatedUser) => Promise<void>;
+  login: (
+    accessToken: string,
+    user: AuthenticatedUser,
+    refreshToken?: string | null
+  ) => Promise<void>;
   logout: () => void;
   refreshUserFromSession: () => Promise<void>;
 };
@@ -77,16 +81,26 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
     set({ user });
   },
-  login: async (token, user) => {
+  login: async (accessToken, user, refreshToken) => {
     const { setToken, setUser } = get();
-    setToken(token);
+    setToken(accessToken);
     setUser(user);
+    if (typeof window !== "undefined") {
+      if (refreshToken) {
+        window.localStorage.setItem("authRefreshToken", refreshToken);
+      } else {
+        window.localStorage.removeItem("authRefreshToken");
+      }
+    }
     set({ isHydrated: true });
   },
   logout: () => {
     const { setToken, setUser } = get();
     setToken(null);
     setUser(null);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("authRefreshToken");
+    }
     set({ isHydrated: true });
   },
   refreshUserFromSession: async () => {

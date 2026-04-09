@@ -1,14 +1,34 @@
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
+
+import { userApiKeyApi } from "@/features/api-key/api/user-api-key.api";
 import type {
   GetProjectApiKeysResponse,
   GetProjectApiKeyValueResponse,
+  UserApiKey,
 } from "@/interfaces/api-key.interface";
 
-type ApiKeyError = AxiosError<{ message?: string | string[] }>;
+type ApiKeyError = AxiosError<{
+  detail?: string | unknown[];
+  message?: string | string[];
+}>;
 
+export const USER_API_KEY_QUERY_KEY = ["apiKey", "user"] as const;
 export const PROJECT_API_KEYS_QUERY_KEY = ["apiKey", "all"] as const;
 export const PROJECT_API_KEY_VALUE_QUERY_KEY = ["apiKey", "value"] as const;
+
+export const useUserApiKeyQuery = (
+  options?: Omit<
+    UseQueryOptions<UserApiKey, ApiKeyError>,
+    "queryKey" | "queryFn"
+  >,
+) => {
+  return useQuery({
+    queryKey: USER_API_KEY_QUERY_KEY,
+    queryFn: () => userApiKeyApi.get(),
+    ...options,
+  });
+};
 
 export const useProjectApiKeyQuery = (
   params: {

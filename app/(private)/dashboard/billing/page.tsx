@@ -4,36 +4,33 @@ import { ArrowUpRight, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useDashboardMonoClass } from "@/features/dashboard/context/dashboard-mono-font";
-import { useAuthStore } from "@/stores/auth-store";
+import { usePlansQuery } from "@/features/monitoring/queries/plan.query";
+import { useCurrentUsageQuery } from "@/features/monitoring/queries/usage.query";
 import { useSubscriptionModalStore } from "@/stores/subscription-modal-store";
 import { cn } from "@/lib/utils";
 
-const TOKEN_USED = 48_291;
-const TOKEN_LIMIT = 75_000;
-const TOKEN_PCT = 64.4;
-
-const FREE_FEATURES: [string, string][] = [
-  ["5,000 sessions per month", "75,000 API calls per month"],
-  ["Basic support", "Community access"],
-];
-
-const PRO_FEATURES: [string, string][] = [
-  ["Unlimited sessions", "Priority API throughput"],
-  ["Dedicated support", "Advanced analytics"],
-];
-
 export default function BillingPage() {
   const monoClassName = useDashboardMonoClass();
-  const user = useAuthStore((state) => state.user);
   const openModal = useSubscriptionModalStore((state) => state.openModal);
+  const { data: plans = [], isLoading, isError } = usePlansQuery();
+  const {
+    data: usage,
+    isLoading: usageLoading,
+    isError: usageError,
+  } = useCurrentUsageQuery();
 
-  const isPro = Boolean(user?.isSubscribed);
-  const planTitle = isPro ? "Pro Plan" : "Free Plan";
-  const planDescription = isPro
-    ? "Full production access with higher limits and priority support."
-    : "Perfect for getting started with Cognivision SDK";
+  const plan = plans.find((p) => p.active) ?? plans[0];
+  const isFreeTier = plan?.name.toLowerCase() === "free";
 
-  const features = isPro ? PRO_FEATURES : FREE_FEATURES;
+  const monthlyUsed = usage?.current_monthly_used ?? 0;
+  const tokenLimit = usage?.monthly_limit ?? 0;
+  const tokenPct = Math.min(
+    100,
+    Math.round(
+      usage?.usage_percentage_monthly ??
+        (tokenLimit > 0 ? (monthlyUsed / tokenLimit) * 100 : 0),
+    ),
+  );
 
   return (
     <div className="bg-[#f4f7fe] px-4 py-6 md:px-8 md:py-6">
@@ -46,23 +43,51 @@ export default function BillingPage() {
                   Current Plan
                 </p>
                 <h1 className="mt-2 text-[28px] font-semibold tracking-[-0.5px] text-[#2b2b2b]">
-                  {planTitle}
+                  {isLoading
+                    ? "Loading…"
+                    : isError
+                      ? "Could not load plan"
+                      : (plan?.display_name ?? "No plan")}
                 </h1>
                 <p className="mt-1 max-w-xl text-[14px] font-normal leading-[1.55] text-[#94a3b8]">
-                  {planDescription}
+                  {isError
+                    ? "Try again later."
+                    : (plan?.description ?? "No description from API.")}
                 </p>
               </div>
-              <span className="inline-flex h-[26.4px] shrink-0 items-center justify-center self-start rounded-full bg-[#5925dc] px-3 text-[11px] font-medium uppercase tracking-[0.3px] text-white sm:self-auto">
-                Active
-              </span>
+              {plan ? (
+                <span
+                  className={cn(
+                    "inline-flex h-[26.4px] shrink-0 items-center justify-center self-start rounded-full px-3 text-[11px] font-medium uppercase tracking-[0.3px] text-white sm:self-auto",
+                    plan.active ? "bg-[#5925dc]" : "bg-[#94a3b8]",
+                  )}
+                >
+                  {plan.active ? "Active" : "Inactive"}
+                </span>
+              ) : null}
             </div>
           </div>
 
-          <div className="px-8 pb-6 pt-2">
-            <div className="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2">
-              {features.flatMap((pair, rowIdx) =>
-                pair.map((label, colIdx) => (
-                  <div key={`${rowIdx}-${colIdx}`} className="flex items-start gap-3">
+          {plan ? (
+            <div className="px-8 pb-6 pt-2">
+              <div className="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2">
+                {[
+                  `${plan.monthly_token_limit.toLocaleString()} tokens per month`,
+                  ...(plan.daily_token_limit != null && plan.daily_token_limit > 0
+                    ? [
+                        `${plan.daily_token_limit.toLocaleString()} tokens per day`,
+                      ]
+                    : []),
+                  ...(plan.features.max_conversations != null
+                    ? [
+                        `Up to ${plan.features.max_conversations} conversations`,
+                      ]
+                    : []),
+                  plan.features.priority_support
+                    ? "Priority support"
+                    : "Standard support",
+                ].map((label) => (
+                  <div key={label} className="flex items-start gap-3">
                     <span className="mt-0.5 flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[#ede9fb] text-[#5925dc]">
                       <Check className="size-3.5 stroke-[2.5]" aria-hidden />
                     </span>
@@ -70,12 +95,16 @@ export default function BillingPage() {
                       {label}
                     </span>
                   </div>
-                )),
-              )}
+                ))}
+              </div>
             </div>
-          </div>
+          ) : !isLoading && !isError ? (
+            <div className="px-8 pb-8 pt-2 text-[13px] text-[#94a3b8]">
+              No plans returned from the API.
+            </div>
+          ) : null}
 
-          {!isPro ? (
+          {plan && isFreeTier ? (
             <div className="mx-8 mb-8 rounded-[10px] border border-[#d8ccf5] bg-[#ede9fb] px-5 py-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
@@ -111,23 +140,43 @@ export default function BillingPage() {
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <span className="text-[14px] font-medium text-[#2b2b2b]">Token Usage</span>
               <p className={cn("text-right text-[13px] tabular-nums", monoClassName)}>
-                <span className="font-medium text-[#2b2b2b]">
-                  {TOKEN_USED.toLocaleString()}
-                </span>
-                <span className="font-normal text-[#94a3b8]">
-                  {" "}
-                  / {TOKEN_LIMIT.toLocaleString()}
-                </span>
+                {usageLoading ? (
+                  <span className="font-normal text-[#94a3b8]">Loading…</span>
+                ) : usageError ? (
+                  <span className="font-normal text-[#94a3b8]">Could not load usage</span>
+                ) : (
+                  <>
+                    <span className="font-medium text-[#2b2b2b]">
+                      {monthlyUsed.toLocaleString()}
+                    </span>
+                    <span className="font-normal text-[#94a3b8]">
+                      {" "}
+                      / {tokenLimit > 0 ? tokenLimit.toLocaleString() : "—"}
+                    </span>
+                  </>
+                )}
               </p>
             </div>
             <div className="mt-3 h-3 overflow-hidden rounded-xl bg-[#f1f5f9]">
               <div
                 className="h-full rounded-xl bg-gradient-to-r from-[#5925dc] to-[#7c5dc9]"
-                style={{ width: `${TOKEN_PCT}%` }}
+                style={{
+                  width: `${
+                    !usageLoading && !usageError && tokenLimit > 0
+                      ? Math.min(100, tokenPct)
+                      : 0
+                  }%`,
+                }}
               />
             </div>
             <p className="mt-2 text-[11px] font-medium text-[#94a3b8]">
-              {TOKEN_PCT}% of limit used
+              {!usageLoading && !usageError && tokenLimit > 0
+                ? `${tokenPct}% of limit used`
+                : usageError
+                  ? "—"
+                  : usageLoading
+                    ? "…"
+                    : "—"}
             </p>
           </div>
         </section>

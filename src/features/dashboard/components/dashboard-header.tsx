@@ -7,7 +7,7 @@ import { format } from "date-fns";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuthStore } from "@/stores/auth-store";
-import { cn } from "@/lib/utils";
+import { cn, initialsFromFullName } from "@/lib/utils";
 import { useDashboardMonoClass } from "@/features/dashboard/context/dashboard-mono-font";
 
 type DashboardHeaderProps = {
@@ -27,15 +27,11 @@ export function DashboardHeader({ monoClassName: monoProp }: DashboardHeaderProp
   const isContextHeader = isMonitoring || isApiKeys || isBilling || isSettings;
   const isCompactSearch = isApiKeys || isBilling || isSettings;
 
-  const displayName = user?.firstName?.trim() || "there";
-  const initials = useMemo(() => {
-    const first = user?.firstName?.charAt(0) ?? "";
-    const last = user?.lastName?.charAt(0) ?? "";
-    const pair = `${first}${last}`.toUpperCase();
-    if (pair.length >= 2) return pair.slice(0, 2);
-    if (first) return `${first}${first}`.toUpperCase().slice(0, 2);
-    return "U";
-  }, [user?.firstName, user?.lastName]);
+  const displayName = user?.name?.trim() || "there";
+  const initials = useMemo(
+    () => initialsFromFullName(user?.name),
+    [user?.name],
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

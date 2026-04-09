@@ -5,7 +5,6 @@ import { Copy, Info, RotateCcw } from "lucide-react";
 
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -16,18 +15,19 @@ import {
 import { Button } from "@/components/ui/button";
 import CustomToast from "@/components/ui/sonner";
 import { useDashboardMonoClass } from "@/features/dashboard/context/dashboard-mono-font";
-import { useWorkspaceApiKeyQuery } from "@/features/workspace/queries/workspace.query";
-import { useCurrentWorkspaceId } from "@/hooks/use-current-workspace-id";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { useResetUserApiKeyMutation } from "@/features/api-key/mutations/user-api-key.mutation";
+import { useUserApiKeyQuery } from "@/features/api-key/queries/api-key.query";
+import { cn, getApiErrorMessage } from "@/lib/utils";
 
 export default function ApiKeysPage() {
   const monoClassName = useDashboardMonoClass();
-  const workspaceId = useCurrentWorkspaceId();
-  const { data, isLoading, isError } = useWorkspaceApiKeyQuery(workspaceId);
+  const { data, isLoading, isError } = useUserApiKeyQuery();
+  const { mutateAsync: resetApiKey, isPending: isResetting } =
+    useResetUserApiKeyMutation();
   const [resetOpen, setResetOpen] = useState(false);
 
-  const apiKey = data?.data?.apiKey?.trim() ?? "";
+  const apiKey = data?.key?.trim() ?? "";
+  const keyActive = data?.active ?? false;
 
   const handleCopy = async () => {
     if (!apiKey) {
@@ -42,9 +42,22 @@ export default function ApiKeysPage() {
     }
   };
 
-  const handleResetConfirm = () => {
-    setResetOpen(false);
-    toast("Key reset is not available yet. Contact support if you need a new key.");
+  const handleResetConfirm = async () => {
+    try {
+      const res = await resetApiKey();
+      setResetOpen(false);
+      CustomToast.success(res.message || "API key reset successfully.");
+    } catch (error: unknown) {
+      const data = (error as { response?: { data?: unknown } })?.response?.data;
+      const msg = getApiErrorMessage(data);
+      if (Array.isArray(msg)) {
+        msg.forEach((m) => CustomToast.error(m));
+      } else if (typeof msg === "string") {
+        CustomToast.error(msg);
+      } else {
+        CustomToast.error("Could not reset API key. Please try again.");
+      }
+    }
   };
 
   return (
@@ -61,8 +74,13 @@ export default function ApiKeysPage() {
                   Use this key to authenticate requests to the Cognivision SDK
                 </p>
               </div>
-              <span className="inline-flex h-[24.4px] shrink-0 items-center justify-center self-start rounded-full bg-[#10b981] px-2.5 text-[11px] font-medium uppercase tracking-[0.3px] text-white sm:self-center">
-                Active
+              <span
+                className={cn(
+                  "inline-flex h-[24.4px] shrink-0 items-center justify-center self-start rounded-full px-2.5 text-[11px] font-medium uppercase tracking-[0.3px] text-white sm:self-center",
+                  keyActive ? "bg-[#10b981]" : "bg-[#94a3b8]",
+                )}
+              >
+                {keyActive ? "Active" : "Inactive"}
               </span>
             </div>
           </div>
@@ -77,25 +95,21 @@ export default function ApiKeysPage() {
                   monoClassName,
                 )}
               >
-                {!workspaceId ? (
-                  <span className="text-[#94a3b8]">
-                    No workspace selected. Sign in again or contact support.
-                  </span>
-                ) : isLoading ? (
+                {isLoading ? (
                   <span className="text-[#94a3b8]">Loading key…</span>
                 ) : isError ? (
                   <span className="text-[#94a3b8]">Could not load API key. Try again later.</span>
                 ) : apiKey ? (
                   apiKey
                 ) : (
-                  <span className="text-[#94a3b8]">No API key available for this workspace.</span>
+                  <span className="text-[#94a3b8]">No API key available.</span>
                 )}
               </p>
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleCopy}
-                disabled={!apiKey || isLoading || !workspaceId}
+                disabled={!apiKey || isLoading}
                 className="h-[36.4px] shrink-0 gap-2 rounded-[7px] border-[#e2e8f0] bg-white px-4 text-[13px] font-medium text-[#2b2b2b] hover:bg-[#f8fafc]"
               >
                 <Copy className="size-[15px]" aria-hidden />
@@ -138,13 +152,15 @@ export default function ApiKeysPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleResetConfirm}
+            <AlertDialogCancel disabled={isResetting}>Cancel</AlertDialogCancel>
+            <Button
+              type="button"
+              disabled={isResetting}
               className="bg-[#ef4444] text-white hover:bg-[#ef4444]/90"
+              onClick={() => void handleResetConfirm()}
             >
-              Reset key
-            </AlertDialogAction>
+              {isResetting ? "Resetting…" : "Reset key"}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

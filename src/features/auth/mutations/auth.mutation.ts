@@ -20,7 +20,6 @@ type AuthError = AxiosError<{ message?: string | string[] }>;
 
 export const REGISTER_MUTATION_KEY = ["auth", "register"] as const;
 export const LOGIN_MUTATION_KEY = ["auth", "login"] as const;
-export const LOGOUT_MUTATION_KEY = ["auth", "logout"] as const;
 export const VERIFY_OTP_MUTATION_KEY = ["auth", "verify-otp"] as const;
 export const RESEND_OTP_MUTATION_KEY = ["auth", "resend-otp"] as const;
 export const DELETE_USER_MUTATION_KEY = ["user", "delete"] as const;
@@ -42,16 +41,6 @@ export const useLoginMutation = (
   return useMutation({
     mutationKey: LOGIN_MUTATION_KEY,
     mutationFn: authApi.login,
-    ...options,
-  });
-};
-
-export const useLogoutMutation = (
-  options?: UseMutationOptions<void, AuthError, void>
-) => {
-  return useMutation({
-    mutationKey: LOGOUT_MUTATION_KEY,
-    mutationFn: authApi.logout,
     ...options,
   });
 };
@@ -80,12 +69,12 @@ export const useDeleteUserMutation = (
   options?: UseMutationOptions<
     { statusCode: number; message: string },
     AuthError,
-    number
+    string
   >
 ) => {
   return useMutation({
     mutationKey: DELETE_USER_MUTATION_KEY,
-    mutationFn: (id: number) => userAPI.deleteUser(id),
+    mutationFn: (id: string) => userAPI.deleteUser(id),
     ...options,
   });
 };
@@ -94,7 +83,7 @@ export const useUpdateUserMutation = (
   options?: UseMutationOptions<
     UpdateUserResponse,
     AuthError,
-    { id: number; payload: UpdateUserPayload }
+    { id: string; payload: UpdateUserPayload }
   >
 ) => {
   return useMutation({
