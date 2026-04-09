@@ -54,6 +54,10 @@ export type AuthUserResponse = {
 export type UpdateUserPayload = {
   email: string;
   name: string;
+  active: boolean;
+  /** Include when changing password */
+  current_password?: string;
+  new_password?: string;
 };
 
 export type UpdateUserResponse = AuthUser;

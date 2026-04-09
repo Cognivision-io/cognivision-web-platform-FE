@@ -1,22 +1,21 @@
 import api from "@/lib/axios";
-import type { UpdateUserPayload, UpdateUserResponse } from "@/interfaces/auth.interface";
+import type { AuthUser, UpdateUserPayload } from "@/interfaces/auth.interface";
 
 export const userAPI = {
-  // getCurrentUser: async () => {
-  //   const response = await api.get<AuthUserResponse>("/auth/user");
-  //   return response.data;
-  // },
-  deleteUser: async (id: string) => {
-    const response = await api.delete<{ statusCode: number; message: string }>(
-      `/user/${id}`
-    );
-    return response.data;
+  getUser: async (id: string) => {
+    const { data } = await api.get<AuthUser>(`/users/${id}`);
+    return data;
   },
-  updateUser: async (id: string, payload: UpdateUserPayload) => {
-    const response = await api.patch<UpdateUserResponse>(
-      `/user/${id}`,
-      payload
+
+  deleteUser: async (id: string) => {
+    const { data } = await api.delete<{ statusCode: number; message: string }>(
+      `/users/${id}`,
     );
-    return response.data;
+    return data;
+  },
+
+  updateUser: async (id: string, payload: UpdateUserPayload) => {
+    const { data } = await api.put<AuthUser>(`/users/${id}`, payload);
+    return data;
   },
 };
