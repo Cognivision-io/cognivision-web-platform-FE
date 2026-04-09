@@ -1,12 +1,17 @@
 import { useMutation, type UseMutationOptions } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
-import { projectApi } from "@/features/dataset/api/project.api";
 import type {
   CreateProjectPayload,
   CreateProjectResponse,
 } from "@/interfaces/project.interface";
 
 type ProjectError = AxiosError<{ message?: string | string[] }>;
+
+async function rejectMutation(..._args: unknown[]): Promise<never> {
+  void _args;
+  throw new Error("Non-auth API is disabled.");
+}
+
 export const CREATE_PROJECT_MUTATION_KEY = ["project", "create"] as const;
 
 export const useCreateProjectMutation = (
@@ -14,43 +19,32 @@ export const useCreateProjectMutation = (
     CreateProjectResponse,
     ProjectError,
     CreateProjectPayload
-  >
+  >,
 ) => {
   return useMutation({
     mutationKey: CREATE_PROJECT_MUTATION_KEY,
-    mutationFn: projectApi.createProject,
+    mutationFn: rejectMutation,
     ...options,
   });
 };
 
-export const AUTO_ANNOTATION_DIRECT_MUTATION_KEY = ["project", "autoAnnotation", "direct"] as const;
-
-export const useAutoAnnotationDirectMutation = (
-  options?: UseMutationOptions<
-    import("@/interfaces/project.interface").AutoAnnotationResponse,
-    ProjectError,
-    import("@/interfaces/project.interface").AutoAnnotationDirectPayload
-  >
-) => {
-  return useMutation({
-    mutationKey: AUTO_ANNOTATION_DIRECT_MUTATION_KEY,
-    mutationFn: projectApi.autoAnnotationDirect,
-    ...options,
-  });
-};
-
-export const AUTO_ANNOTATION_BATCH_DIRECT_MUTATION_KEY = ["project", "autoAnnotation", "batch", "direct"] as const;
+export const AUTO_ANNOTATION_BATCH_DIRECT_MUTATION_KEY = [
+  "project",
+  "autoAnnotation",
+  "batch",
+  "direct",
+] as const;
 
 export const useAutoAnnotationBatchDirectMutation = (
   options?: UseMutationOptions<
     import("@/interfaces/project.interface").AutoAnnotationResponse,
     ProjectError,
     import("@/interfaces/project.interface").AutoAnnotationBatchDirectPayload
-  >
+  >,
 ) => {
   return useMutation({
     mutationKey: AUTO_ANNOTATION_BATCH_DIRECT_MUTATION_KEY,
-    mutationFn: projectApi.autoAnnotationBatchDirect,
+    mutationFn: rejectMutation,
     ...options,
   });
 };
@@ -59,14 +53,14 @@ export const UPLOAD_ANNOTATION_MUTATION_KEY = ["project", "uploadAnnotation"] as
 
 export const useUploadAnnotationMutation = (
   options?: UseMutationOptions<
-    any,
+    unknown,
     ProjectError,
     { projectId: number; imageId: string; file: File; labelMap?: Record<string, string> }
-  >
+  >,
 ) => {
   return useMutation({
     mutationKey: UPLOAD_ANNOTATION_MUTATION_KEY,
-    mutationFn: projectApi.uploadAnnotation,
+    mutationFn: rejectMutation,
     ...options,
   });
 };
@@ -75,14 +69,14 @@ export const TRAIN_MODEL_MUTATION_KEY = ["project", "trainModel"] as const;
 
 export const useTrainModelMutation = (
   options?: UseMutationOptions<
-    any,
+    unknown,
     ProjectError,
     { projectId: number; versionNumber: string; modelType: string }
-  >
+  >,
 ) => {
   return useMutation({
     mutationKey: TRAIN_MODEL_MUTATION_KEY,
-    mutationFn: projectApi.trainModel,
+    mutationFn: rejectMutation,
     ...options,
   });
 };

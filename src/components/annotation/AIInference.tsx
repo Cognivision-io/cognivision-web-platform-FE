@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Sparkles, Check, X } from 'lucide-react';
-import { AnnotationClass, Polygon, SAM3Response } from '@/types/annotation';
+import { AnnotationClass, Polygon } from '@/types/annotation';
 
 interface AIInferenceProps {
                     classes: AnnotationClass[];
@@ -22,50 +22,8 @@ export default function AIInference({ classes, imageUrl, onMasksReceived }: AIIn
 
                                         setLoading(true);
                                         try {
-                                                            const allMasks: Polygon[] = [];
-
-                                                            for (const cls of classes) {
-                                                                                const prompt = cls.prompt || cls.name;
-
-                                                                                try {
-                                                                                                    // Send imageUrl directly to avoid CORS issues
-                                                                                                    const response = await fetch('/api/annotation/infer', {
-                                                                                                                        method: 'POST',
-                                                                                                                        headers: { 'Content-Type': 'application/json' },
-                                                                                                                        body: JSON.stringify({ imageUrl, text: prompt })
-                                                                                                    });
-
-                                                                                                    if (!response.ok) {
-                                                                                                                        const errorData = await response.json();
-                                                                                                                        console.error('API error:', errorData);
-                                                                                                                        throw new Error('Inference failed');
-                                                                                                    }
-
-                                                                                                    const data: SAM3Response = await response.json();
-
-                                                                                                    if (data.outputs?.[0]?.model_predictions?.predictions) {
-                                                                                                                        const predictions = data.outputs[0].model_predictions.predictions;
-
-                                                                                                                        predictions.forEach((pred) => {
-                                                                                                                                            allMasks.push({
-                                                                                                                                                                id: pred.detection_id,
-                                                                                                                                                                points: pred.points,
-                                                                                                                                                                classId: cls.id,
-                                                                                                                                                                className: cls.name,
-                                                                                                                                                                confidence: pred.confidence,
-                                                                                                                                                                accepted: false
-                                                                                                                                            });
-                                                                                                                        });
-                                                                                                    }
-                                                                                } catch (error) {
-                                                                                                    console.error(`Inference failed for class ${cls.name}:`, error);
-                                                                                }
-                                                            }
-
-                                                            setPendingMasks(allMasks);
-                                        } catch (error) {
-                                                            console.error('Inference error:', error);
-                                                            alert('Inference failed');
+                                                            alert('AI inference API is disabled.');
+                                                            setPendingMasks([]);
                                         } finally {
                                                             setLoading(false);
                                         }

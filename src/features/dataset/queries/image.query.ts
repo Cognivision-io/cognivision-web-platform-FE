@@ -1,6 +1,5 @@
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
-import { projectApi } from "@/features/dataset/api/project.api";
-import type { GetImagesResponse } from "@/interfaces/image.interface";
+import type { GetImagesResponse, Image } from "@/interfaces/image.interface";
 import type { AxiosError } from "axios";
 
 export const UNANNOTATED_IMAGES_QUERY_KEY = ["project", "unannotated-images"] as const;
@@ -10,11 +9,16 @@ export const useUnannotatedImagesQuery = (
   id: number,
   offset: number = 0,
   limit: number = 50,
-  options?: Omit<UseQueryOptions<GetImagesResponse, AxiosError>, "queryKey" | "queryFn">
+  options?: Omit<UseQueryOptions<GetImagesResponse, AxiosError>, "queryKey" | "queryFn">,
 ) => {
   return useQuery({
     queryKey: [...UNANNOTATED_IMAGES_QUERY_KEY, id, offset, limit],
-    queryFn: () => projectApi.getUnannotatedImages(id, offset, limit),
+    queryFn: async (): Promise<GetImagesResponse> => ({
+      results: [],
+      total: 0,
+      offset,
+      limit,
+    }),
     enabled: !!id,
     ...options,
   });
@@ -24,11 +28,16 @@ export const useAnnotatedImagesQuery = (
   id: number,
   offset: number = 0,
   limit: number = 50,
-  options?: Omit<UseQueryOptions<GetImagesResponse, AxiosError>, "queryKey" | "queryFn">
+  options?: Omit<UseQueryOptions<GetImagesResponse, AxiosError>, "queryKey" | "queryFn">,
 ) => {
   return useQuery({
     queryKey: [...ANNOTATED_IMAGES_QUERY_KEY, id, offset, limit],
-    queryFn: () => projectApi.getAnnotatedImages(id, offset, limit),
+    queryFn: async (): Promise<GetImagesResponse> => ({
+      results: [],
+      total: 0,
+      offset,
+      limit,
+    }),
     enabled: !!id,
     ...options,
   });
@@ -36,14 +45,18 @@ export const useAnnotatedImagesQuery = (
 
 export const IMAGE_DETAIL_QUERY_KEY = ["project", "image-detail"] as const;
 
+export type ImageDetailQueryData = { data: { image?: Image } };
+
 export const useImageDetailQuery = (
   roboflowProjectId: string,
   imageId: string,
-  options?: Omit<UseQueryOptions<any, AxiosError>, "queryKey" | "queryFn">
+  options?: Omit<UseQueryOptions<ImageDetailQueryData, AxiosError>, "queryKey" | "queryFn">,
 ) => {
   return useQuery({
     queryKey: [...IMAGE_DETAIL_QUERY_KEY, roboflowProjectId, imageId],
-    queryFn: () => projectApi.getImageDetail(roboflowProjectId, imageId),
+    queryFn: async (): Promise<ImageDetailQueryData> => ({
+      data: { image: undefined },
+    }),
     enabled: !!roboflowProjectId && !!imageId,
     ...options,
   });

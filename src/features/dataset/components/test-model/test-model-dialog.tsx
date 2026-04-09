@@ -15,8 +15,6 @@ import {
 import { Upload, Link as LinkIcon, Copy, Monitor } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import { cn } from "@/lib/utils";
-import { runRoboflowInference } from "./roboflow-api";
-import { toast } from "sonner";
 import { type RoboflowInferenceResponse } from "@/interfaces/project.interface";
 import { useWorkspaceApiKeyQuery } from "@/features/workspace/queries/workspace.query";
 import { useSearchParams } from "next/navigation";
@@ -86,34 +84,11 @@ function TestModelDialogInner({
     setInferenceResult(null);
 
     try {
-      console.log("🔄 Running inference via Roboflow HTTP API...");
-      console.log("📋 Model ID:", version.model.id);
-      console.log("📋 Model Endpoint:", version.model.endpoint);
-      console.log("📋 Confidence:", confidenceThreshold);
-      console.log("📋 Overlap:", overlapThreshold);
-
-      const result = await runRoboflowInference(
-        imageUrl,
-        version.model.id,
-        apiKey,
-        confidenceThreshold,
-        overlapThreshold,
-        version.model.endpoint, // unused (kept for compatibility)
-        workspaceName,
-      );
-
-      console.log("✅ Inference complete:", result);
-      setInferenceResult(result);
-
-      const count = result.predictions.length;
-      if (count === 0) {
-        CustomToast.error("No objects detected");
-      } else {
-        CustomToast.success(`Detected ${count} object${count > 1 ? "s" : ""}!`);
-      }
-    } catch (e) {
-      console.error("❌ Inference failed:", e);
-      CustomToast.error(e instanceof Error ? e.message : "Inference failed");
+      void apiKey;
+      void workspaceName;
+      void confidenceThreshold;
+      void overlapThreshold;
+      CustomToast.error("Model inference API is disabled.");
     } finally {
       setIsInferencing(false);
     }

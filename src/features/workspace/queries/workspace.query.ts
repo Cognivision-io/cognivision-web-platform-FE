@@ -1,15 +1,30 @@
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
-import { workspaceApi } from "@/features/workspace/api/workspace.api";
 import type {
   GetWorkspaceApiKeyResponse,
   GetWorkspaceResponse,
-  GetWorkspacesResponse,
+  Workspace,
   WorkspaceCreditHistoryResponse,
   WorkspaceCreditsResponse,
 } from "@/interfaces/workspace.interface";
 
 type WorkspaceError = AxiosError<{ message?: string | string[] }>;
+
+function emptyWorkspace(id: number): Workspace {
+  return {
+    id,
+    deletedAt: null,
+    createdAt: "",
+    updatedAt: "",
+    name: "—",
+    order: 0,
+    status: true,
+    credits: "0",
+    remainingCredits: "0",
+    createdBy: 0,
+    projects: [],
+  };
+}
 
 export const WORKSPACE_CREDITS_QUERY_KEY = ["workspace", "credits"] as const;
 export const WORKSPACES_QUERY_KEY = ["workspace", "all"] as const;
@@ -20,30 +35,20 @@ export const WORKSPACE_CREDITS_HISTORY_QUERY_KEY = [
 ] as const;
 export const WORKSPACE_API_KEY_QUERY_KEY = ["workspace", "api-key"] as const;
 
-export const useWorkspacesQuery = (
-  params: { page?: number; limit?: number; search?: string },
-  options?: Omit<
-    UseQueryOptions<GetWorkspacesResponse, WorkspaceError>,
-    "queryKey" | "queryFn"
-  >
-) => {
-  return useQuery({
-    queryKey: [...WORKSPACES_QUERY_KEY, params],
-    queryFn: () => workspaceApi.getAll(params),
-    ...options,
-  });
-};
-
 export const useWorkspaceQuery = (
   workspaceId?: number,
   options?: Omit<
     UseQueryOptions<GetWorkspaceResponse, WorkspaceError>,
     "queryKey" | "queryFn"
-  >
+  >,
 ) => {
   return useQuery({
     queryKey: [...WORKSPACE_QUERY_KEY, workspaceId],
-    queryFn: () => workspaceApi.getById(workspaceId as number),
+    queryFn: async (): Promise<GetWorkspaceResponse> => ({
+      statusCode: 200,
+      message: "",
+      data: emptyWorkspace(workspaceId as number),
+    }),
     enabled: !!workspaceId,
     ...options,
   });
@@ -54,11 +59,15 @@ export const useWorkspaceCreditsQuery = (
   options?: Omit<
     UseQueryOptions<WorkspaceCreditsResponse, WorkspaceError>,
     "queryKey" | "queryFn"
-  >
+  >,
 ) => {
   return useQuery({
     queryKey: [...WORKSPACE_CREDITS_QUERY_KEY, workspaceId],
-    queryFn: () => workspaceApi.getCredits(workspaceId as number),
+    queryFn: async (): Promise<WorkspaceCreditsResponse> => ({
+      statusCode: 200,
+      message: "",
+      data: { workspaceId: workspaceId as number, credits: 0 },
+    }),
     enabled: !!workspaceId,
     ...options,
   });
@@ -73,16 +82,15 @@ export const useWorkspaceCreditsHistoryQuery = (
   options?: Omit<
     UseQueryOptions<WorkspaceCreditHistoryResponse, WorkspaceError>,
     "queryKey" | "queryFn"
-  >
+  >,
 ) => {
   return useQuery({
     queryKey: [...WORKSPACE_CREDITS_HISTORY_QUERY_KEY, params],
-    queryFn: () =>
-      workspaceApi.getCreditHistory({
-        workspaceId: params.workspaceId as number,
-        page: params.page,
-        limit: params.limit,
-      }),
+    queryFn: async (): Promise<WorkspaceCreditHistoryResponse> => ({
+      statusCode: 200,
+      message: "",
+      data: { data: [], total: 0, page: 1, limit: 10 },
+    }),
     enabled: !!params.workspaceId,
     ...options,
   });
@@ -93,11 +101,15 @@ export const useWorkspaceApiKeyQuery = (
   options?: Omit<
     UseQueryOptions<GetWorkspaceApiKeyResponse, WorkspaceError>,
     "queryKey" | "queryFn"
-  >
+  >,
 ) => {
   return useQuery({
     queryKey: [...WORKSPACE_API_KEY_QUERY_KEY, workspaceId],
-    queryFn: () => workspaceApi.getApiKey(workspaceId as number),
+    queryFn: async (): Promise<GetWorkspaceApiKeyResponse> => ({
+      statusCode: 200,
+      message: "",
+      data: { apiKey: "", projects: [] },
+    }),
     enabled: !!workspaceId,
     ...options,
   });

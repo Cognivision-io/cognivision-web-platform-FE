@@ -18,32 +18,25 @@ export default function ImageUpload({ onImageSelect, images }: ImageUploadProps)
 
                                         setUploading(true);
                                         const file = acceptedFiles[0];
-                                        const formData = new FormData();
-                                        formData.append('image', file);
 
                                         try {
-                                                            const response = await fetch('/api/annotation/upload', {
-                                                                                method: 'POST',
-                                                                                body: formData,
-                                                            });
-
-                                                            if (!response.ok) throw new Error('Upload failed');
-
-                                                            const data = await response.json();
+                                                            const objectUrl = URL.createObjectURL(file);
                                                             const img = new Image();
-                                                            img.onload = () => {
-                                                                                onImageSelect({
-                                                                                                    id: data.imageId,
-                                                                                                    url: data.imageUrl,
-                                                                                                    name: file.name,
-                                                                                                    width: img.width,
-                                                                                                    height: img.height
-                                                                                });
-                                                            };
-                                                            img.src = data.imageUrl;
+                                                            await new Promise<void>((resolve, reject) => {
+                                                                                img.onload = () => resolve();
+                                                                                img.onerror = () => reject(new Error('Could not read image'));
+                                                                                img.src = objectUrl;
+                                                            });
+                                                            onImageSelect({
+                                                                                id: `local-${Date.now()}`,
+                                                                                url: objectUrl,
+                                                                                name: file.name,
+                                                                                width: img.width,
+                                                                                height: img.height,
+                                                            });
                                         } catch (error) {
                                                             console.error('Upload error:', error);
-                                                            alert('Failed to upload image');
+                                                            alert('Failed to load image');
                                         } finally {
                                                             setUploading(false);
                                         }
