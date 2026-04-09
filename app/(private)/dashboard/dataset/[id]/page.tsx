@@ -87,8 +87,6 @@ const ProjectDetailPage = () => {
         !isProjectApiKeyError,
     },
   );
-    console.log("🚀 ~ ProjectDetailPage ~ projectApiKeyValueResponse:", projectApiKeyValueResponse)
-
   const projectApiKeyValue = projectApiKeyValueResponse?.data?.apiKey ?? "";
 
   const maskedProjectApiKeyValue = projectApiKeyValue
