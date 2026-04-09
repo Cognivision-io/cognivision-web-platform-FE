@@ -71,6 +71,8 @@ export type AuthUserResponse = {
 };
 export type UpdateUserPayload = {
   email: string;
+  firstName?: string;
+  lastName?: string | null;
 };
 
 export type UpdateUserResponse = AuthUserResponse;
