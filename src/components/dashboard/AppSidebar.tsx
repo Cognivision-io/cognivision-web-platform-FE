@@ -1,48 +1,114 @@
 "use client";
+
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Network, Database, Rocket, BarChart3, HelpCircle, Bot } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import {
+  CreditCard,
+  KeyRound,
+  LayoutDashboard,
+  LineChart,
+  LogOut,
+  Settings,
+} from "lucide-react";
+
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-  useSidebar,
+  SidebarRail,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLogoutMutation } from "@/features/auth/mutations/auth.mutation";
-import CustomToast from "../ui/sonner";
+import { useSubscriptionModalStore } from "@/stores/subscription-modal-store";
+import CustomToast from "@/components/ui/sonner";
 
-const mainItems = [
-  { title: "Use Case", url: "/dashboard", icon: Network },
-  { title: "Projects", url: "/dashboard/dataset", icon: Database },
-  { title: "ARkitect", url: "/dashboard/agent", icon: Bot },
-  { title: "Monitoring", url: "/dashboard/monitoring", icon: BarChart3 },
+type NavLinkConfig = {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+};
+
+type NavSection = {
+  label: string;
+  items: NavLinkConfig[];
+};
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    label: "Main",
+    items: [
+      { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { title: "Monitoring", href: "/dashboard/monitoring", icon: LineChart },
+    ],
+  },
+  {
+    label: "Developer",
+    items: [{ title: "API Keys", href: "/dashboard/api-keys", icon: KeyRound }],
+  },
+  {
+    label: "Account",
+    items: [
+      { title: "Billing", href: "/dashboard/billing", icon: CreditCard },
+      {
+        title: "Settings",
+        href: "/dashboard/settings/login-security",
+        icon: Settings,
+      },
+    ],
+  },
 ];
 
-const bottomItems = [{ title: "Help & Docs", url: "/help", icon: HelpCircle }];
+function routeIsActive(pathname: string, href: string) {
+  if (href === "/dashboard") return pathname === "/dashboard";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function NavLinkRow({
+  href,
+  icon: Icon,
+  title,
+  active,
+}: NavLinkConfig & { active: boolean }) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "relative flex h-9 items-center gap-2 rounded-[7px] px-2.5 transition-colors",
+        active
+          ? "bg-[#ede9fb] text-[#5925dc]"
+          : "text-[#64748b] hover:bg-[#f8fafc]",
+      )}
+    >
+      {active ? (
+        <span
+          className="absolute bottom-1.5 left-0 top-1.5 w-[3px] rounded-br-[3px] rounded-tr-[3px] bg-[#5925dc]"
+          aria-hidden
+        />
+      ) : null}
+      <Icon
+        className={cn("size-[17px] shrink-0", active ? "text-[#5925dc]" : "text-[#64748b] opacity-70")}
+        aria-hidden
+      />
+      <span
+        className={cn(
+          "min-w-0 flex-1 truncate text-left text-[13.5px] leading-tight",
+          active ? "font-medium" : "font-normal",
+        )}
+      >
+        {title}
+      </span>
+    </Link>
+  );
+}
 
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { state } = useSidebar();
-  const collapsed = state === "collapsed";
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
-  const { mutateAsync: triggerLogout, isPending: isLoggingOut } =
-    useLogoutMutation();
+  const openModal = useSubscriptionModalStore((state) => state.openModal);
+  const { mutateAsync: triggerLogout, isPending: isLoggingOut } = useLogoutMutation();
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
@@ -57,137 +123,80 @@ export function AppSidebar() {
     }
   };
 
-  const isActiveRoute = (pathname: string, href: string) => {
-    if (href === "/dashboard") return pathname === "/dashboard"; // keep dashboard strict
-    return pathname === href || pathname.startsWith(href + "/");
-  };
-
   return (
-    <Sidebar collapsible="icon" className="border-r">
-      <SidebarContent className="pt-6">
-        {/* Logo and Header */}
-        <div className={cn("mb-8", collapsed ? "px-2" : "px-6")}>
-          <Link href="/" className="flex items-center gap-3">
-            <img
-              src="/logo.svg"
-              alt="CogniVision"
-              className="h-10 w-auto drop-shadow-sm"
-            />
-            <span className="font-heading text-[24px] font-semibold text-black">
-              CogniVision
-            </span>
+    <Sidebar
+      collapsible="offcanvas"
+      className="border-r border-[#e2e8f0] bg-white [&_[data-sidebar=sidebar]]:bg-white"
+    >
+      <SidebarContent className="flex h-full flex-col gap-0 overflow-hidden p-0">
+        <div className="flex h-[73px] shrink-0 flex-col justify-center border-b border-[#e2e8f0] px-3">
+          <Link href="/" className="flex items-center gap-3 px-1 py-1">
+            <div className="flex size-[39px] shrink-0 items-center justify-center overflow-hidden rounded-[6.5px] bg-[#ecf0ff]">
+              <img src="/logo.svg" alt="" className="size-7 object-contain" />
+            </div>
+            <div className="min-w-0 text-left leading-tight">
+              <p className="truncate text-[15px] font-semibold tracking-[-0.3px] text-[#2b2b2b]">
+                Cognivision
+              </p>
+              <p className="truncate text-[11px] font-normal text-[#94a3b8]">Developer Portal</p>
+            </div>
           </Link>
         </div>
 
-        {/* Main Navigation */}
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainItems.map((item) => {
-                const isActive = isActiveRoute(pathname, item.url);
+        <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-4 pt-4">
+          {NAV_SECTIONS.map((section) => (
+            <div key={section.label} className="mb-5 last:mb-0">
+              <p className="mb-2.5 px-2 text-[10px] font-medium uppercase tracking-[0.8px] text-[#94a3b8]">
+                {section.label}
+              </p>
+              <div className="flex flex-col gap-1">
+                {section.items.map((item) => {
+                  const active = routeIsActive(pathname, item.href);
+                  return (
+                    <NavLinkRow
+                      key={item.href}
+                      href={item.href}
+                      icon={item.icon}
+                      title={item.title}
+                      active={active}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
 
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      className={cn(
-                        "mb-1 h-10",
-                        isActive
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                        isActive
-                          ? "active:bg-primary/10 active:text-primary"
-                          : "active:bg-accent active:text-accent-foreground",
-                      )}
-                    >
-                      <Link
-                        href={item.url}
-                        className="flex flex-1 items-center gap-2"
-                      >
-                        <item.icon className="h-4 w-4" />
-                        {!collapsed && (
-                          <span className="flex-1">{item.title}</span>
-                        )}
-                        <span
-                          className={cn(
-                            "ml-auto hidden h-full w-1 rounded bg-primary md:inline-block",
-                            isActive ? "opacity-100" : "opacity-0",
-                          )}
-                        />
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Bottom Navigation */}
-        <div className="mt-auto">
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {bottomItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      className="text-muted-foreground hover:bg-accent hover:text-accent-foreground active:bg-accent active:text-accent-foreground"
-                    >
-                      <Link
-                        href={item.url}
-                        className="flex flex-1 items-center gap-2"
-                      >
-                        <item.icon className="h-4 w-4" />
-                        {!collapsed && <span>{item.title}</span>}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+        <div className="shrink-0 border-t border-[#e2e8f0] px-3 pb-5 pt-3">
+          <div className="rounded-[10px] bg-[#ede9fb] p-3.5 pt-3">
+            <p className="text-[12px] font-semibold text-[#5925dc]">
+              {user?.isSubscribed ? "Pro Plan" : "Free Plan"}
+            </p>
+            <p className="mt-1.5 text-[11.5px] font-normal leading-snug text-[#7c5dc9]">
+              {user?.isSubscribed
+                ? "Thank you for your subscription."
+                : "5,000 sessions/month included"}
+            </p>
+            <button
+              type="button"
+              onClick={() => openModal("core")}
+              className="mt-3 flex h-8 w-full items-center justify-center rounded-[7px] bg-[#5925dc] text-[12.5px] font-medium text-white transition-colors hover:bg-[#5925dc]/90"
+            >
+              Upgrade to Pro
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="mt-3 flex h-9 w-full items-center justify-center gap-2 rounded-[7px] text-[13.5px] font-normal text-[#ef4444] transition-colors hover:bg-red-50 disabled:opacity-50"
+          >
+            <LogOut className="size-4" aria-hidden />
+            {isLoggingOut ? "Signing out…" : "Logout"}
+          </button>
         </div>
       </SidebarContent>
-
-      {/* User Profile */}
-      <SidebarFooter className={`mb-4 ${collapsed ? "px-2" : "px-4"}`}>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton size="lg" className="h-12">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {user?.firstName?.charAt(0).toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  {!collapsed && (
-                    <div className="flex flex-col items-start flex-1">
-                      <span className="text-sm font-medium">
-                        {user?.firstName} {user?.lastName || ""}
-                      </span>
-                    </div>
-                  )}
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings/login-security">
-                    Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                >
-                  {isLoggingOut ? "Signing out..." : "Sign out"}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }

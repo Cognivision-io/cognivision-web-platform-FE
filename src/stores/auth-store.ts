@@ -1,10 +1,8 @@
 "use client";
 
-import type { AxiosError } from "axios";
 import { create } from "zustand";
 import type { AuthenticatedUser } from "@/interfaces/auth.interface";
 import { clearSessionToken, persistSessionToken } from "@/lib/session";
-import { userAPI } from "@/features/auth/api/user.api";
 
 type AuthStore = {
   user: AuthenticatedUser | null;
@@ -92,16 +90,18 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ isHydrated: true });
   },
   refreshUserFromSession: async () => {
-    try {
-      const response = await userAPI.getCurrentUser();
-      set({ user: response.data });
-    } catch (error) {
-      const status = (error as AxiosError | undefined)?.response?.status;
-      if (status === 401) {
-        get().logout();
+    if (typeof window !== "undefined") {
+      const storedUser = window.localStorage.getItem("authUser");
+      let parsedUser: AuthenticatedUser | null = null;
+      if (storedUser) {
+        try {
+          parsedUser = JSON.parse(storedUser) as AuthenticatedUser;
+        } catch (error) {
+          console.warn("Failed to parse stored auth user", error);
+        }
       }
-    } finally {
-      set({ isHydrated: true });
+      set({ user: parsedUser });
     }
+    set({ isHydrated: true });
   },
 }));

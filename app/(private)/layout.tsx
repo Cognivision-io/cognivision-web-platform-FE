@@ -1,10 +1,13 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, type CSSProperties } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { DM_Sans, DM_Mono } from "next/font/google";
 
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { DashboardHeader } from "@/features/dashboard/components/dashboard-header";
+import { DashboardMonoClassProvider } from "@/features/dashboard/context/dashboard-mono-font";
 import { useAuthStore } from "@/stores/auth-store";
 import { useSubscriptionModalStore } from "@/stores/subscription-modal-store";
 import {
@@ -13,26 +16,28 @@ import {
 } from "@/features/subscription/types";
 import SubscriptionModal from "@/features/subscription/components/SubscriptionModal";
 
-function PrivateLayoutInner({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const dmMono = DM_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+});
+
+const sidebarLayoutStyle = {
+  "--sidebar-width": "232px",
+  "--sidebar-width-mobile": "min(100vw, 280px)",
+} as CSSProperties;
+
+function UpgradePlanFromQuery() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const openModal = useSubscriptionModalStore((state) => state.openModal);
-  const upgradePlanParam = searchParams.get("upgradePlan");
-
   const isHydrated = useAuthStore((state) => state.isHydrated);
-  const isAuthenticated = useAuthStore((state) => Boolean(state.user));
-
-  useEffect(() => {
-    if (!isHydrated) return;
-    if (!isAuthenticated) {
-      router.replace("/login");
-    }
-  }, [isAuthenticated, isHydrated, router]);
+  const upgradePlanParam = searchParams.get("upgradePlan");
 
   useEffect(() => {
     if (!isHydrated || !upgradePlanParam) return;
@@ -47,6 +52,27 @@ function PrivateLayoutInner({
     router.replace(targetPath, { scroll: false });
   }, [isHydrated, upgradePlanParam, openModal, pathname, router, searchParams]);
 
+  return null;
+}
+
+function PrivateLayoutInner({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
+  const isAuthenticated = Boolean(user) || Boolean(token);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (!isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [isAuthenticated, isHydrated, router]);
+
   if (!isHydrated || !isAuthenticated) {
     return (
       <div className="grid min-h-screen place-items-center bg-background text-foreground">
@@ -56,22 +82,27 @@ function PrivateLayoutInner({
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
-        <AppSidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-10 border-b bg-background">
-            <div className="flex h-14 items-center px-6">
-              <SidebarTrigger />
+    <div className={`${dmSans.className} min-h-svh text-[#2b2b2b] antialiased`}>
+      <DashboardMonoClassProvider monoClassName={dmMono.className}>
+        <SidebarProvider
+          defaultOpen
+          style={sidebarLayoutStyle}
+          className="h-svh min-h-0 overflow-hidden"
+        >
+          <AppSidebar />
+          <SidebarInset className="flex h-svh min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-0 bg-[#f4f7fe] p-0 shadow-none md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:rounded-none">
+            <DashboardHeader />
+            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+              <Suspense fallback={null}>
+                <UpgradePlanFromQuery />
+              </Suspense>
+              {children}
             </div>
-          </header>
-          <main className="min-w-0 flex-1 overflow-auto bg-[#f5f7ff]">
-            {children}
-          </main>
-        </div>
-      </div>
-      <SubscriptionModal />
-    </SidebarProvider>
+            <SubscriptionModal />
+          </SidebarInset>
+        </SidebarProvider>
+      </DashboardMonoClassProvider>
+    </div>
   );
 }
 
@@ -80,15 +111,5 @@ export default function PrivateLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <Suspense
-      fallback={
-        <div className="grid min-h-screen place-items-center bg-background text-foreground">
-          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
-        </div>
-      }
-    >
-      <PrivateLayoutInner>{children}</PrivateLayoutInner>
-    </Suspense>
-  );
+  return <PrivateLayoutInner>{children}</PrivateLayoutInner>;
 }
