@@ -105,9 +105,7 @@ export function UsageTrendChart() {
               tickLine={false}
               axisLine={false}
               tickFormatter={(v) =>
-                granularity === "monthly" && v >= 1000
-                  ? `${v / 1000}k`
-                  : `${v}`
+                granularity === "monthly" && v >= 1000 ? `${v / 1000}k` : `${v}`
               }
               domain={
                 granularity === "monthly"
