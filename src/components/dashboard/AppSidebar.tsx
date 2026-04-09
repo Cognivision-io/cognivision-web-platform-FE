@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
-import { useLogoutMutation } from "@/features/auth/mutations/auth.mutation";
 import { useSubscriptionModalStore } from "@/stores/subscription-modal-store";
 import CustomToast from "@/components/ui/sonner";
 
@@ -108,19 +107,11 @@ export function AppSidebar() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const openModal = useSubscriptionModalStore((state) => state.openModal);
-  const { mutateAsync: triggerLogout, isPending: isLoggingOut } = useLogoutMutation();
 
-  const handleLogout = async () => {
-    if (isLoggingOut) return;
-    try {
-      await triggerLogout();
-      logout();
-      CustomToast.success("Signed out successfully");
-      router.replace("/login");
-    } catch (error) {
-      console.error("Failed to sign out", error);
-      CustomToast.error("Failed to sign out. Please try again.");
-    }
+  const handleLogout = () => {
+    logout();
+    CustomToast.success("Signed out successfully");
+    router.replace("/login");
   };
 
   return (
@@ -188,11 +179,10 @@ export function AppSidebar() {
           <button
             type="button"
             onClick={handleLogout}
-            disabled={isLoggingOut}
             className="mt-3 flex h-9 w-full items-center justify-center gap-2 rounded-[7px] text-[13.5px] font-normal text-[#ef4444] transition-colors hover:bg-red-50 disabled:opacity-50"
           >
             <LogOut className="size-4" aria-hidden />
-            {isLoggingOut ? "Signing out…" : "Logout"}
+            Logout
           </button>
         </div>
       </SidebarContent>

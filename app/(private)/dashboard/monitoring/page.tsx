@@ -1,29 +1,70 @@
 "use client";
 
-import { addMonths, differenceInCalendarDays, format, startOfMonth } from "date-fns";
+import { useMemo } from "react";
+import {
+  addMonths,
+  differenceInCalendarDays,
+  format,
+  parseISO,
+  startOfMonth,
+} from "date-fns";
 import { AlertCircle, Clock } from "lucide-react";
 
 import { useDashboardMonoClass } from "@/features/dashboard/context/dashboard-mono-font";
 import { UsageTrendChart } from "@/features/monitoring/components/monitoring-page/usage-trend-chart";
-import { useAuthStore } from "@/stores/auth-store";
+import { usePlansQuery } from "@/features/monitoring/queries/plan.query";
+import { useCurrentUsageQuery } from "@/features/monitoring/queries/usage.query";
 import { cn } from "@/lib/utils";
 
-const MONTHLY_USED = 48_291;
-const MONTHLY_LIMIT = 75_000;
-const DAILY_USED = 1_630;
-const DAILY_LIMIT = 2_500;
 const FAILED_CALLS = 247;
-const MONTHLY_PCT = Math.round((MONTHLY_USED / MONTHLY_LIMIT) * 100);
-const DAILY_PCT = Math.round((DAILY_USED / DAILY_LIMIT) * 100);
 
 export default function MonitoringPage() {
   const monoClassName = useDashboardMonoClass();
-  const user = useAuthStore((state) => state.user);
+  const { data: plans = [], isLoading: plansLoading } = usePlansQuery();
+  const { data: usage, isLoading: usageLoading, isError: usageError } =
+    useCurrentUsageQuery();
 
-  const planName = user?.isSubscribed ? "Pro" : "Free";
-  const nextReset = startOfMonth(addMonths(new Date(), 1));
+  const primaryPlan = useMemo(() => {
+    const active = plans.filter((p) => p.active);
+    return active.find((p) => p.name === "free") ?? active[0] ?? plans[0];
+  }, [plans]);
+
+  const planLabel = primaryPlan?.display_name ?? "Plan";
+
+  const monthlyUsed = usage?.current_monthly_used ?? 0;
+  const monthlyLimit = usage?.monthly_limit ?? 0;
+  const monthlyPct = Math.min(
+    100,
+    Math.round(
+      usage?.usage_percentage_monthly ??
+        (monthlyLimit > 0 ? (monthlyUsed / monthlyLimit) * 100 : 0),
+    ),
+  );
+
+  const dailyUsed = usage?.current_daily_used ?? 0;
+  const dailyLimit = usage?.daily_limit ?? null;
+  const dailyPct =
+    usage?.usage_percentage_daily != null
+      ? Math.min(100, Math.round(usage.usage_percentage_daily))
+      : dailyLimit != null && dailyLimit > 0
+        ? Math.min(100, Math.round((dailyUsed / dailyLimit) * 100))
+        : 0;
+
+  const nextReset = useMemo(() => {
+    if (usage?.month_start) {
+      try {
+        return addMonths(parseISO(usage.month_start), 1);
+      } catch {
+        /* fall through */
+      }
+    }
+    return startOfMonth(addMonths(new Date(), 1));
+  }, [usage?.month_start]);
+
   const resetLabel = format(nextReset, "MMMM d, yyyy");
   const daysUntilReset = differenceInCalendarDays(nextReset, new Date());
+
+  const usageReady = !usageLoading && !usageError && usage;
 
   return (
     <div className="bg-[#f4f7fe] px-4 py-6 md:px-7 md:py-8">
@@ -34,14 +75,20 @@ export default function MonitoringPage() {
           </p>
           <div className="flex items-center gap-2 text-[12px] font-normal text-[#94a3b8]">
             <Clock className="size-[13px] shrink-0 opacity-80" aria-hidden />
-            <span>Last updated: less than a minute ago</span>
+            <span>
+              {usageLoading
+                ? "Loading usage…"
+                : usageError
+                  ? "Usage unavailable"
+                  : "Usage up to date"}
+            </span>
           </div>
         </div>
 
         <div className="flex flex-col justify-center gap-1 rounded-[14px] border border-[#e2e8f0] bg-white px-6 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-[13px] font-medium text-[#2b2b2b]">
-              {planName} Plan — usage limits
+              {plansLoading ? "Loading plan…" : `${planLabel} — usage limits`}
             </p>
             <p className="text-[12px] font-normal text-[#94a3b8]">
               Resets on {resetLabel} · Billing cycle: monthly
@@ -69,23 +116,38 @@ export default function MonitoringPage() {
                     monoClassName,
                   )}
                 >
-                  {MONTHLY_USED.toLocaleString()} / {MONTHLY_LIMIT.toLocaleString()}
+                  {usageLoading ? (
+                    <span className="text-[#94a3b8]">…</span>
+                  ) : usageError ? (
+                    <span className="text-[#94a3b8]">—</span>
+                  ) : (
+                    <>
+                      {monthlyUsed.toLocaleString()} /{" "}
+                      {monthlyLimit > 0 ? monthlyLimit.toLocaleString() : "—"}
+                    </>
+                  )}
                 </p>
-                <p className="text-[11.5px] font-normal text-[#94a3b8]">{MONTHLY_PCT}% used</p>
+                <p className="text-[11.5px] font-normal text-[#94a3b8]">
+                  {usageReady ? `${monthlyPct}% used` : "—"}
+                </p>
               </div>
             </div>
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#f4f7fe]">
               <div
                 className="h-full rounded-full bg-[#5925dc]"
-                style={{ width: `${MONTHLY_PCT}%` }}
+                style={{
+                  width: `${usageReady && monthlyLimit > 0 ? monthlyPct : 0}%`,
+                }}
               />
             </div>
             <div className="mt-3 flex justify-between text-[11.5px]">
               <span className={cn("font-normal text-[#64748b]", monoClassName)}>
-                {MONTHLY_USED.toLocaleString()} requests
+                {usageReady ? `${monthlyUsed.toLocaleString()} used` : "—"}
               </span>
               <span className={cn("font-normal text-[#94a3b8]", monoClassName)}>
-                {MONTHLY_LIMIT.toLocaleString()} limit
+                {usageReady && monthlyLimit > 0
+                  ? `${monthlyLimit.toLocaleString()} limit`
+                  : "—"}
               </span>
             </div>
           </div>
@@ -102,25 +164,39 @@ export default function MonitoringPage() {
                   monoClassName,
                 )}
               >
-                {DAILY_USED.toLocaleString()} / {DAILY_LIMIT.toLocaleString()}
-                <span className="font-normal text-[#94a3b8]"> · </span>
-                <span>{DAILY_PCT}% used</span>
+                {usageLoading ? (
+                  <span className="font-normal text-[#94a3b8]">…</span>
+                ) : usageError ? (
+                  <span className="font-normal text-[#94a3b8]">—</span>
+                ) : dailyLimit != null && dailyLimit > 0 ? (
+                  <>
+                    {dailyUsed.toLocaleString()} / {dailyLimit.toLocaleString()}
+                    <span className="font-normal text-[#94a3b8]"> · </span>
+                    <span>{dailyPct}% used</span>
+                  </>
+                ) : (
+                  <span className="font-normal text-[#94a3b8]">No daily cap</span>
+                )}
               </p>
             </div>
-            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#f4f7fe]">
-              <div
-                className="h-full rounded-full bg-[#f59e0b]"
-                style={{ width: `${DAILY_PCT}%` }}
-              />
-            </div>
-            <div className="mt-3 flex justify-between text-[11px]">
-              <span className={cn("font-normal text-[#64748b]", monoClassName)}>
-                {DAILY_USED.toLocaleString()} used today
-              </span>
-              <span className={cn("font-normal text-[#94a3b8]", monoClassName)}>
-                {DAILY_LIMIT.toLocaleString()} daily limit
-              </span>
-            </div>
+            {!usageLoading && !usageError && dailyLimit != null && dailyLimit > 0 ? (
+              <>
+                <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#f4f7fe]">
+                  <div
+                    className="h-full rounded-full bg-[#f59e0b]"
+                    style={{ width: `${dailyPct}%` }}
+                  />
+                </div>
+                <div className="mt-3 flex justify-between text-[11px]">
+                  <span className={cn("font-normal text-[#64748b]", monoClassName)}>
+                    {dailyUsed.toLocaleString()} used today
+                  </span>
+                  <span className={cn("font-normal text-[#94a3b8]", monoClassName)}>
+                    {dailyLimit.toLocaleString()} daily limit
+                  </span>
+                </div>
+              </>
+            ) : null}
           </div>
 
           <div className="flex items-center gap-4 border-t border-[#f1f5f9] px-6 py-4">

@@ -10,26 +10,13 @@ import { useUpdateUserMutation } from "@/features/auth/mutations/auth.mutation";
 import { useAuthStore } from "@/stores/auth-store";
 import { toast } from "sonner";
 
-function splitDisplayName(value: string): { firstName: string; lastName: string | null } {
-  const trimmed = value.trim();
-  if (!trimmed) return { firstName: "", lastName: null };
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) return { firstName: parts[0], lastName: null };
-  return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
-}
-
 export default function LoginSecurityPage() {
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
 
   const { mutateAsync: triggerUpdateUser, isPending: isUpdating } = useUpdateUserMutation();
 
-  const initialDisplayName =
-    user == null
-      ? ""
-      : [user.firstName, user.lastName].filter(Boolean).join(" ").trim() ||
-        user.username ||
-        "";
+  const initialDisplayName = user == null ? "" : user.name?.trim() ?? "";
 
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -63,8 +50,8 @@ export default function LoginSecurityPage() {
       return;
     }
 
-    const { firstName, lastName } = splitDisplayName(displayName);
-    if (!firstName.trim()) {
+    const name = displayName.trim();
+    if (!name) {
       CustomToast.error("Please enter a display name.");
       return;
     }
@@ -74,12 +61,11 @@ export default function LoginSecurityPage() {
         id: user.id,
         payload: {
           email: user.email,
-          firstName: firstName.trim(),
-          lastName: lastName?.trim() ? lastName.trim() : null,
+          name,
         },
       });
-      if (response?.data) {
-        setUser(response.data);
+      if (response) {
+        setUser(response);
       }
       CustomToast.success("Changes saved successfully.");
     } catch (error) {

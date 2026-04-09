@@ -1,8 +1,10 @@
 import axios, { AxiosHeaders } from "axios";
 
+const apiOrigin = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
+
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3099",
+  baseURL: `${apiOrigin}/api/v1`,
   headers: {
     "Content-Type": "application/json",
   },
@@ -15,7 +17,8 @@ api.interceptors.request.use(
       const token = window.localStorage.getItem("authToken");
       if (token) {
         const headers = AxiosHeaders.from(config.headers ?? {});
-        headers.set("Authorization", `${token}`);
+        const value = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+        headers.set("Authorization", value);
         config.headers = headers;
       }
     }
@@ -35,6 +38,7 @@ api.interceptors.response.use(
     // Handle 401 Unauthorized - redirect to login
     if (error.response?.status === 401 && typeof window !== "undefined") {
       window.localStorage.removeItem("authToken");
+      window.localStorage.removeItem("authRefreshToken");
       window.localStorage.removeItem("authUser");
     }
 

@@ -6,13 +6,13 @@ export const userAPI = {
   //   const response = await api.get<AuthUserResponse>("/auth/user");
   //   return response.data;
   // },
-  deleteUser: async (id: number) => {
+  deleteUser: async (id: string) => {
     const response = await api.delete<{ statusCode: number; message: string }>(
       `/user/${id}`
     );
     return response.data;
   },
-  updateUser: async (id: number, payload: UpdateUserPayload) => {
+  updateUser: async (id: string, payload: UpdateUserPayload) => {
     const response = await api.patch<UpdateUserResponse>(
       `/user/${id}`,
       payload

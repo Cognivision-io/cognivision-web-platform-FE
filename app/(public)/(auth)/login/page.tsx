@@ -7,7 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { capitalize, isValidEmail } from "@/lib/utils";
+import { capitalize, getApiErrorMessage, isValidEmail } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLoginMutation } from "@/features/auth/mutations/auth.mutation";
 import CustomToast from "@/components/ui/sonner";
@@ -28,6 +28,9 @@ function LoginPageInner() {
       .replace(/[.!?]+$/, "")
       .toLowerCase();
     if (normalized === "entity not found") return "User not found";
+    if (normalized === "invalid credentials") {
+      return "Invalid email or password.";
+    }
     return capitalize(rawMessage);
   };
 
@@ -40,17 +43,17 @@ function LoginPageInner() {
       }
       const response = await loginMutation({ email, password });
 
-      if (!response?.data?.tokens?.token || !response?.data?.user) {
+      const accessToken = response?.tokens?.access_token;
+      const userPayload = response?.user;
+
+      if (!accessToken || !userPayload) {
         CustomToast.error("Something went wrong. Please try again.");
         return;
       }
 
       CustomToast.success("Login Successful");
 
-      const token = response.data.tokens.token;
-      const userPayload = response.data.user;
-
-      await login(token, userPayload);
+      await login(accessToken, userPayload, response.tokens.refresh_token);
 
       router.replace(callbackUrl ?? "/dashboard");
     } catch (error: unknown) {
@@ -59,12 +62,14 @@ function LoginPageInner() {
           response?: {
             data?: {
               message?: string | string[];
+              detail?: string | unknown[];
               response?: { email?: string };
             };
           };
         }
       )?.response?.data;
-      const message = errorResponse?.message;
+
+      const message = getApiErrorMessage(errorResponse);
 
       if (message === "Email is not verifed") {
         const emailFromServer = errorResponse?.response?.email;

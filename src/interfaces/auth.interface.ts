@@ -1,91 +1,69 @@
 export type RegisterPayload = {
-  firstName: string;
   email: string;
   password: string;
-  useCase: string;
+  name: string;
+};
+
+/** Access tokens returned by auth endpoints */
+export type AuthTokens = {
+  access_token: string;
+  refresh_token: string;
+  type: string;
+  expires_in: number;
+};
+
+/** User object returned by the API */
+export type AuthUser = {
+  id: string;
+  email: string;
+  name: string;
+  active: boolean;
+  verified: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * Session user: API shape plus optional fields for UI/subscription until the API provides them.
+ */
+export type AuthenticatedUser = AuthUser & {
+  isSubscribed?: boolean;
+  subscriptionType?: string | null;
+  workspaces?: number[];
 };
 
 export type RegisterResponse = {
-  statusCode: number;
-  data: {
-    otpCode: number;
-    otpExpireAt: string;
-  };
-  message: string;
+  user: AuthUser;
+  tokens: AuthTokens;
 };
+
 export type LoginPayload = {
   email: string;
   password: string;
 };
 
-export type AuthTokens = {
-  token: string;
-  refreshToken?: string;
-};
-
-export type AuthenticatedUser = {
-  id: number;
-  deletedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  firstName: string;
-  lastName: string | null;
-  username: string | null;
-  email: string;
-  phone: string | null;
-  dateOfBirth: string | null;
-  country: string | null;
-  isEmailVerified: boolean;
-  isPhoneVerified: boolean;
-  otpCode: string | null;
-  otpExpireAt: string | null;
-  subscriptionType: string | null;
-  useCase: string | null;
-  subscriptionStartDate: string | null;
-  subscriptionEndDate: string | null;
-  isSubscribed: boolean;
-  lastLoginAt: string | null;
-  providerId: string | null;
-  provider: string | null;
-  profilePicture: string | null;
-  hasReceivedSignupCredits: boolean;
-  role: string | null;
-  workspaces: number[];
-  projects: number[];
-  apiKeys: number[];
-  subscriptionPlans: number[];
-};
-
 export type LoginResponse = {
-  statusCode: number;
-  data: {
-    tokens: AuthTokens;
-    user: AuthenticatedUser;
-  };
-  message: string;
+  user: AuthUser;
+  tokens: AuthTokens;
 };
+
 export type AuthUserResponse = {
-  statusCode: number;
-  data: AuthenticatedUser;
-  message: string;
+  user: AuthUser;
 };
+
 export type UpdateUserPayload = {
   email: string;
-  firstName?: string;
-  lastName?: string | null;
+  name: string;
 };
 
-export type UpdateUserResponse = AuthUserResponse;
+export type UpdateUserResponse = AuthUser;
+
 export type VerifyOtpPayload = {
   code: number;
 };
 
 export type VerifyOtpResponse = {
-  statusCode: number;
-  data: {
-    tokens: AuthTokens;
-  };
-  message: string;
+  tokens: AuthTokens;
 };
 
 export type ResendOtpPayload = {
@@ -93,6 +71,5 @@ export type ResendOtpPayload = {
 };
 
 export type ResendOtpResponse = {
-  statusCode: number;
-  message: string;
+  message?: string;
 };
