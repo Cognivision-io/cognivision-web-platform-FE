@@ -23,6 +23,14 @@ export function getApiErrorMessage(
   const o = data as Record<string, unknown>;
 
   if (typeof o.detail === "string") return o.detail;
+  if (
+    o.detail !== null &&
+    typeof o.detail === "object" &&
+    !Array.isArray(o.detail)
+  ) {
+    const inner = o.detail as Record<string, unknown>;
+    if (typeof inner.message === "string") return inner.message;
+  }
   if (Array.isArray(o.detail)) {
     const msgs = o.detail
       .map((item) => {

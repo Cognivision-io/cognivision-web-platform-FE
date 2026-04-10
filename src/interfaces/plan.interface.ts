@@ -17,3 +17,15 @@ export type Plan = {
   created_at: string;
   updated_at: string;
 };
+
+export type PlansApiEnvelope = {
+  status: string;
+  message: string;
+  data: Plan[];
+  meta?: {
+    pagination: unknown;
+    request_id: string;
+    timestamp: string;
+    version: string;
+  };
+};

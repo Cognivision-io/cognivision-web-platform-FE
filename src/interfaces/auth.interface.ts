@@ -42,13 +42,43 @@ export type LoginPayload = {
   password: string;
 };
 
+/** Normalized login result (after unwrapping API envelope). */
 export type LoginResponse = {
   user: AuthUser;
   tokens: AuthTokens;
 };
 
+/** Raw POST /auth/login and /auth/register success body */
+export type AuthSessionApiEnvelope = {
+  status: string;
+  message: string;
+  data: {
+    user: AuthUser;
+    tokens: AuthTokens;
+  };
+  meta?: {
+    pagination: unknown;
+    request_id: string;
+    timestamp: string;
+    version: string;
+  };
+};
+
 export type AuthUserResponse = {
   user: AuthUser;
+};
+
+/** Standard API envelope used by /users endpoints. */
+export type AuthUserApiEnvelope = {
+  status: string;
+  message: string;
+  data: AuthUser;
+  meta?: {
+    pagination: unknown;
+    request_id: string;
+    timestamp: string;
+    version: string;
+  };
 };
 
 export type UpdateUserPayload = {
@@ -76,4 +106,28 @@ export type ResendOtpPayload = {
 
 export type ResendOtpResponse = {
   message?: string;
+};
+
+export type ForgetPasswordPayload = {
+  email: string;
+};
+
+/**
+ * Normalized forgot-password result. API currently returns message in the envelope
+ * with `data: null`.
+ */
+export type ForgetPasswordResponse = {
+  message: string;
+};
+
+export type ForgetPasswordApiEnvelope = {
+  status: string;
+  message: string;
+  data: null;
+  meta?: {
+    pagination: unknown;
+    request_id: string;
+    timestamp: string;
+    version: string;
+  };
 };

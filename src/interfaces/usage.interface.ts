@@ -10,3 +10,15 @@ export type CurrentUsage = {
   usage_percentage_monthly: number;
   usage_percentage_daily: number | null;
 };
+
+export type UsageApiEnvelope = {
+  status: string;
+  message: string;
+  data: CurrentUsage;
+  meta?: {
+    pagination: unknown;
+    request_id: string;
+    timestamp: string;
+    version: string;
+  };
+};

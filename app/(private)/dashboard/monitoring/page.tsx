@@ -43,10 +43,11 @@ export default function MonitoringPage() {
 
   const dailyUsed = usage?.current_daily_used ?? 0;
   const dailyLimit = usage?.daily_limit ?? null;
+  const hasDailyCap = dailyLimit != null && dailyLimit > 0;
   const dailyPct =
     usage?.usage_percentage_daily != null
       ? Math.min(100, Math.round(usage.usage_percentage_daily))
-      : dailyLimit != null && dailyLimit > 0
+      : hasDailyCap
         ? Math.min(100, Math.round((dailyUsed / dailyLimit) * 100))
         : 0;
 
@@ -168,7 +169,7 @@ export default function MonitoringPage() {
                   <span className="font-normal text-[#94a3b8]">…</span>
                 ) : usageError ? (
                   <span className="font-normal text-[#94a3b8]">—</span>
-                ) : dailyLimit != null && dailyLimit > 0 ? (
+                ) : hasDailyCap ? (
                   <>
                     {dailyUsed.toLocaleString()} / {dailyLimit.toLocaleString()}
                     <span className="font-normal text-[#94a3b8]"> · </span>
@@ -179,7 +180,7 @@ export default function MonitoringPage() {
                 )}
               </p>
             </div>
-            {!usageLoading && !usageError && dailyLimit != null && dailyLimit > 0 ? (
+            {!usageLoading && !usageError ? (
               <>
                 <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#f4f7fe]">
                   <div
@@ -192,7 +193,7 @@ export default function MonitoringPage() {
                     {dailyUsed.toLocaleString()} used today
                   </span>
                   <span className={cn("font-normal text-[#94a3b8]", monoClassName)}>
-                    {dailyLimit.toLocaleString()} daily limit
+                    {hasDailyCap ? `${dailyLimit.toLocaleString()} daily limit` : "No daily limit"}
                   </span>
                 </div>
               </>

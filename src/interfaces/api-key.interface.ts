@@ -4,6 +4,18 @@ export type ResetUserApiKeyResponse = {
   new_key: string;
 };
 
+export type ResetUserApiKeyApiEnvelope = {
+  status: string;
+  message: string;
+  data: ResetUserApiKeyResponse;
+  meta?: {
+    pagination: unknown;
+    request_id: string;
+    timestamp: string;
+    version: string;
+  };
+};
+
 /** GET /apikey — current user’s API key */
 export type UserApiKey = {
   id: string;
@@ -12,6 +24,18 @@ export type UserApiKey = {
   active: boolean;
   created_at: string;
   updated_at: string;
+};
+
+export type UserApiKeyApiEnvelope = {
+  status: string;
+  message: string;
+  data: UserApiKey;
+  meta?: {
+    pagination: unknown;
+    request_id: string;
+    timestamp: string;
+    version: string;
+  };
 };
 
 export type ProjectApiKey = {

@@ -28,7 +28,10 @@ function LoginPageInner() {
       .replace(/[.!?]+$/, "")
       .toLowerCase();
     if (normalized === "entity not found") return "User not found";
-    if (normalized === "invalid credentials") {
+    if (
+      normalized === "invalid credentials" ||
+      normalized === "authentication required"
+    ) {
       return "Invalid email or password.";
     }
     return capitalize(rawMessage);
