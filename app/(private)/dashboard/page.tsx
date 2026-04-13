@@ -8,7 +8,7 @@ import { TokenUsageChart } from "@/features/dashboard/components/dashboard-page/
 import { useDashboardMonoClass } from "@/features/dashboard/context/dashboard-mono-font";
 import { useCurrentUsageQuery } from "@/features/monitoring/queries/usage.query";
 import { usePlansQuery } from "@/features/monitoring/queries/plan.query";
-import { useSubscriptionModalStore } from "@/stores/subscription-modal-store";
+import { useSubscriptionModalStore } from "@/store/subscription-modal-store";
 import { cn } from "@/lib/utils";
 
 const MODEL_ROWS = [

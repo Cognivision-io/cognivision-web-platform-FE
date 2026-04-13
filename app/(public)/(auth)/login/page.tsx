@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { capitalize, isValidEmail } from "@/lib/utils";
 import { normaliseApiError } from "@/lib/api-error";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStore } from "@/store/auth-store";
 import { useLoginMutation } from "@/features/auth/mutations/auth.mutation";
 import CustomToast from "@/components/ui/sonner";
 
@@ -75,7 +75,7 @@ function LoginPageInner() {
 
       const message = normaliseApiError(error);
 
-      if (message === "Email is not verifed") {
+      if (typeof message === "string" && message === "Email is not verifed") {
         const emailFromServer = errorResponse?.response?.email;
         const emailToUse = emailFromServer ?? email;
         CustomToast.success("Verify your email");

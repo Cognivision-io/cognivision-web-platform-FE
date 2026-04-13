@@ -9,8 +9,8 @@ import { ErrorBoundary } from "@/components/providers/ErrorBoundary";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardHeader } from "@/features/dashboard/components/dashboard-header";
 import { DashboardMonoClassProvider } from "@/features/dashboard/context/dashboard-mono-font";
-import { useAuthStore } from "@/stores/auth-store";
-import { useSubscriptionModalStore } from "@/stores/subscription-modal-store";
+import { useAuthStore } from "@/store/auth-store";
+import { useSubscriptionModalStore } from "@/store/subscription-modal-store";
 import {
   isSubscriptionPlanKey,
   SubscriptionPlanKey,

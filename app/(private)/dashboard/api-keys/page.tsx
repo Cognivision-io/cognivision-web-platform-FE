@@ -17,6 +17,7 @@ import CustomToast from "@/components/ui/sonner";
 import { useDashboardMonoClass } from "@/features/dashboard/context/dashboard-mono-font";
 import { useResetUserApiKeyMutation } from "@/features/api-key/mutations/user-api-key.mutation";
 import { useUserApiKeyQuery } from "@/features/api-key/queries/api-key.query";
+import { handleMutationError } from "@/lib/handle-error";
 import { cn } from "@/lib/utils";
 
 export default function ApiKeysPage() {
@@ -47,7 +48,9 @@ export default function ApiKeysPage() {
       const res = await resetApiKey();
       setResetOpen(false);
       CustomToast.success(res.message || "API key reset successfully.");
-    } catch {}
+    } catch (error: unknown) {
+      handleMutationError(error);
+    }
   };
 
   return (

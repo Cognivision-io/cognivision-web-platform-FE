@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useDashboardMonoClass } from "@/features/dashboard/context/dashboard-mono-font";
 import { usePlansQuery } from "@/features/monitoring/queries/plan.query";
 import { useCurrentUsageQuery } from "@/features/monitoring/queries/usage.query";
-import { useSubscriptionModalStore } from "@/stores/subscription-modal-store";
+import { useSubscriptionModalStore } from "@/store/subscription-modal-store";
 import { cn } from "@/lib/utils";
 
 export default function BillingPage() {

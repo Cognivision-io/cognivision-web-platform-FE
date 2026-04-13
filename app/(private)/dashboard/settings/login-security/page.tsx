@@ -23,7 +23,8 @@ import {
   loginSecurityFormSchema,
   type LoginSecurityFormValues,
 } from "@/features/auth/schemas/login-security.schema";
-import { useAuthStore } from "@/stores/auth-store";
+import { handleMutationError } from "@/lib/handle-error";
+import { useAuthStore } from "@/store/auth-store";
 
 const emptyPasswordDefaults = {
   currentPassword: "",
@@ -121,7 +122,9 @@ export default function LoginSecurityPage() {
       form.setValue("newPassword", "");
       form.setValue("confirmPassword", "");
       CustomToast.success("Changes saved successfully.");
-    } catch {}
+    } catch (error: unknown) {
+      handleMutationError(error);
+    }
   };
 
   const formDisabled = isUpdating || (profileLoading && !user);

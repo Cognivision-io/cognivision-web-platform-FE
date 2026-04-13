@@ -1,7 +1,7 @@
 "use client";
 
 import { DocPageHeader } from "@/components/docs/DocPageHeader";
-import { useDocsStore } from "@/stores/docs-store";
+import { useDocsStore } from "@/store/docs-store";
 import {
   Table,
   TableBody,
