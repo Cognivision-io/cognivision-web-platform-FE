@@ -22,7 +22,7 @@ import {
   useVerifyOtpMutation,
 } from "@/features/auth/mutations/auth.mutation";
 import CustomToast from "@/components/ui/sonner";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStore } from "@/store/auth-store";
 import Link from "next/link";
 
 const VerifyOtpContent = () => {

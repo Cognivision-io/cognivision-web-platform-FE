@@ -26,7 +26,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useMemo, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStore } from "@/store/auth-store";
 import { initialsFromFullName } from "@/lib/utils";
 import { useCurrentWorkspaceId } from "@/hooks/use-current-workspace-id";
 import { useWorkspaceQuery } from "@/features/workspace/queries/workspace.query";

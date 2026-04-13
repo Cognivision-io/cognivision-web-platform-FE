@@ -20,7 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useRegisterMutation } from "@/features/auth/mutations/auth.mutation";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStore } from "@/store/auth-store";
 import { capitalize, emailRegex } from "@/lib/utils";
 import CustomToast from "@/components/ui/sonner";
 
