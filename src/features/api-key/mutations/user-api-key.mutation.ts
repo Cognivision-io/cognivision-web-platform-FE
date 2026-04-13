@@ -8,6 +8,7 @@ import type { AxiosError } from "axios";
 import { userApiKeyApi } from "@/features/api-key/api/user-api-key.api";
 import { USER_API_KEY_QUERY_KEY } from "@/features/api-key/queries/api-key.query";
 import type { ResetUserApiKeyResponse } from "@/interfaces/api-key.interface";
+import { handleMutationError } from "@/lib/handle-error";
 
 type ResetApiKeyError = AxiosError<{
   detail?: string | unknown[];
@@ -27,12 +28,16 @@ export const useResetUserApiKeyMutation = (
   >,
 ) => {
   const queryClient = useQueryClient();
-  const { onSuccess, ...rest } = options ?? {};
+  const { onSuccess, onError, ...rest } = options ?? {};
 
   return useMutation({
     mutationKey: RESET_USER_API_KEY_MUTATION_KEY,
     mutationFn: () => userApiKeyApi.reset(),
     ...rest,
+    onError: (error, variables, onMutateResult, context) => {
+      handleMutationError(error);
+      onError?.(error, variables, onMutateResult, context);
+    },
     onSuccess: async (data, variables, onMutateResult, context) => {
       await queryClient.invalidateQueries({ queryKey: USER_API_KEY_QUERY_KEY });
       await onSuccess?.(data, variables, onMutateResult, context);

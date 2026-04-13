@@ -5,6 +5,7 @@ import type {
   UploadFolderPayload,
   UploadResponse,
 } from "@/interfaces/upload.interface";
+import { handleMutationError } from "@/lib/handle-error";
 
 type UploadError = AxiosError<{ message?: string | string[] }>;
 
@@ -19,19 +20,29 @@ export const UPLOAD_FOLDER_MUTATION_KEY = ["project", "upload-folder"] as const;
 export const useUploadImagesMutation = (
   options?: UseMutationOptions<UploadResponse, UploadError, UploadImagesPayload>,
 ) => {
+  const { onError, ...rest } = options ?? {};
   return useMutation({
     mutationKey: UPLOAD_IMAGES_MUTATION_KEY,
     mutationFn: rejectMutation,
-    ...options,
+    ...rest,
+    onError: (error, variables, onMutateResult, context) => {
+      handleMutationError(error);
+      onError?.(error, variables, onMutateResult, context);
+    },
   });
 };
 
 export const useUploadFolderMutation = (
   options?: UseMutationOptions<UploadResponse, UploadError, UploadFolderPayload>,
 ) => {
+  const { onError, ...rest } = options ?? {};
   return useMutation({
     mutationKey: UPLOAD_FOLDER_MUTATION_KEY,
     mutationFn: rejectMutation,
-    ...options,
+    ...rest,
+    onError: (error, variables, onMutateResult, context) => {
+      handleMutationError(error);
+      onError?.(error, variables, onMutateResult, context);
+    },
   });
 };

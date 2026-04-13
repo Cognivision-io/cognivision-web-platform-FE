@@ -2,16 +2,21 @@
 
 import { useMemo, useState } from "react";
 import {
-  DataGrid,
   type GridColDef,
   type GridPaginationModel,
 } from "@mui/x-data-grid";
+import dynamic from "next/dynamic";
 import { format } from "date-fns";
 import { ChevronDown } from "lucide-react";
 
 import { useWorkspaceCreditsHistoryQuery } from "@/features/workspace/queries/workspace.query";
 import type { WorkspaceCreditHistoryEntry } from "@/interfaces/workspace.interface";
 import { cn } from "@/lib/utils";
+
+const DataGrid = dynamic(
+  () => import("@mui/x-data-grid").then((module) => module.DataGrid),
+  { ssr: false },
+);
 
 const formatCredits = (value?: number | string | null) => {
   const numericValue = typeof value === "number" ? value : Number(value);

@@ -5,6 +5,7 @@ import type {
   ContactUsPayload,
   ContactUsResponse,
 } from "@/interfaces/contact.interface";
+import { handleMutationError } from "@/lib/handle-error";
 
 export type ContactError = AxiosError<{ message?: string | string[] }>;
 
@@ -18,9 +19,14 @@ async function rejectMutation(..._args: unknown[]): Promise<never> {
 export const useContactUsMutation = (
   options?: UseMutationOptions<ContactUsResponse, ContactError, ContactUsPayload>,
 ) => {
+  const { onError, ...rest } = options ?? {};
   return useMutation({
     mutationKey: CONTACT_US_MUTATION_KEY,
     mutationFn: rejectMutation,
-    ...options,
+    ...rest,
+    onError: (error, variables, onMutateResult, context) => {
+      handleMutationError(error);
+      onError?.(error, variables, onMutateResult, context);
+    },
   });
 };

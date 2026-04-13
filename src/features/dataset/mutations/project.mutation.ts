@@ -4,6 +4,7 @@ import type {
   CreateProjectPayload,
   CreateProjectResponse,
 } from "@/interfaces/project.interface";
+import { handleMutationError } from "@/lib/handle-error";
 
 type ProjectError = AxiosError<{ message?: string | string[] }>;
 
@@ -21,10 +22,15 @@ export const useCreateProjectMutation = (
     CreateProjectPayload
   >,
 ) => {
+  const { onError, ...rest } = options ?? {};
   return useMutation({
     mutationKey: CREATE_PROJECT_MUTATION_KEY,
     mutationFn: rejectMutation,
-    ...options,
+    ...rest,
+    onError: (error, variables, onMutateResult, context) => {
+      handleMutationError(error);
+      onError?.(error, variables, onMutateResult, context);
+    },
   });
 };
 
@@ -42,10 +48,15 @@ export const useAutoAnnotationBatchDirectMutation = (
     import("@/interfaces/project.interface").AutoAnnotationBatchDirectPayload
   >,
 ) => {
+  const { onError, ...rest } = options ?? {};
   return useMutation({
     mutationKey: AUTO_ANNOTATION_BATCH_DIRECT_MUTATION_KEY,
     mutationFn: rejectMutation,
-    ...options,
+    ...rest,
+    onError: (error, variables, onMutateResult, context) => {
+      handleMutationError(error);
+      onError?.(error, variables, onMutateResult, context);
+    },
   });
 };
 
@@ -58,10 +69,15 @@ export const useUploadAnnotationMutation = (
     { projectId: number; imageId: string; file: File; labelMap?: Record<string, string> }
   >,
 ) => {
+  const { onError, ...rest } = options ?? {};
   return useMutation({
     mutationKey: UPLOAD_ANNOTATION_MUTATION_KEY,
     mutationFn: rejectMutation,
-    ...options,
+    ...rest,
+    onError: (error, variables, onMutateResult, context) => {
+      handleMutationError(error);
+      onError?.(error, variables, onMutateResult, context);
+    },
   });
 };
 
@@ -74,9 +90,14 @@ export const useTrainModelMutation = (
     { projectId: number; versionNumber: string; modelType: string }
   >,
 ) => {
+  const { onError, ...rest } = options ?? {};
   return useMutation({
     mutationKey: TRAIN_MODEL_MUTATION_KEY,
     mutationFn: rejectMutation,
-    ...options,
+    ...rest,
+    onError: (error, variables, onMutateResult, context) => {
+      handleMutationError(error);
+      onError?.(error, variables, onMutateResult, context);
+    },
   });
 };

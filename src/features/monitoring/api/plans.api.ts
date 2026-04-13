@@ -1,23 +1,10 @@
 import api from "@/lib/axios";
-import type { Plan, PlansApiEnvelope } from "@/interfaces/plan.interface";
+import type { Plan } from "@/interfaces/plan.interface";
+import type { ApiEnvelope } from "@/lib/api-envelope";
+
+import { monitoringAdapter } from "./monitoring.adapter";
 
 export const plansApi = {
-  list: async () => {
-    const response = await api.get<Plan[] | PlansApiEnvelope>("/plans");
-    const payload = response.data;
-
-    const plans =
-      payload &&
-      typeof payload === "object" &&
-      "data" in payload &&
-      Array.isArray(payload.data)
-        ? payload.data
-        : payload;
-
-    if (!Array.isArray(plans)) {
-      throw new Error("Invalid plans response");
-    }
-
-    return plans;
-  },
+  list: async () =>
+    api.get<ApiEnvelope<Plan[]> | Plan[]>("/plans").then(monitoringAdapter.toPlanList),
 };

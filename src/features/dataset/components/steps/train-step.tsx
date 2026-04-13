@@ -29,7 +29,6 @@ import { useDropzone } from "react-dropzone";
 import { ArrowRight, CloudUpload } from "lucide-react";
 import { downloadImage } from "@/features/dataset/utils/dataset.utils";
 import CustomToast from "@/components/ui/sonner";
-import { getApiErrorMessage } from "@/lib/api-error";
 
 interface TrainStepProps {
   onNext: () => void;
@@ -85,7 +84,6 @@ export const TrainStep = ({ onNext, uploadedData }: TrainStepProps) => {
       },
       onError: (error) => {
         console.error("Upload error:", error);
-        CustomToast.error(getApiErrorMessage(error, "Failed to upload images"));
       },
     });
 

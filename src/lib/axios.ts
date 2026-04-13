@@ -1,6 +1,9 @@
 import axios, { AxiosHeaders } from "axios";
 
-const apiOrigin = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
+import { env } from "@/lib/env";
+import { clearSessionToken, getBrowserSessionToken } from "@/lib/session";
+
+const apiOrigin = env.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
 
 // Create axios instance with default config
 const api = axios.create({
@@ -8,13 +11,14 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
-// Request interceptor - Add auth token to requests
+// Request interceptor - use session cookie token as temporary bearer fallback.
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
-      const token = window.localStorage.getItem("authToken");
+      const token = getBrowserSessionToken();
       if (token) {
         const headers = AxiosHeaders.from(config.headers ?? {});
         const value = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
@@ -35,11 +39,16 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle 401 Unauthorized - redirect to login
+    // Handle 401 Unauthorized - clear client-side session cookie mirror.
     if (error.response?.status === 401 && typeof window !== "undefined") {
-      window.localStorage.removeItem("authToken");
-      window.localStorage.removeItem("authRefreshToken");
       window.localStorage.removeItem("authUser");
+      clearSessionToken();
+      const isAuthRoute = ["/login", "/register", "/forget-password", "/verify-otp"].some(
+        (route) => window.location.pathname.startsWith(route),
+      );
+      if (!isAuthRoute) {
+        window.location.replace("/login?reason=session_expired");
+      }
     }
 
     // Handle 403 Forbidden

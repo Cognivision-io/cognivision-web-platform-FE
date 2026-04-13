@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 
 import { PLANS_QUERY_KEY } from "@/features/monitoring/queries/plan.query";
+import { handleMutationError } from "@/lib/handle-error";
 
 export const REFRESH_PLANS_MUTATION_KEY = ["plans", "refresh"] as const;
 
@@ -19,12 +20,17 @@ export const useRefreshPlansMutation = (
   >,
 ) => {
   const queryClient = useQueryClient();
+  const { onError, ...rest } = options ?? {};
 
   return useMutation({
     mutationKey: REFRESH_PLANS_MUTATION_KEY,
     mutationFn: async () => {
       await queryClient.invalidateQueries({ queryKey: PLANS_QUERY_KEY });
     },
-    ...options,
+    ...rest,
+    onError: (error, variables, onMutateResult, context) => {
+      handleMutationError(error);
+      onError?.(error, variables, onMutateResult, context);
+    },
   });
 };
