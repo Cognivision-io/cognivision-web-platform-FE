@@ -6,7 +6,8 @@ import { Activity, ChevronDown, CreditCard, TrendingUp } from "lucide-react";
 import { DashboardStatCard } from "@/features/dashboard/components/dashboard-page/stat-card";
 import { TokenUsageChart } from "@/features/dashboard/components/dashboard-page/token-usage-chart";
 import { useDashboardMonoClass } from "@/features/dashboard/context/dashboard-mono-font";
-import { useAuthStore } from "@/stores/auth-store";
+import { useCurrentUsageQuery } from "@/features/monitoring/queries/usage.query";
+import { usePlansQuery } from "@/features/monitoring/queries/plan.query";
 import { useSubscriptionModalStore } from "@/stores/subscription-modal-store";
 import { cn } from "@/lib/utils";
 
@@ -38,15 +39,17 @@ const ACTIVITY = [
 
 export default function DashboardPage() {
   const monoClassName = useDashboardMonoClass();
-  const user = useAuthStore((state) => state.user);
+  const { data: plans = [], isLoading: plansLoading } = usePlansQuery();
+  const { data: usage, isLoading: usageLoading, isError: usageError } =
+    useCurrentUsageQuery();
   const openModal = useSubscriptionModalStore((state) => state.openModal);
 
-  const planLabel =
-    user?.isSubscribed && user.subscriptionType
-      ? user.subscriptionType.replace(/_/g, " ")
-      : "Free";
+  const primaryPlan = plans.find((plan) => plan.active) ?? plans[0];
+  const planLabel = primaryPlan?.display_name ?? "Free";
 
   const monthLabel = format(new Date(), "MMMM yyyy");
+  const monthlyUsed = usage?.current_monthly_used ?? null;
+  const dailyUsed = usage?.current_daily_used ?? null;
 
   return (
     <div className="bg-[#f4f7fe] px-4 py-6 md:px-7 md:py-8">
@@ -68,30 +71,46 @@ export default function DashboardPage() {
           <DashboardStatCard
             icon={<Activity className="size-[18px] text-[#5925dc]" aria-hidden />}
             label="Total API calls this month"
-            value="48,291"
+            value={
+              usageLoading
+                ? "…"
+                : usageError || monthlyUsed == null
+                  ? "—"
+                  : monthlyUsed.toLocaleString()
+            }
             monoClassName={monoClassName}
             trend={
               <span className="inline-flex items-center gap-1.5">
-                <span className="inline-flex h-[18.4px] items-center gap-1 rounded-full bg-[#ecfdf5] pl-1.5 pr-2">
-                  <TrendingUp className="size-[9px] text-[#059669]" aria-hidden />
-                  <span className="text-[11.5px] font-medium text-[#059669]">+12.4%</span>
+                <span className="text-[12px] font-normal text-[#94a3b8]">
+                  {usageLoading
+                    ? "Loading from usage API…"
+                    : usageError
+                      ? "Usage unavailable"
+                      : "Live usage API"}
                 </span>
-                <span className="text-[12px] font-normal text-[#94a3b8]">vs last month</span>
               </span>
             }
           />
           <DashboardStatCard
             icon={<TrendingUp className="size-[18px] text-[#5925dc]" aria-hidden />}
             label="Total API calls today"
-            value="3,874"
+            value={
+              usageLoading
+                ? "…"
+                : usageError || dailyUsed == null
+                  ? "—"
+                  : dailyUsed.toLocaleString()
+            }
             monoClassName={monoClassName}
             trend={
               <span className="inline-flex items-center gap-1.5">
-                <span className="inline-flex h-[18.4px] items-center gap-1 rounded-full bg-[#ecfdf5] pl-1.5 pr-2">
-                  <TrendingUp className="size-[9px] text-[#059669]" aria-hidden />
-                  <span className="text-[11.5px] font-medium text-[#059669]">+8.1%</span>
+                <span className="text-[12px] font-normal text-[#94a3b8]">
+                  {usageLoading
+                    ? "Loading from usage API…"
+                    : usageError
+                      ? "Usage unavailable"
+                      : "Live usage API"}
                 </span>
-                <span className="text-[12px] font-normal text-[#94a3b8]">This month</span>
               </span>
             }
           />
@@ -104,7 +123,7 @@ export default function DashboardPage() {
             trend={
               <span className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex h-[22px] items-center rounded-full bg-[#ede9fb] px-2.5 text-[12px] font-medium text-[#5925dc]">
-                  Active
+                  {plansLoading ? "Loading…" : "Active"}
                 </span>
                 <button
                   type="button"

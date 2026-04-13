@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { DM_Sans, DM_Mono } from "next/font/google";
 
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
+import { ErrorBoundary } from "@/components/providers/ErrorBoundary";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardHeader } from "@/features/dashboard/components/dashboard-header";
 import { DashboardMonoClassProvider } from "@/features/dashboard/context/dashboard-mono-font";
@@ -30,6 +31,19 @@ const sidebarLayoutStyle = {
   "--sidebar-width": "232px",
   "--sidebar-width-mobile": "min(100vw, 280px)",
 } as CSSProperties;
+
+function DashboardErrorFallback() {
+  return (
+    <div className="grid min-h-screen place-items-center bg-[#f4f7fe] px-6">
+      <div className="max-w-md rounded-xl border border-[#e2e8f0] bg-white p-6 text-center shadow-sm">
+        <h2 className="text-base font-semibold text-[#2b2b2b]">Something went wrong</h2>
+        <p className="mt-2 text-sm text-[#64748b]">
+          An unexpected dashboard error occurred. Please refresh the page and try again.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function UpgradePlanFromQuery() {
   const router = useRouter();
@@ -111,5 +125,9 @@ export default function PrivateLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <PrivateLayoutInner>{children}</PrivateLayoutInner>;
+  return (
+    <ErrorBoundary fallback={<DashboardErrorFallback />}>
+      <PrivateLayoutInner>{children}</PrivateLayoutInner>
+    </ErrorBoundary>
+  );
 }

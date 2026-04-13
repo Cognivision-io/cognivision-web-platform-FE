@@ -3,6 +3,7 @@ import type {
   CreateSubscriptionPayload,
   CreateSubscriptionResponse,
 } from "@/interfaces/subscription.interface";
+import { handleMutationError } from "@/lib/handle-error";
 
 async function rejectMutation(..._args: unknown[]): Promise<never> {
   void _args;
@@ -18,9 +19,14 @@ export const useCreateSubscriptionMutation = (
     CreateSubscriptionPayload
   >,
 ) => {
+  const { onError, ...rest } = options ?? {};
   return useMutation({
     mutationKey: CREATE_SUBSCRIPTION_KEY,
     mutationFn: rejectMutation,
-    ...options,
+    ...rest,
+    onError: (error, variables, onMutateResult, context) => {
+      handleMutationError(error);
+      onError?.(error, variables, onMutateResult, context);
+    },
   });
 };

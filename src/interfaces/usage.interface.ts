@@ -9,6 +9,10 @@ export type CurrentUsage = {
   day_start: string;
   usage_percentage_monthly: number;
   usage_percentage_daily: number | null;
+  /** Optional backend metrics not available in all environments yet. */
+  failed_api_calls?: number;
+  failed_calls?: number;
+  monthly_failed_calls?: number;
 };
 
 export type UsageApiEnvelope = {

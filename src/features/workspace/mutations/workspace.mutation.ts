@@ -5,6 +5,7 @@ import type {
   CreateWorkspacePayload,
   CreateWorkspaceResponse,
 } from "@/interfaces/workspace.interface";
+import { handleMutationError } from "@/lib/handle-error";
 
 type WorkspaceError = AxiosError<{ message?: string | string[] }>;
 
@@ -22,9 +23,14 @@ export const useCreateWorkspaceMutation = (
     CreateWorkspacePayload
   >,
 ) => {
+  const { onError, ...rest } = options ?? {};
   return useMutation({
     mutationKey: CREATE_WORKSPACE_MUTATION_KEY,
     mutationFn: rejectMutation,
-    ...options,
+    ...rest,
+    onError: (error, variables, onMutateResult, context) => {
+      handleMutationError(error);
+      onError?.(error, variables, onMutateResult, context);
+    },
   });
 };

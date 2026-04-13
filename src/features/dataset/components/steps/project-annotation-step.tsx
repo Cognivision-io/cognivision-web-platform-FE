@@ -28,7 +28,6 @@ import {
   projectClassesToAnnotationClasses,
 } from '@/features/dataset/utils/annotation-conversion.utils';
 import CustomToast from '@/components/ui/sonner';
-import { getApiErrorMessage } from '@/lib/api-error';
 
 interface ProjectAnnotationStepProps {
   onNext: () => void;
@@ -60,9 +59,6 @@ export function ProjectAnnotationStep({ onNext, uploadedData }: ProjectAnnotatio
     onSuccess: () => {
       CustomToast.success('Annotations saved successfully!');
       setHasUploadedAnnotations(true);
-    },
-    onError: (error) => {
-      CustomToast.error(getApiErrorMessage(error, 'Failed to save annotations'));
     },
   });
 

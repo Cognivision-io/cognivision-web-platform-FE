@@ -7,7 +7,8 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { capitalize, getApiErrorMessage, isValidEmail } from "@/lib/utils";
+import { capitalize, isValidEmail } from "@/lib/utils";
+import { normaliseApiError } from "@/lib/api-error";
 import { useAuthStore } from "@/stores/auth-store";
 import { useLoginMutation } from "@/features/auth/mutations/auth.mutation";
 import CustomToast from "@/components/ui/sonner";
@@ -72,7 +73,7 @@ function LoginPageInner() {
         }
       )?.response?.data;
 
-      const message = getApiErrorMessage(errorResponse);
+      const message = normaliseApiError(error);
 
       if (message === "Email is not verifed") {
         const emailFromServer = errorResponse?.response?.email;

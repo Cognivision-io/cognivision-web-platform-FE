@@ -1,7 +1,7 @@
 import { AUTH_SESSION_COOKIE, AUTH_SESSION_MAX_AGE } from "@/constants/auth";
 
 const buildCookieAttributes = (maxAge: number) => {
-  const attributes = [`Path=/`, `Max-Age=${maxAge}`, `SameSite=Lax`];
+  const attributes = [`Path=/`, `Max-Age=${maxAge}`, `SameSite=Strict`];
   if (typeof window !== "undefined" && window.location.protocol === "https:") {
     attributes.push("Secure");
   }
@@ -16,7 +16,7 @@ export const persistSessionToken = (token: string, maxAge: number = AUTH_SESSION
 
 export const clearSessionToken = () => {
   if (typeof document === "undefined") return;
-  document.cookie = `${AUTH_SESSION_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`;
+  document.cookie = `${AUTH_SESSION_COOKIE}=; Path=/; Max-Age=0; SameSite=Strict`;
 };
 
 export const getBrowserSessionToken = (): string | null => {

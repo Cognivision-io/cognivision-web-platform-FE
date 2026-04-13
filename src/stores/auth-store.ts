@@ -26,27 +26,17 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   isHydrated: false,
   hydrate: async () => {
     if (typeof window === "undefined" || get().isHydrated) return;
-    const storedToken = window.localStorage.getItem("authToken");
     const storedUser = window.localStorage.getItem("authUser");
 
-    if (storedToken) {
-      persistSessionToken(storedToken);
-    } else {
-      clearSessionToken();
-    }
-
-    if (storedToken || storedUser) {
+    if (storedUser) {
       let parsedUser: AuthenticatedUser | null = null;
-      if (storedUser) {
-        try {
-          parsedUser = JSON.parse(storedUser) as AuthenticatedUser;
-        } catch (error) {
-          parsedUser = null;
-          console.warn("Failed to parse stored auth user", error);
-        }
+      try {
+        parsedUser = JSON.parse(storedUser) as AuthenticatedUser;
+      } catch (error) {
+        parsedUser = null;
+        console.warn("Failed to parse stored auth user", error);
       }
       set({
-        token: storedToken,
         user: parsedUser,
       });
     }
@@ -54,14 +44,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     await get().refreshUserFromSession();
   },
   setToken: (token) => {
-    if (typeof window !== "undefined") {
-      if (token) {
-        window.localStorage.setItem("authToken", token);
-      } else {
-        window.localStorage.removeItem("authToken");
-      }
-    }
-
     if (token) {
       persistSessionToken(token);
     } else {
@@ -85,22 +67,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     const { setToken, setUser } = get();
     setToken(accessToken);
     setUser(user);
-    if (typeof window !== "undefined") {
-      if (refreshToken) {
-        window.localStorage.setItem("authRefreshToken", refreshToken);
-      } else {
-        window.localStorage.removeItem("authRefreshToken");
-      }
-    }
+    void refreshToken;
     set({ isHydrated: true });
   },
   logout: () => {
     const { setToken, setUser } = get();
     setToken(null);
     setUser(null);
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem("authRefreshToken");
-    }
     set({ isHydrated: true });
   },
   refreshUserFromSession: async () => {

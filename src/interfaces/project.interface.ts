@@ -35,6 +35,43 @@ export interface RoboflowWorkspace {
   members: number;
 }
 
+export interface PreprocessingResizeConfig extends Record<string, unknown> {
+  format?: string;
+  width?: number;
+  height?: number;
+}
+
+export interface PreprocessingConfig extends Record<string, unknown> {
+  resize?: PreprocessingResizeConfig;
+  "auto-orient"?: boolean;
+}
+
+export interface AugmentationImageConfig extends Record<string, unknown> {
+  versions?: number;
+}
+
+export interface AugmentationFlipConfig extends Record<string, unknown> {
+  horizontal?: boolean;
+  vertical?: boolean;
+}
+
+export interface AugmentationBrightnessConfig extends Record<string, unknown> {
+  percent?: number;
+}
+
+export interface AugmentationConfig extends Record<string, unknown> {
+  image?: AugmentationImageConfig;
+  flip?: AugmentationFlipConfig;
+  brightness?: AugmentationBrightnessConfig;
+}
+
+export interface RoboflowModelMetadata extends Record<string, unknown> {
+  id?: string;
+  map?: number | string;
+  precision?: number | string;
+  recall?: number | string;
+}
+
 export interface RoboflowProjectMetadata {
   id: string;
   type: string;
@@ -57,8 +94,8 @@ export interface RoboflowProjectMetadata {
     thumb: string;
     annotation: string | null;
   };
-  preprocessing: any;
-  augmentation: any;
+  preprocessing: PreprocessingConfig;
+  augmentation: AugmentationConfig;
 }
 
 export interface RoboflowVersion {
@@ -67,10 +104,10 @@ export interface RoboflowVersion {
   created: number;
   images: number;
   splits: Record<string, number>;
-  preprocessing: any;
-  augmentation: any;
+  preprocessing: PreprocessingConfig;
+  augmentation: AugmentationConfig;
   exports: string[];
-  model?: any;
+  model?: RoboflowModelMetadata;
 }
 
 export interface ProjectDetails {
@@ -142,7 +179,7 @@ export type AutoAnnotationResponse = {
     imageWidth?: number;
     mask_area?: number;
     polygon?: [number, number][];
-    saved_images?: any;
+    saved_images?: unknown;
     // Batch format with multiple objects
     objects?: Array<{
       bbox?: number[];

@@ -20,7 +20,6 @@ import { useProjectQuery } from "@/features/dataset/queries/project.query";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import CustomToast from "@/components/ui/sonner";
-import { getApiErrorMessage } from "@/lib/api-error";
 
 interface UploadStepProps {
   onNext: (data: { roboflowProjectId: string; imageIds: string[] }) => void;
@@ -54,9 +53,8 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
     onSuccess: (data) => {
       handleSuccess(data);
     },
-    onError: (error) => {
+    onError: () => {
       setUploadProgress(false);
-      CustomToast.error(getApiErrorMessage(error, "Failed to upload images"));
     },
   });
 
@@ -64,9 +62,8 @@ export const UploadStep = ({ onNext }: UploadStepProps) => {
     onSuccess: (data) => {
       handleSuccess(data);
     },
-    onError: (error) => {
+    onError: () => {
       setUploadProgress(false);
-      CustomToast.error(getApiErrorMessage(error, "Failed to upload folder"));
     },
   });
 

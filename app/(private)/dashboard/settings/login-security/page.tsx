@@ -24,7 +24,6 @@ import {
   type LoginSecurityFormValues,
 } from "@/features/auth/schemas/login-security.schema";
 import { useAuthStore } from "@/stores/auth-store";
-import { getApiErrorMessage } from "@/lib/utils";
 
 const emptyPasswordDefaults = {
   currentPassword: "",
@@ -122,17 +121,7 @@ export default function LoginSecurityPage() {
       form.setValue("newPassword", "");
       form.setValue("confirmPassword", "");
       CustomToast.success("Changes saved successfully.");
-    } catch (error: unknown) {
-      const data = (error as { response?: { data?: unknown } })?.response?.data;
-      const msg = getApiErrorMessage(data);
-      if (Array.isArray(msg)) {
-        msg.forEach((m) => CustomToast.error(m));
-      } else if (typeof msg === "string") {
-        CustomToast.error(msg);
-      } else {
-        CustomToast.error("Could not save changes. Please try again.");
-      }
-    }
+    } catch {}
   };
 
   const formDisabled = isUpdating || (profileLoading && !user);
