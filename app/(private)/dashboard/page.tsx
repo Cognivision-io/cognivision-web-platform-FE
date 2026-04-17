@@ -1,7 +1,10 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Activity, ChevronDown, CreditCard, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 import { DashboardStatCard } from "@/features/dashboard/components/dashboard-page/stat-card";
 import { TokenUsageChart } from "@/features/dashboard/components/dashboard-page/token-usage-chart";
@@ -9,6 +12,7 @@ import { useDashboardMonoClass } from "@/features/dashboard/context/dashboard-mo
 import { useCurrentUsageQuery } from "@/features/monitoring/queries/usage.query";
 import { usePlansQuery } from "@/features/monitoring/queries/plan.query";
 import { useSubscriptionModalStore } from "@/store/subscription-modal-store";
+import { useAuthStore } from "@/store/auth-store";
 import { cn } from "@/lib/utils";
 
 const MODEL_ROWS = [
@@ -37,7 +41,23 @@ const ACTIVITY = [
   { id: "a4", dot: "bg-[#f59e0b]", label: "Data processed", time: "18 min ago" },
 ] as const;
 
-export default function DashboardPage() {
+function DashboardPageInner() {
+  const searchParams = useSearchParams();
+  const redirectUri = searchParams.get("redirect_uri");
+  const storeToken = useAuthStore((state) => state.token);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  useEffect(() => {
+    if (!redirectUri || !storeToken) return;
+    setIsRedirecting(true);
+    const separator = redirectUri.includes("?") ? "&" : "?";
+    const finalUrl = `${redirectUri}${separator}token=${storeToken}`;
+    const timer = setTimeout(() => {
+      window.location.href = finalUrl;
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [redirectUri, storeToken]);
+
   const monoClassName = useDashboardMonoClass();
   const { data: plans = [], isLoading: plansLoading } = usePlansQuery();
   const { data: usage, isLoading: usageLoading, isError: usageError } =
@@ -50,6 +70,41 @@ export default function DashboardPage() {
   const monthLabel = format(new Date(), "MMMM yyyy");
   const monthlyUsed = usage?.current_monthly_used ?? null;
   const dailyUsed = usage?.current_daily_used ?? null;
+
+  if (isRedirecting && redirectUri && storeToken) {
+    const separator = redirectUri.includes("?") ? "&" : "?";
+    const finalUrl = `${redirectUri}${separator}token=${storeToken}`;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f4f7fe]">
+        <div className="w-full max-w-md space-y-8 px-6 text-center">
+          <Link href="/" className="flex items-center justify-center gap-3">
+            <img
+              src="/logo.svg"
+              alt="CogniVision"
+              className="h-10 w-auto drop-shadow-sm"
+            />
+            <span className="font-heading text-[24px] font-semibold text-black">
+              CogniVision
+            </span>
+          </Link>
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-[#2b2b2b]">Redirecting…</h2>
+            <p className="text-sm text-[#64748b]">
+              Taking you back to the application...
+            </p>
+            <div className="pt-6">
+              <a
+                href={finalUrl}
+                className="inline-flex h-12 w-full items-center justify-center rounded-md bg-[#5925dc] px-4 text-base font-semibold text-white hover:bg-[#4a1eb8] transition-colors"
+              >
+                Click here if nothing happens
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#f4f7fe] px-4 py-6 md:px-7 md:py-8">
@@ -205,5 +260,13 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={null}>
+      <DashboardPageInner />
+    </Suspense>
   );
 }

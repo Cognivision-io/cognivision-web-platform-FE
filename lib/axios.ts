@@ -23,6 +23,7 @@ api.interceptors.request.use(
         const headers = AxiosHeaders.from(config.headers ?? {});
         const value = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
         headers.set("Authorization", value);
+        // headers.set("ngrok-skip-browser-warning", true);
         config.headers = headers;
       }
     }
@@ -30,7 +31,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor - Handle errors globally
@@ -43,9 +44,12 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && typeof window !== "undefined") {
       window.localStorage.removeItem("authUser");
       clearSessionToken();
-      const isAuthRoute = ["/login", "/register", "/forget-password", "/verify-otp"].some(
-        (route) => window.location.pathname.startsWith(route),
-      );
+      const isAuthRoute = [
+        "/login",
+        "/register",
+        "/forget-password",
+        "/verify-otp",
+      ].some((route) => window.location.pathname.startsWith(route));
       if (!isAuthRoute) {
         window.location.replace("/login?reason=session_expired");
       }
@@ -62,7 +66,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

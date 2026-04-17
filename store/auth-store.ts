@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import type { AuthenticatedUser } from "@/types/auth.interface";
-import { clearSessionToken, persistSessionToken } from "@/lib/session";
+import { clearSessionToken, getBrowserSessionToken, persistSessionToken } from "@/lib/session";
 
 type AuthStore = {
   user: AuthenticatedUser | null;
@@ -38,9 +38,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         parsedUser = null;
         console.warn("Failed to parse stored auth user", error);
       }
-      set({
-        user: parsedUser,
-      });
+      set({ user: parsedUser });
+    }
+
+    // Restore token from cookie so it is always available in the store
+    const cookieToken = getBrowserSessionToken();
+    if (cookieToken) {
+      set({ token: cookieToken });
     }
 
     await get().refreshUserFromSession();
