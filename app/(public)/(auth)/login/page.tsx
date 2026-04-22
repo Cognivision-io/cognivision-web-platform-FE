@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, Suspense, useState } from "react";
+import { FormEvent, Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
@@ -8,7 +8,8 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { capitalize, isValidEmail } from "@/lib/utils";
-import { useAuthStore } from "@/stores/auth-store";
+import { normaliseApiError } from "@/lib/api-error";
+import { useAuthStore } from "@/store/auth-store";
 import { useLoginMutation } from "@/features/auth/mutations/auth.mutation";
 import CustomToast from "@/components/ui/sonner";
 
@@ -16,11 +17,34 @@ function LoginPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
+  const redirectUri = searchParams.get("redirect_uri");
   const login = useAuthStore((state) => state.login);
+  const user = useAuthStore((state) => state.user);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const storeToken = useAuthStore((state) => state.token);
   const { mutateAsync: loginMutation, isPending } = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (user && storeToken) {
+      if (redirectUri) {
+        setIsRedirecting(true);
+        let finalUrl = redirectUri;
+        const separator = finalUrl.includes('?') ? '&' : '?';
+        finalUrl += `${separator}token=${storeToken}`;
+        const timer = setTimeout(() => {
+          window.location.href = finalUrl;
+        }, 300);
+        return () => clearTimeout(timer);
+      } else {
+        router.replace(callbackUrl ?? "/dashboard");
+      }
+    }
+  }, [isHydrated, user, storeToken, redirectUri, router, callbackUrl]);
 
   const normalizeLoginErrorMessage = (rawMessage: string) => {
     const normalized = rawMessage
@@ -28,6 +52,12 @@ function LoginPageInner() {
       .replace(/[.!?]+$/, "")
       .toLowerCase();
     if (normalized === "entity not found") return "User not found";
+    if (
+      normalized === "invalid credentials" ||
+      normalized === "authentication required"
+    ) {
+      return "Invalid email or password.";
+    }
     return capitalize(rawMessage);
   };
 
@@ -40,33 +70,46 @@ function LoginPageInner() {
       }
       const response = await loginMutation({ email, password });
 
-      if (!response?.data?.tokens?.token || !response?.data?.user) {
+      const accessToken = response?.tokens?.access_token;
+      const userPayload = response?.user;
+
+      if (!accessToken || !userPayload) {
         CustomToast.error("Something went wrong. Please try again.");
         return;
       }
 
       CustomToast.success("Login Successful");
 
-      const token = response.data.tokens.token;
-      const userPayload = response.data.user;
+      await login(accessToken, userPayload, response.tokens.refresh_token);
 
-      await login(token, userPayload);
-
-      router.replace(callbackUrl ?? "/dashboard");
+      if (redirectUri) {
+        setIsRedirecting(true);
+        let finalUrl = redirectUri;
+        const separator = finalUrl.includes('?') ? '&' : '?';
+        finalUrl += `${separator}token=${accessToken}`;
+        
+        setTimeout(() => {
+          window.location.href = finalUrl;
+        }, 100);
+      } else {
+        router.replace(callbackUrl ?? "/dashboard");
+      }
     } catch (error: unknown) {
       const errorResponse = (
         error as {
           response?: {
             data?: {
               message?: string | string[];
+              detail?: string | unknown[];
               response?: { email?: string };
             };
           };
         }
       )?.response?.data;
-      const message = errorResponse?.message;
 
-      if (message === "Email is not verifed") {
+      const message = normaliseApiError(error);
+
+      if (typeof message === "string" && message === "Email is not verifed") {
         const emailFromServer = errorResponse?.response?.email;
         const emailToUse = emailFromServer ?? email;
         CustomToast.success("Verify your email");
@@ -90,6 +133,51 @@ function LoginPageInner() {
       }
     }
   };
+
+  if (!isHydrated) {
+    return (
+      <div className="flex w-full items-center justify-center px-6 py-12 text-muted-foreground lg:w-1/2 lg:px-12">
+        <div className="text-center text-sm">Loading...</div>
+      </div>
+    );
+  }
+
+  if (isRedirecting) {
+    let finalUrl = redirectUri || "";
+    if (storeToken && redirectUri) {
+      const separator = finalUrl.includes('?') ? '&' : '?';
+      finalUrl += `${separator}token=${storeToken}`;
+    }
+
+    return (
+      <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2 lg:px-12">
+        <div className="w-full max-w-md space-y-8">
+          <Link href="/" className="flex items-center gap-3 justify-center">
+            <img
+              src="/logo.svg"
+              alt="CogniVision"
+              className="h-10 w-auto drop-shadow-sm"
+            />
+            <span className="font-heading text-[24px] font-semibold text-black">
+              CogniVision
+            </span>
+          </Link>
+          <div className="space-y-4 text-center">
+            <h2 className="text-2xl font-bold">Login Successful</h2>
+            <p className="text-muted-foreground">Redirecting you to the application...</p>
+            <div className="pt-6">
+              <a 
+                href={finalUrl} 
+                className="inline-flex h-12 w-full items-center justify-center rounded-md bg-primary px-4 text-base font-semibold text-primary-foreground hover:bg-primary/90"
+              >
+                Click here if nothing happens
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2 lg:px-12">

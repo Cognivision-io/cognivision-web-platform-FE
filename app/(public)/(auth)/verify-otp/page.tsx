@@ -22,7 +22,7 @@ import {
   useVerifyOtpMutation,
 } from "@/features/auth/mutations/auth.mutation";
 import CustomToast from "@/components/ui/sonner";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStore } from "@/store/auth-store";
 import Link from "next/link";
 
 const VerifyOtpContent = () => {
@@ -47,10 +47,15 @@ const VerifyOtpContent = () => {
 
     try {
       const response = await verifyOtpMutation({ code: Number(otp) });
-      const token = response.data?.tokens?.token;
+      const accessToken = response.tokens?.access_token;
+      const refreshToken = response.tokens?.refresh_token;
 
-      if (token) {
-        useAuthStore.getState().setToken(token);
+      if (accessToken) {
+        const { setToken } = useAuthStore.getState();
+        setToken(accessToken);
+        if (typeof window !== "undefined" && refreshToken) {
+          window.localStorage.setItem("authRefreshToken", refreshToken);
+        }
       }
 
       CustomToast.success("Successfully verified your code");

@@ -6,14 +6,14 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { capitalize, isValidEmail } from "@/lib/utils";
-import { useResendOtpMutation } from "@/features/auth/mutations/auth.mutation";
+import { useForgetPasswordMutation } from "@/features/auth/mutations/auth.mutation";
 import CustomToast from "@/components/ui/sonner";
 import Link from "next/link";
 
 const ForgetPasswordPage = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const { mutateAsync: resendOtp, isPending } = useResendOtpMutation();
+  const { mutateAsync: forgetPassword, isPending } = useForgetPasswordMutation();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -22,8 +22,8 @@ const ForgetPasswordPage = () => {
         CustomToast.error("Please enter a valid email address.");
         return;
       }
-      await resendOtp({ email });
-      CustomToast.success("An OTP has been sent to your email");
+      const response = await forgetPassword({ email });
+      CustomToast.success(response.message || "An OTP has been sent to your email");
       router.push(`/verify-otp?email=${encodeURIComponent(email)}`);
     } catch (error: unknown) {
       const message = (

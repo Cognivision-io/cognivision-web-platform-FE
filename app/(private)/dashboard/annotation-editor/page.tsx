@@ -109,7 +109,7 @@ export default function AnnotationEditor() {
                                         });
                     };
 
-                    const handleSave = async () => {
+                    const handleSave = () => {
                                         const annotations = {
                                                             image: currentImage,
                                                             classes: currentClasses,
@@ -117,21 +117,13 @@ export default function AnnotationEditor() {
                                                             timestamp: new Date().toISOString()
                                         };
 
-                                        try {
-                                                            const response = await fetch('/api/annotation/save', {
-                                                                                method: 'POST',
-                                                                                headers: { 'Content-Type': 'application/json' },
-                                                                                body: JSON.stringify(annotations)
-                                                            });
-
-                                                            if (!response.ok) throw new Error('Save failed');
-
-                                                            const data = await response.json();
-                                                            alert(`Annotations saved: ${data.filename}`);
-                                        } catch (error) {
-                                                            console.error('Save error:', error);
-                                                            alert('Failed to save annotations');
-                                        }
+                                        const blob = new Blob([JSON.stringify(annotations, null, 2)], { type: 'application/json' });
+                                        const url = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `annotations-${Date.now()}.json`;
+                                        a.click();
+                                        URL.revokeObjectURL(url);
                     };
 
                     const handleExport = () => {

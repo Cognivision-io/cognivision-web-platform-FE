@@ -1,314 +1,343 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { LogOut, Mail, UserX } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Check, Eye, EyeOff } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import CustomToast from "@/components/ui/sonner";
+import { useUpdateUserMutation } from "@/features/auth/mutations/auth.mutation";
+import { USER_QUERY_KEY, useUserQuery } from "@/features/auth/queries/user.query";
 import {
-  useDeleteUserMutation,
-  useLogoutMutation,
-  useUpdateUserMutation,
-} from "@/features/auth/mutations/auth.mutation";
-import {
-  useGetSubscriptionQuery,
-} from "@/features/subscription/mutations/subscription.mutation";
-import { isValidEmail } from "@/lib/utils";
-import { useAuthStore } from "@/stores/auth-store";
-import { useSubscriptionModalStore } from "@/stores/subscription-modal-store";
+  loginSecurityFormSchema,
+  type LoginSecurityFormValues,
+} from "@/features/auth/schemas/login-security.schema";
+import { handleMutationError } from "@/lib/handle-error";
+import { useAuthStore } from "@/store/auth-store";
 
-const LoginSecurityPage = () => {
-  const router = useRouter();
+const emptyPasswordDefaults = {
+  currentPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+} as const;
+
+export default function LoginSecurityPage() {
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
   const setUser = useAuthStore((state) => state.setUser);
-  const { mutateAsync: triggerLogout, isPending: isLoggingOut } =
-    useLogoutMutation();
-  const { mutateAsync: triggerDeleteUser, isPending: isDeletingUser } =
-    useDeleteUserMutation();
-  const { mutateAsync: triggerUpdateUser, isPending: isUpdatingUser } =
-    useUpdateUserMutation();
-  const [isChangeEmailOpen, setIsChangeEmailOpen] = useState(false);
-  const [newEmail, setNewEmail] = useState("");
-  const openSubscriptionModal = useSubscriptionModalStore(
-    (state) => state.openModal
+
+  const { data: profileFromApi, isLoading: profileLoading } = useUserQuery(
+    user?.id,
   );
-  const subscriptionPlanId = user?.subscriptionPlans?.[0];
-  const { data: subscriptionPlanResponse, isLoading: isPlanLoading } =
-    useGetSubscriptionQuery(subscriptionPlanId);
 
-  const subscriptionPlan = subscriptionPlanResponse?.data;
-  const planPrice = subscriptionPlan?.price
-    ? Number(subscriptionPlan.price)
-    : 0;
-  const planCycle = subscriptionPlan?.billingCycle ?? "monthly";
-  const planCurrency = subscriptionPlan?.currency ?? "USD";
-  const annualTotal =
-    planCycle === "annual" ? (planPrice * 12).toFixed(2) : null;
-  const planDisplayName = subscriptionPlan?.name ?? "Public Plan";
-  const planPriceLabel = isPlanLoading
-    ? "Loading..."
-    : subscriptionPlan
-      ? `$${planPrice.toFixed(2)}/mo`
-      : "$0.00/mo";
+  const profile = profileFromApi ?? user;
 
-  const displayName = useMemo(() => {
-    if (!user) return "Hania Hasan";
-    const composed = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
-    if (composed.length > 0) {
-      return composed;
-    }
-    return user.username ?? user.email ?? "Cognivision User";
-  }, [user]);
+  const { mutateAsync: triggerUpdateUser, isPending: isUpdating } =
+    useUpdateUserMutation();
 
-  const initials = useMemo(() => {
-    if (user?.firstName || user?.lastName) {
-      const firstInitial = user.firstName?.[0] ?? "";
-      const lastInitial = user.lastName?.[0] ?? "";
-      const combined = `${firstInitial}${lastInitial}`.trim();
-      return combined.toUpperCase() || "H";
-    }
-    return user?.email?.[0].toUpperCase() ?? "H";
-  }, [user]);
+  const form = useForm<LoginSecurityFormValues>({
+    resolver: yupResolver(loginSecurityFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      ...emptyPasswordDefaults,
+    },
+  });
 
-  const providerLabel = useMemo(() => {
-    const provider = user?.provider ?? "google";
-    return provider.charAt(0).toUpperCase() + provider.slice(1);
-  }, [user]);
+  useEffect(() => {
+    const p = profileFromApi ?? user;
+    if (!p) return;
+    form.reset({
+      name: p.name?.trim() ?? "",
+      email: p.email ?? "",
+      ...emptyPasswordDefaults,
+    });
+  }, [user?.id, user?.name, user?.email, profileFromApi, form]);
 
-  const handleLogout = async () => {
-    if (isLoggingOut) return;
-    try {
-      await triggerLogout();
-      logout();
-      CustomToast.success("Signed out successfully");
-      router.replace("/login");
-    } catch (error) {
-      console.error("Failed to sign out", error);
-      CustomToast.error("Failed to sign out. Please try again.");
+  const resetToProfile = () => {
+    const p = profileFromApi ?? user;
+    if (p) {
+      form.reset({
+        name: p.name?.trim() ?? "",
+        email: p.email ?? "",
+        ...emptyPasswordDefaults,
+      });
+    } else {
+      form.reset({
+        name: "",
+        email: "",
+        ...emptyPasswordDefaults,
+      });
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (isDeletingUser) return;
+  const onSubmit = async (values: LoginSecurityFormValues) => {
     if (!user?.id) {
-      CustomToast.error("Unable to delete account. Please try again.");
+      CustomToast.error("You must be signed in to save changes.");
       return;
     }
 
-    try {
-      await triggerDeleteUser(user.id);
-      try {
-        await triggerLogout();
-      } catch (logoutError) {
-        console.warn("Failed to sign out after deletion", logoutError);
-      }
-      logout();
-      queryClient.clear();
-      CustomToast.success("Account deleted successfully");
-      router.replace("/login");
-    } catch (error) {
-      const message =
-        (
-          error as {
-            response?: { data?: { message?: string | string[] } };
+    const pwdTouched =
+      values.currentPassword.length > 0 ||
+      values.newPassword.length > 0 ||
+      values.confirmPassword.length > 0;
+
+    const payload = {
+      email: values.email.trim(),
+      name: values.name.trim(),
+      active: profile?.active ?? true,
+      ...(pwdTouched
+        ? {
+            current_password: values.currentPassword,
+            new_password: values.newPassword,
           }
-        )?.response?.data?.message ?? "Failed to delete account";
-
-      CustomToast.error(
-        typeof message === "string" ? message : "Failed to delete account"
-      );
-    }
-  };
-
-  const handleChangeEmail = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (isUpdatingUser) return;
-    if (!user?.id) {
-      CustomToast.error("Unable to update email. Please try again.");
-      return;
-    }
-
-    const trimmedEmail = newEmail.trim();
-    if (!isValidEmail(trimmedEmail)) {
-      CustomToast.error("Please enter a valid email address.");
-      return;
-    }
+        : {}),
+    };
 
     try {
       const response = await triggerUpdateUser({
         id: user.id,
-        payload: { email: trimmedEmail },
+        payload,
       });
-      if (response?.data) {
-        setUser(response.data);
+      if (response) {
+        setUser(response);
       }
-      CustomToast.success("Email updated successfully");
-      setIsChangeEmailOpen(false);
-      setNewEmail("");
-    } catch (error) {
-      const message = (
-        error as { response?: { data?: { message?: string | string[] } } }
-      )?.response?.data?.message;
-
-      if (Array.isArray(message)) {
-        message.forEach((msg) => CustomToast.error(msg));
-      } else if (typeof message === "string") {
-        CustomToast.error(message);
-      } else {
-        CustomToast.error("Failed to update email. Please try again.");
-      }
+      await queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY });
+      form.setValue("currentPassword", "");
+      form.setValue("newPassword", "");
+      form.setValue("confirmPassword", "");
+      CustomToast.success("Changes saved successfully.");
+    } catch (error: unknown) {
+      handleMutationError(error);
     }
   };
 
+  const formDisabled = isUpdating || (profileLoading && !user);
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-[32px] font-semibold text-[#141b2d]">
-          Your Profile
-        </h1>
-      </div>
-
-      <div className="rounded-lg border border-[#e0e5ff] bg-white px-5 py-5 shadow-[0_24px_50px_rgba(41,53,108,0.07)]">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-1 items-center gap-4">
-            <Avatar className="h-12 w-12">
-              <AvatarFallback className="h-12 w-12 rounded-full bg-[#7b5cff] text-base font-semibold text-white">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-base font-semibold text-[#1b2559]">
-                {displayName}
-              </p>
-              <p className="text-[15px] text-[#6c7292]">
-                {user?.email ?? "haniahasan825@gmail.com"}
+    <div className="bg-[#f4f7fe] px-4 py-6 md:px-8 md:py-6">
+      <div className="mx-auto w-full max-w-[1280px]">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="rounded-[14px] border border-[#e2e8f0] bg-white shadow-sm"
+          >
+            <div className="border-b border-[#f1f5f9] px-8 pb-6 pt-8">
+              <h1 className="text-[18px] font-semibold tracking-[-0.3px] text-[#2b2b2b]">
+                Account Information
+              </h1>
+              <p className="mt-1 text-[13px] font-normal leading-relaxed text-[#94a3b8]">
+                Manage your personal details and account settings
               </p>
             </div>
-          </div>
-          <Button
-            type="button"
-            disabled={isLoggingOut}
-            onClick={handleLogout}
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#e0e4f8] bg-white px-3 text-sm font-semibold text-[#4b516f] shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition hover:border-[#cdd2f1] hover:text-[#2b3150]"
-          >
-            <LogOut className="h-4 w-4 text-[#9AA1C8]" />
-            {isLoggingOut ? "Signing out..." : "Sign out"}
-          </Button>
-        </div>
-      </div>
 
-      <div className="rounded-lg border border-[#e0e5ff] bg-white px-5 py-6 shadow-[0_24px_50px_rgba(41,53,108,0.07)]">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9aa1c5]">
-              Current Plan
-            </p>
-            <p className="text-lg font-semibold text-[#1b2559]">
-              {isPlanLoading ? "Checking plan..." : planDisplayName}
-            </p>
-            <p className="text-sm text-[#6c7292]">
-              {subscriptionPlan
-                ? `${planCycle === "annual" ? "Annual billing" : "Monthly billing"} · ${planCurrency}`
-                : "Public tier · Free"}
-            </p>
-            {subscriptionPlan && planCycle === "annual" && annualTotal && (
-              <p className="text-xs text-[#9aa1c5]">
-                ${annualTotal} billed once a year
-              </p>
-            )}
-          </div>
-          <div className="flex items-end gap-4">
-            <div className="text-2xl font-bold text-[#141b2d]">
-              {planPriceLabel}
+            <div className="space-y-7 px-8 py-8">
+              {profileLoading && !profileFromApi ? (
+                <p className="text-[13px] text-[#94a3b8]">Loading profile…</p>
+              ) : null}
+
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[13px] font-medium text-[#2b2b2b]">
+                      Display Name
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        disabled={formDisabled}
+                        className="h-[41.2px] rounded-[7px] border-[#e2e8f0] text-[14px] text-[#2b2b2b] shadow-none"
+                        autoComplete="name"
+                      />
+                    </FormControl>
+                    <p className="text-[12px] font-normal leading-[1.5] text-[#94a3b8]">
+                      This is how your name will appear in the portal
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[13px] font-medium text-[#2b2b2b]">
+                      Email Address
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="email"
+                        disabled={formDisabled}
+                        className="h-[41.2px] rounded-[7px] border-[#e2e8f0] text-[14px] text-[#2b2b2b] shadow-none"
+                        autoComplete="email"
+                      />
+                    </FormControl>
+                    <p className="text-[12px] font-normal leading-[1.5] text-[#94a3b8]">
+                      Used for sign-in and notifications
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="h-px bg-[#f1f5f9]" aria-hidden />
+
+              <FormField
+                control={form.control}
+                name="currentPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[13px] font-medium text-[#2b2b2b]">
+                      Current Password
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          type={showCurrentPassword ? "text" : "password"}
+                          placeholder="Enter current password"
+                          className="h-[41.2px] rounded-[7px] border-[#e2e8f0] pr-10 text-[14px] shadow-none placeholder:text-[#94a3b8]"
+                          autoComplete="current-password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCurrentPassword((prev) => !prev)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          aria-label={
+                            showCurrentPassword ? "Hide password" : "Show password"
+                          }
+                        >
+                          {showCurrentPassword ? (
+                            <EyeOff size={20} />
+                          ) : (
+                            <Eye size={20} />
+                          )}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="newPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[13px] font-medium text-[#2b2b2b]">
+                      New Password
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          type={showNewPassword ? "text" : "password"}
+                          placeholder="Enter new password"
+                          className="h-[41.2px] rounded-[7px] border-[#e2e8f0] pr-10 text-[14px] shadow-none placeholder:text-[#94a3b8]"
+                          autoComplete="new-password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword((prev) => !prev)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          aria-label={
+                            showNewPassword ? "Hide password" : "Show password"
+                          }
+                        >
+                          {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <p className="text-[12px] font-normal leading-[1.5] text-[#94a3b8]">
+                      Leave blank to keep your current password. Must be at least 8 characters when
+                      changing.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[13px] font-medium text-[#2b2b2b]">
+                      Confirm New Password
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Confirm new password"
+                          className="h-[41.2px] rounded-[7px] border-[#e2e8f0] pr-10 text-[14px] shadow-none placeholder:text-[#94a3b8]"
+                          autoComplete="new-password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword((prev) => !prev)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          aria-label={
+                            showConfirmPassword ? "Hide password" : "Show password"
+                          }
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff size={20} />
+                          ) : (
+                            <Eye size={20} />
+                          )}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <Button
+                  type="submit"
+                  disabled={formDisabled}
+                  className="h-[36.4px] gap-2 rounded-[7px] bg-[#5925dc] px-5 text-[13px] font-medium text-white hover:bg-[#5925dc]/90"
+                >
+                  <Check className="size-[15px]" strokeWidth={2.5} aria-hidden />
+                  {isUpdating ? "Saving…" : "Save Changes"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={resetToProfile}
+                  className="h-[36.4px] rounded-[7px] border-[#e2e8f0] bg-white px-5 text-[13px] font-medium text-[#2b2b2b] hover:bg-[#f8fafc]"
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => openSubscriptionModal("core")}
-              className="h-10 rounded-xl px-4 text-sm font-semibold"
-            >
-              Upgrade Plan
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h2 className="text-lg font-semibold text-[#1b2559]">Modify Account</h2>
-        <div className="mt-4 flex flex-wrap gap-3">
-            <Dialog open={isChangeEmailOpen} onOpenChange={setIsChangeEmailOpen}>
-            <DialogTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-11 rounded-xl border-[#d7dbef] bg-white px-4 text-sm font-semibold text-[#4b516f] shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-[#c3c8e4] hover:text-[#1e2748]"
-              >
-                <Mail className="h-4 w-4 text-[#8c94b6]" />
-                Change Email
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[420px]">
-              <DialogHeader>
-                <DialogTitle>Change Email</DialogTitle>
-                <DialogDescription>
-                  Update your account email address.
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleChangeEmail} className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="newEmail" className="text-sm font-medium">
-                    New Email Address
-                  </label>
-                  <Input
-                    id="newEmail"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={newEmail}
-                    onChange={(event) => setNewEmail(event.target.value)}
-                    required
-                    className="h-11"
-                  />
-                </div>
-                <DialogFooter>
-                  <Button
-                    type="submit"
-                    className="h-10"
-                    disabled={isUpdatingUser}
-                  >
-                    {isUpdatingUser ? "Updating..." : "Update Email"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-            </Dialog>
-            <Button
-            type="button"
-            variant="outline"
-            disabled={isDeletingUser}
-            onClick={handleDeleteAccount}
-            className="h-11 rounded-xl border-[#d7dbef] bg-white px-4 text-sm font-semibold text-[#4b516f] shadow-[0_1px_2px_rgba(15,23,42,0.03)] hover:border-[#c3c8e4] hover:text-[#8d1e1e]"
-          >
-            <UserX className="h-4 w-4 text-[#8c94b6]" />
-            {isDeletingUser ? "Deleting..." : "Delete Account"}
-          </Button>
-        </div>
+          </form>
+        </Form>
       </div>
     </div>
   );
-};
-
-export default LoginSecurityPage;
+}
