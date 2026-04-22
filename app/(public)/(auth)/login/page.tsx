@@ -207,7 +207,7 @@ function LoginPageInner() {
               required
               id="email"
               type="email"
-              placeholder="hania@cognivision"
+              placeholder="john@cognivision.io"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               className="h-12"
@@ -256,7 +256,7 @@ function LoginPageInner() {
             {isPending ? "Signing in..." : "Sign In"}
           </Button>
 
-          <p className="text-center text-sm">
+          {/* <p className="text-center text-sm">
             Don&apos;t have an account?{" "}
             <Link
               href="/register"
@@ -264,7 +264,7 @@ function LoginPageInner() {
             >
               Register
             </Link>
-          </p>
+          </p> */}
         </form>
       </div>
     </div>

@@ -10,20 +10,18 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
 
           <div className="relative z-10 flex flex-1 flex-col justify-center space-y-6">
             <h2 className="text-5xl font-bold leading-tight">
-              Build AR powered apps; no heavy coding.
+              Build AR powered apps; no coding.
             </h2>
             <p className="text-lg leading-relaxed text-primary-foreground/90">
-              Empower your applications with computer vision and augmented
-              reality in just a few lines of code. Our SDK handles everything;
-              from dataset management and model training to real-time object
-              detection and spatial measurement; so you can focus on building
-              experiences, not infrastructure.
+              No Swift. No native bridging. Just describe what you want —
+              Cognivision generates working AR code that runs on a real iPhone
+              in minutes.
             </p>
           </div>
 
           <div className="relative z-10">
             <p className="text-lg font-medium">
-              Your data. Your models. Your vision.
+              AR features in React Native, from a prompt.
             </p>
           </div>
         </div>
