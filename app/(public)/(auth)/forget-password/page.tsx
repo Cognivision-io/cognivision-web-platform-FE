@@ -69,7 +69,7 @@ const ForgetPasswordPage = () => {
               required
               id="email"
               type="email"
-              placeholder="hania@cognivision"
+              placeholder="john@cognivision.io"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               className="h-12"
