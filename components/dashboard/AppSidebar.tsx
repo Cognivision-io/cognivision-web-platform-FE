@@ -170,7 +170,7 @@ export function AppSidebar() {
             </p>
             <button
               type="button"
-              onClick={() => openModal("core")}
+              onClick={() => window.open("https://www.cognivision.io/contact-sales", "_blank")}
               className="mt-3 flex h-8 w-full items-center justify-center rounded-[7px] bg-[#5925dc] text-[12.5px] font-medium text-white transition-colors hover:bg-[#5925dc]/90"
             >
               Upgrade to Pro

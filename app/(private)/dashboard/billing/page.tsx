@@ -115,7 +115,7 @@ export default function BillingPage() {
                 </div>
                 <Button
                   type="button"
-                  onClick={() => openModal("core")}
+                  onClick={() => window.open("https://www.cognivision.io/contact-sales", "_blank")}
                   className="h-[36.4px] shrink-0 gap-2 rounded-[7px] bg-[#5925dc] px-5 text-[13px] font-medium text-white hover:bg-[#5925dc]/90"
                 >
                   <ArrowUpRight className="size-[15px]" aria-hidden />
