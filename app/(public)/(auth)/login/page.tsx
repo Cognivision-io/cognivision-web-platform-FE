@@ -34,7 +34,7 @@ function LoginPageInner() {
       if (redirectUri) {
         setIsRedirecting(true);
         let finalUrl = redirectUri;
-        const separator = finalUrl.includes('?') ? '&' : '?';
+        const separator = finalUrl.includes("?") ? "&" : "?";
         finalUrl += `${separator}token=${storeToken}`;
         const timer = setTimeout(() => {
           window.location.href = finalUrl;
@@ -85,9 +85,9 @@ function LoginPageInner() {
       if (redirectUri) {
         setIsRedirecting(true);
         let finalUrl = redirectUri;
-        const separator = finalUrl.includes('?') ? '&' : '?';
+        const separator = finalUrl.includes("?") ? "&" : "?";
         finalUrl += `${separator}token=${accessToken}`;
-        
+
         setTimeout(() => {
           window.location.href = finalUrl;
         }, 100);
@@ -124,7 +124,7 @@ function LoginPageInner() {
 
       if (Array.isArray(message)) {
         message.forEach((msg: string) =>
-          CustomToast.error(normalizeLoginErrorMessage(msg))
+          CustomToast.error(normalizeLoginErrorMessage(msg)),
         );
       } else if (typeof message === "string") {
         CustomToast.error(normalizeLoginErrorMessage(message));
@@ -145,7 +145,7 @@ function LoginPageInner() {
   if (isRedirecting) {
     let finalUrl = redirectUri || "";
     if (storeToken && redirectUri) {
-      const separator = finalUrl.includes('?') ? '&' : '?';
+      const separator = finalUrl.includes("?") ? "&" : "?";
       finalUrl += `${separator}token=${storeToken}`;
     }
 
@@ -164,10 +164,12 @@ function LoginPageInner() {
           </Link>
           <div className="space-y-4 text-center">
             <h2 className="text-2xl font-bold">Login Successful</h2>
-            <p className="text-muted-foreground">Redirecting you to the application...</p>
+            <p className="text-muted-foreground">
+              Redirecting you to the application...
+            </p>
             <div className="pt-6">
-              <a 
-                href={finalUrl} 
+              <a
+                href={finalUrl}
                 className="inline-flex h-12 w-full items-center justify-center rounded-md bg-primary px-4 text-base font-semibold text-primary-foreground hover:bg-primary/90"
               >
                 Click here if nothing happens
@@ -180,9 +182,12 @@ function LoginPageInner() {
   }
 
   return (
-    <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2 lg:px-12">
+    <div className="flex items-center justify-center px-6 py-12 h-full ">
       <div className="w-full max-w-md space-y-8">
-        <Link href="/" className="flex items-center gap-3">
+        {/* <Link
+          href="https://cognivision.io/"
+          className="flex items-center gap-3"
+        >
           <img
             src="/logo.svg"
             alt="CogniVision"
@@ -191,10 +196,10 @@ function LoginPageInner() {
           <span className="font-heading text-[24px] font-semibold text-black">
             CogniVision
           </span>
-        </Link>
+        </Link> */}
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Welcome to Cognivision 👋</h1>
+          <h1 className="text-3xl font-bold">Welcome to Cognivision </h1>
           <p className="text-muted-foreground">Sign in to your account</p>
         </div>
 
@@ -269,7 +274,7 @@ function LoginPageInner() {
       </div>
     </div>
   );
-};
+}
 
 const LoginPage = () => {
   return (
