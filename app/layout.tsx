@@ -9,7 +9,7 @@ const poppins = localFont({
     {
       path: "../public/fonts/Poppins/Poppins-Regular.ttf",
       weight: "400",
-      style: "normal",
+      style: "normal"
     },
     {
       path: "../public/fonts/Poppins/Poppins-Medium.ttf",
